@@ -1,28 +1,4 @@
-import {
-  Box,
-  Code,
-  Heading,
-  Image,
-  ListItem,
-  OrderedList,
-  Tab,
-  Table,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  UnorderedList
-} from "@chakra-ui/react"
-import { ColorModeStyles, useColorModeValue } from "nextjs-color-mode"
-import { chakraColor } from "../helpers/chakra-theme"
-import { Link } from './Link'
-import Spoiler from './Spoiler'
+import React from "react"
 
 function getAnchor(text) {
   return text
@@ -34,90 +10,92 @@ function getAnchor(text) {
 const H = ({ children, as, size }) => {
   const anchor = getAnchor(children)
 
-  return (
-    <Heading id={anchor} as={as} size={size} paddingY={'2'}>
-      <Link className="paragraph" href={`#${anchor}`} marginLeft={-4}>
-        <Text as='abbr' opacity="0" color={'gray.300'} fontWeight='normal'>§ </Text>
+  return React.createElement(
+    as,
+    {
+      className: `py-2 font-bold text-${size}`,
+    },
+    <a className="paragraph -ml-4" href={`#${anchor}`}>
+      <abbr className={`opacity-0.5 color-gray-300 font-normal`}>§ </abbr>
+      <span className={`hover:underline hover:decoration-gray-400`}>
         {children}
-      </Link>
-    </Heading>
+      </span>
+    </a>
   )
 }
 
-const CodeVariant = ({ children, name }) => {
-  return (
-    <Box name={name}>
-      {children}
-    </Box>
-  )
-}
+// const CodeVariant = ({ children, name }) => {
+//   return (
+//     <Box name={name}>
+//       {children}
+//     </Box>
+//   )
+// }
 
-const CodeVariants = ({ children }) => {
-  const [ bg, bgCss ] = useColorModeValue('code-variant-bg', chakraColor('gray.50'), chakraColor('gray.700'))
-  children = Array.isArray(children) ? children : [children]
-
-  return (
-    <>
-      <ColorModeStyles styles={[bgCss]} />
-      <Tabs
-        variant='enclosed'
-        colorScheme={''}
-        marginTop={4}
-        marginBottom={4}
-        backgroundColor={bg}
-        borderRadius={'lg'}
-      >
-        <TabList>
-          {children.map(({ props }) => (
-            <Tab key={props.name}>{props.name}</Tab>
-          ))}
-        </TabList>
-        <TabPanels>
-          {children.map(variant => (
-            <TabPanel key={variant.props.name} paddingY={2} paddingX={6}>
-              {variant}
-            </TabPanel>
-          ))}
-        </TabPanels>
-      </Tabs>
-    </>
-  )
-}
+// const CodeVariants = ({ children }) => {
+//   const [ bg, bgCss ] = useColorModeValue('code-variant-bg', chakraColor('gray.50'), chakraColor('gray.700'))
+//   children = Array.isArray(children) ? children : [children]
+//
+//   return (
+//     <>
+//       <Tabs
+//         variant='enclosed'
+//         colorScheme={''}
+//         marginTop={4}
+//         marginBottom={4}
+//         backgroundColor={bg}
+//         borderRadius={'lg'}
+//       >
+//         <TabList>
+//           {children.map(({ props }) => (
+//             <Tab key={props.name}>{props.name}</Tab>
+//           ))}
+//         </TabList>
+//         <TabPanels>
+//           {children.map(variant => (
+//             <TabPanel key={variant.props.name} paddingY={2} paddingX={6}>
+//               {variant}
+//             </TabPanel>
+//           ))}
+//         </TabPanels>
+//       </Tabs>
+//     </>
+//   )
+// }
 
 // `text`
 const Highlight = (props) => (
-  <Code
-    fontSize={'xs'}
-    background='purple.100'
-    borderRadius={'full'}
-    whiteSpace={'pre'}
-    wordSpacing={'normal'}
-    wordBreak={'normal'}
-    paddingX='2'
+  <pre
+    className={`px-2 text-xs bg-white rounded-full whitespace-pre break-normal spacing`}
+    // fontSize={'xs'}
+    // background='purple.100'
+    // borderRadius={'full'}
+    // whiteSpace={'pre'}
+    // wordSpacing={'normal'}
+    // wordBreak={'normal'}
+    // paddingX='2'
     {...props}
   />
 )
 
 // ```text```
 const Snippet = (props) => (
-  <Box
-    border="1px solid black"
-    background={'#282a36'}
-    marginY='4'
-    overflow='x-auto'
-    borderRadius='md'
+  <div
+    // border="1px solid black"
+    // background={'#282a36'}
+    // marginY='4'
+    // overflow='x-auto'
+    // borderRadius='md'
+    className={`border-1`}
   >
     <pre {...props} />
-  </Box>
+  </div>
 )
 
 const MdTable = (props) => {
-  const [borderColor, borderColorCss] = useColorModeValue('table-border-color', chakraColor('gray.200'), chakraColor('gray.600'))
-  
   return (
     <>
-      <ColorModeStyles styles={[borderColorCss]} />
-      <Box
+      <div
         paddingX='0'
         paddingY='0'
         border='1px'
@@ -127,37 +105,31 @@ const MdTable = (props) => {
         maxWidth={'100vw'}
         overflow="auto"
       >
-        <Table
+        <table
           variant={'simple'}
           size={'sm'}
           {...props}
         />
-      </Box>
+      </div>
     </>
   )
 }
 
 const TableHeader = (props) => {
-  const [color, colorCss] = useColorModeValue('th-color', chakraColor('gray.500'), chakraColor('gray.300'))
-
   return (
     <>
-      <ColorModeStyles styles={[colorCss]} />
-      <Th py={3} px={5} color={color} border={'none'} {...props} />
+      <th py={3} px={5} color={color} border={'none'} {...props} />
     </>
   )
 }
 
 const TableRow = (props) =>
-  <Tr borderRadius='lg' border={'none'} {...props} />
+  <tr borderRadius='lg' border={'none'} {...props} />
 
 const TableCell = (props) => {
-  const [borderColor, borderColorCss] = useColorModeValue('td-border-color', chakraColor('gray.200'), chakraColor('gray.600'))
-
   return (
     <>
-      <ColorModeStyles styles={[borderColorCss]} />
-      <Td
+      <td
         py={2}
         px={{ base: 3, xl: 6 }}
         borderBottom={'none'}
@@ -171,8 +143,8 @@ const TableCell = (props) => {
 }
 
 export default {
-  a: (props) => <Link color={'purple.400'} {...props} />,
-  p: (props) => <Box paddingY={'2'} {...props} />,
+  a: (props) => <a color={'purple.400'} {...props} />,
+  p: (props) => <div className={'py-2'} {...props} />,
   h1: (props) => <H as='h1' size={'xl'}  {...props} />,
   h2: (props) => <H as='h2' size={'lg'} {...props} />,
   h3: (props) => <H as='h3' size={'md'} {...props} />,
@@ -181,18 +153,18 @@ export default {
   pre: Snippet,
   code: Highlight,
   table: MdTable,
-  thead: (props) => <Thead {...props} />,
-  tbody: (props) => <Tbody {...props} />,
+  thead: (props) => <thead {...props} />,
+  tbody: (props) => <tbody {...props} />,
   tr: TableRow,
   th: TableHeader,
   td: TableCell,
-  ul: (props) => <UnorderedList paddingY={1} {...props} />,
-  ol: (props) => <OrderedList paddingY={2} {...props} />,
-  li: (props) => <ListItem paddingY={0.5} {...props} />,
-  img: (props) =>  <Image display={'inline-block'} rounded={'md'} {...props} marginBottom={-1} />,
-  Spoiler: (props) => <Spoiler {...props} />,
-  CodeVariants: (props) => <CodeVariants {...props} />,
-  CodeVariant: (props) => <CodeVariant {...props} />,
+  ul: (props) => <ul className={`py-1 list-disc`} {...props} />,
+  ol: (props) => <ol className={`py-2 list-decimal`} {...props} />,
+  li: (props) => <li className={`py-0.5`} {...props} />,
+  img: (props) =>  <img className={`inline-block rounded-md -mb-1`} {...props} />,
+  // Spoiler: (props) => <Spoiler {...props} />,
+  // CodeVariants: (props) => <CodeVariants {...props} />,
+  // CodeVariant: (props) => <CodeVariant {...props} />,
   Snippet,
   Highlight
 }
