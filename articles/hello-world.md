@@ -1,7 +1,9 @@
 ---
 url: "hello-world"
 date: "2024-03-01"
+author: "dzikoysk"
 title: "Hello world"
+image: "/hello-world/progress-bar.webp"
 tags: []
 ---
 
@@ -12,7 +14,7 @@ Nulla nec odio nec nunc tincidunt tincidunt nec nec nunc.
 
 Some code:
 
-```kotlin
+```kotlin {2}
 main {
     println("Hello, world!")
 }
@@ -25,3 +27,12 @@ List:
 Another list:
 1. One
 2. Two
+
+## Table
+
+Table:
+
+| Header 1 | Header 2 | Header 3 |
+|----------|:--------:|---------:|
+| Cell 1   |  Cell 2  |   Cell 3 |
+| Cell 4   |  Cell 5  |   Cell 6 |

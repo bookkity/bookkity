@@ -2,9 +2,11 @@ import React from "react"
 
 function getAnchor(text) {
   return text
-    .toLowerCase()
-    .replace(/[^a-z0-9 ]/g, '')
-    .replace(/[ ]/g, '-')
+      ?.toString()
+      ?.toLowerCase()
+      ?.replace(/[^a-z0-9 ]/g, '')
+      ?.replace(/[ ]/g, '-')
+      ?? ''
 }
 
 const H = ({ children, as, size }) => {
@@ -16,8 +18,8 @@ const H = ({ children, as, size }) => {
       className: `py-2 font-bold text-${size}`,
     },
     <a className="paragraph -ml-4" href={`#${anchor}`}>
-      <abbr className={`opacity-0.5 color-gray-300 font-normal`}>§ </abbr>
-      <span className={`hover:underline hover:decoration-gray-400`}>
+      <abbr className={`opacity-0.5 text-gray-400 font-normal opacity-0`}>§ </abbr>
+      <span className={`hover:underline hover:decoration-gray-300`}>
         {children}
       </span>
     </a>
@@ -65,17 +67,9 @@ const H = ({ children, as, size }) => {
 
 // `text`
 const Highlight = (props) => (
-  <pre
-    className={`px-2 text-xs bg-white rounded-full whitespace-pre break-normal spacing`}
-    // fontSize={'xs'}
-    // background='purple.100'
-    // borderRadius={'full'}
-    // whiteSpace={'pre'}
-    // wordSpacing={'normal'}
-    // wordBreak={'normal'}
-    // paddingX='2'
-    {...props}
-  />
+  <pre className={`px-2 text-xs bg-white rounded-full whitespace-pre break-normal spacing`}>
+    {props.children}
+  </pre>
 )
 
 // ```text```
@@ -94,72 +88,42 @@ const Snippet = (props) => (
 
 const MdTable = (props) => {
   return (
-    <>
-      <div
-        paddingX='0'
-        paddingY='0'
-        border='1px'
-        borderColor={borderColor}
-        borderRadius='lg'
-        marginY='4'
-        maxWidth={'100vw'}
-        overflow="auto"
-      >
-        <table
-          variant={'simple'}
-          size={'sm'}
-          {...props}
-        />
-      </div>
-    </>
+    <div className={`px-0 py-0 my-4 max-w-full overflow-auto`}>
+      <table className={`rounded-corners`} {...props} />
+    </div>
   )
 }
 
 const TableHeader = (props) => {
-  return (
-    <>
-      <th py={3} px={5} color={color} border={'none'} {...props} />
-    </>
-  )
+  return <th className={`py-2 px-5`} {...props} />
 }
 
-const TableRow = (props) =>
-  <tr borderRadius='lg' border={'none'} {...props} />
+const TableRow = (props) => {
+  return <tr className={`bg-white`} {...props} />
+}
 
 const TableCell = (props) => {
-  return (
-    <>
-      <td
-        py={2}
-        px={{ base: 3, xl: 6 }}
-        borderBottom={'none'}
-        borderTop={'1px'}
-        borderTopColor={borderColor}
-        wordBreak={'break-word'}
-        {...props}
-      />
-    </>
-  )
+  return <td className={`py-1.5 px-3 break-words`} {...props} />
 }
 
 export default {
   a: (props) => <a color={'purple.400'} {...props} />,
   p: (props) => <div className={'py-2'} {...props} />,
-  h1: (props) => <H as='h1' size={'xl'}  {...props} />,
-  h2: (props) => <H as='h2' size={'lg'} {...props} />,
-  h3: (props) => <H as='h3' size={'md'} {...props} />,
-  h4: (props) => <H as='h4' size={'sm'} {...props} />,
-  h5: (props) => <H as='h5' size={'xs'} {...props} />,
+  h1: (props) => <H as='h1' size={'2xl'}  {...props} />,
+  h2: (props) => <H as='h2' size={'xl'} {...props} />,
+  h3: (props) => <H as='h3' size={'lg'} {...props} />,
+  h4: (props) => <H as='h4' size={'md'} {...props} />,
+  h5: (props) => <H as='h5' size={'sm'} {...props} />,
   pre: Snippet,
-  code: Highlight,
+  // code: Highlight,
   table: MdTable,
-  thead: (props) => <thead {...props} />,
+  thead: (props) => <thead className={``} {...props} />,
   tbody: (props) => <tbody {...props} />,
   tr: TableRow,
   th: TableHeader,
   td: TableCell,
-  ul: (props) => <ul className={`py-1 list-disc`} {...props} />,
-  ol: (props) => <ol className={`py-2 list-decimal`} {...props} />,
+  ul: (props) => <ul className={`py-1 pl-5 list-disc`} {...props} />,
+  ol: (props) => <ol className={`py-2 pl-5 list-decimal`} {...props} />,
   li: (props) => <li className={`py-0.5`} {...props} />,
   img: (props) =>  <img className={`inline-block rounded-md -mb-1`} {...props} />,
   // Spoiler: (props) => <Spoiler {...props} />,

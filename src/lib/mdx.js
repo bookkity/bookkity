@@ -5,6 +5,9 @@ import { serialize } from 'next-mdx-remote/serialize'
 import remarkGfm from 'remark-gfm'
 import rehypePrism from '@mapbox/rehype-prism'
 import matter from 'gray-matter'
+import rehypeSlug from "rehype-slug"
+import rehypePrettyCode from "rehype-pretty-code"
+import rehypeAutolinkHeadings from "rehype-autolink-headings"
 
 const readDirectory = promisify(readdir)
 const readSpecificFile = promisify(readFile)
@@ -34,7 +37,10 @@ function serializeMdx(mdx) {
         remarkGfm,
       ],
       rehypePlugins: [
-        rehypePrism
+        // rehypePrism,
+        rehypeSlug,
+        [rehypePrettyCode, { theme: "min-light"}],
+        // rehypeAutolinkHeadings
       ]
     }
   })

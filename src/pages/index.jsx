@@ -2,7 +2,7 @@ import Layout from "@/components/Layout"
 import {Input} from "@/components/shadcn/Input"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faSearch} from "@fortawesome/free-solid-svg-icons"
-import {useEffect, useState} from "react"
+import {useEffect, useMemo, useState} from "react"
 import {getArticles} from "@/lib/mdx"
 import Head from "next/head"
 
@@ -27,10 +27,12 @@ export default function Home({ articles }) {
   const [selectedTag, setSelectedTag] = useState('')
   const [search, setSearch] = useState('')
 
-  const filteredArticles = articles
-    .filter(article => selectedTag ? article.tags.includes(selectedTag) : true)
-    .filter(article => search ? article.title.toLowerCase().includes(search.toLowerCase()) : true)
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+  const filteredArticles = useMemo(() => {
+    return articles
+      .filter(article => selectedTag ? article.tags.includes(selectedTag) : true)
+      .filter(article => search ? article.title.toLowerCase().includes(search.toLowerCase()) : true)
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+  }, [articles, selectedTag, search])
 
   return (
     <>
@@ -67,15 +69,32 @@ export default function Home({ articles }) {
           </>
         )}
         <div className={`pt-6 px-4`}>
+          {!search && filteredArticles.length === 0 && (
+            <p className={`text-gray-500 text-sm`}>
+              No articles found in this category <span className={`italic font-semibold`}>(yet!)</span>
+            </p>
+          )}
           {filteredArticles.map((article, idx) => {
             return (
-              <a href={`/article/${article.url}`} key={idx}>
-                <div key={`article-${idx}`} className={`py-6 bg-white rounded-lg w-1/3 px-6 cursor-pointer hover:scale-[1.02] hover:duration-200`}>
-                  <p className={`text-xs font-semibold text-gray-400`}>{article.date}</p>
-                  <h2 className={`text-2xl font-semibold pt-1`}>{article.title}</h2>
-                  <p className={`text-gray-500`}>{article.description}</p>
-                </div>
-              </a>
+              <div className={`w-1/3`} key={idx}>
+                <a href={`/article/${article.url}`} >
+                  <div key={`article-${idx}`} className={`bg-white rounded-lg cursor-pointer hover:scale-[1.02] hover:duration-200`}>
+                    <img src={`/article/${article.image}`} alt={article.title} className={`rounded-t-2xl w-full h-32 object-cover`} />
+                    <div className={`flex items-center`}>
+                      <div className={`px-3 py-3`}>
+                        <img src={`/author/${article.author}.jpg`} alt={'Bookkity'} className={`rounded-full h-12 w-12`}/>
+                      </div>
+                      <div className={`flex flex-col justify-center`}>
+                        <h2 className={`text-xl font-semibold`}>{article.title}</h2>
+                        <p className={`text-xs text-gray-400`}>
+                          {article.date} by <span className={`text-gray-700`}>{article.author}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <p className={`text-gray-500`}>{article.description}</p>
+                  </div>
+                </a>
+              </div>
             )
           })}
         </div>

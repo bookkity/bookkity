@@ -47,7 +47,10 @@ export default function Article({ article }) {
           </span>
         </p>
         <h1 className={`pt-10 pb-3 font-semibold text-3xl`}>{article.title}</h1>
-        <MDXRemote components={MDX} {...article.content} />
+        <div className={'mdx'}>
+          <MDXRemote components={MDX} {...article.content} />
+        </div>
+
       </Layout>
     </>
   )
