@@ -6,7 +6,7 @@ import {useState} from "react"
 const inter = Inter({ subsets: ["latin"] })
 
 const discordIcons = {
-  default: <FontAwesomeIcon icon={faDiscord} size="md" color={'white'} className={`icon`}/>,
+  default: <FontAwesomeIcon icon={faDiscord} size="lg" color={'white'} className={`icon`}/>,
   pl: <div className={`icon`}>🇵🇱</div>,
   en: <div className={`icon`}>🌎</div>
 }
