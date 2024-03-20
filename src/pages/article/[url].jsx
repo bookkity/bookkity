@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout"
-import {getArticles} from "@/lib/mdx"
+import {getArticles} from "@/helpers/articles"
 import Head from "next/head"
 import {MDXRemote} from "next-mdx-remote"
 import MDX from "@/components/mdx/MDX"

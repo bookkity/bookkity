@@ -3,7 +3,7 @@ import {Input} from "@/components/shadcn/Input"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faSearch} from "@fortawesome/free-solid-svg-icons"
 import {useEffect, useMemo, useState} from "react"
-import {getArticles} from "@/lib/mdx"
+import {getArticles} from "@/helpers/articles"
 import Head from "next/head"
 
 const tags = [

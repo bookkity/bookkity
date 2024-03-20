@@ -3,7 +3,7 @@ url: "hello-world"
 date: "2024-03-01"
 author: "dzikoysk"
 title: "Hello world"
-image: "/hello-world/progress-bar.webp"
+image: "/hello-world/progress-bar.jpg"
 tags: []
 ---
 
