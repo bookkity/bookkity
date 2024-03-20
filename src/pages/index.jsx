@@ -68,7 +68,7 @@ export default function Home({ articles }) {
             </div>
           </>
         )}
-        <div className={`pt-6 px-4`}>
+        <div className={`pt-6 px-4 flex gap-4`}>
           {!search && filteredArticles.length === 0 && (
             <p className={`text-gray-500 text-sm`}>
               No articles found in this category <span className={`italic font-semibold`}>(yet!)</span>
