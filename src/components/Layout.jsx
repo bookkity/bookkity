@@ -15,18 +15,18 @@ export default function Layout({ children }) {
   const [discordIcon, setDiscordIcon] = useState(discordIcons.default)
 
   return (
-    <main className={`flex min-h-screen flex-col bg-gray-100 ${inter.className}`}>
+    <main className={`flex min-h-screen max-w-screen flex-col bg-gray-100 ${inter.className}`}>
       <div className={`header flex items-center justify-between h-18 border-b border-b-gray-200 shadow-xs w-full`}>
         <a href={"/"}>
-          <div className={'flex items-center p-4'}>
+          <div className={'flex items-center px-4 py-4'}>
             <div className={``}>
               <img
                 src={`/images/boo.png`}
                 alt={'Bookkity'}
-                className={`rounded-xl h-10`}
+                className={`rounded-xl h-10 min-w-10`}
               />
             </div>
-            <p className={'font-semibold text-md px-3'}>Bookkity</p>
+            <p className={'font-semibold text-md pl-3'}>Bookkity</p>
           </div>
         </a>
         <div className={`flex items-center pt-1`}>
@@ -63,7 +63,7 @@ export default function Layout({ children }) {
           </div>
         </div>
       </div>
-      <div className={`content flex-grow container mx-auto`}>
+      <div className={`content flex-grow container mx-auto px-4 md:px-x-[2rem]`}>
         {children}
       </div>
       <div className={`footer h-14 flex justify-center w-full`}>

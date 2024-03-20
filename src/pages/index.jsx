@@ -40,7 +40,7 @@ export default function Home({ articles }) {
         <title>Bookkity</title>
       </Head>
       <Layout>
-        <div className={`px-4 pt-16`}>
+        <div className={`md:px-4 pt-8 md:pt-16`}>
           <div className={`flex items-center bg-white rounded-lg text-gray-500`}>
             <div className={`px-5 pt-1`}>
               <FontAwesomeIcon icon={faSearch} size="lg" />
@@ -52,7 +52,7 @@ export default function Home({ articles }) {
             />
           </div>
         </div>
-        <div className={`flex text-lg pt-6`}>
+        <div className={`flex text-lg pt-6 md:px-0`}>
           {tags.map((tag) => (
             <div key={tag.name} className={`p-2 px-6 font-semibold ${tag.tag === selectedTag ? 'text-purple-800' : ''}`}>
               <a href={`#${tag.tag}`} onClick={() => setSelectedTag(tag.tag)}>{tag.name}</a>
@@ -76,7 +76,7 @@ export default function Home({ articles }) {
           )}
           {filteredArticles.map((article, idx) => {
             return (
-              <div className={`w-1/3`} key={idx}>
+              <div className={`md:w-1/3`} key={idx}>
                 <a href={`/article/${article.url}`} >
                   <div key={`article-${idx}`} className={`bg-white rounded-lg cursor-pointer hover:scale-[1.02] hover:duration-200`}>
                     <img src={`/article/${article.image}`} alt={article.title} className={`rounded-t-2xl w-full h-32 object-cover`} />
