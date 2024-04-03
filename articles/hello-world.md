@@ -2,6 +2,7 @@
 url: "hello-world"
 date: "2024-03-01"
 author: "dzikoysk"
+language: "pl"
 title: "Hello world"
 image: "/hello-world/progress-bar.jpg"
 tags: []

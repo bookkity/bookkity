@@ -1,16 +1,20 @@
 import Layout from "@/components/Layout"
-import {Input} from "@/components/shadcn/Input"
+import {Input} from "@/components/ui/input"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faSearch} from "@fortawesome/free-solid-svg-icons"
-import {useEffect, useMemo, useState} from "react"
+import {useMemo, useState} from "react"
 import {getArticles} from "@/helpers/articles"
 import Head from "next/head"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
+import {Toggle} from "@/components/ui/toggle"
 
 const tags = [
   { name: 'All', tag: '' },
   { name: 'JVM', tag: 'jvm' },
   { name: 'Java', tag: 'java' },
   { name: 'Kotlin', tag: 'kotlin' },
+  { name: 'DevOps', tag: 'devops' },
+  { name: 'Hardware', tag: 'hardware' },
 ]
 
 export async function getStaticProps() {
@@ -26,13 +30,23 @@ export async function getStaticProps() {
 export default function Home({ articles }) {
   const [selectedTag, setSelectedTag] = useState('')
   const [search, setSearch] = useState('')
+  const [languages, setLanguages] = useState({ value: ['pl', 'en'] })
 
   const filteredArticles = useMemo(() => {
     return articles
+      .filter(article => languages.value.includes(article.language))
       .filter(article => selectedTag ? article.tags.includes(selectedTag) : true)
       .filter(article => search ? article.title.toLowerCase().includes(search.toLowerCase()) : true)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-  }, [articles, selectedTag, search])
+  }, [articles, languages, selectedTag, search])
+
+  const toggleLanguage = (lang) => {
+    let updated = languages.value.includes(lang)
+      ? languages.value.filter(l => l !== lang)
+      : [...languages.value, lang]
+
+    setLanguages({ value: [...updated] })
+  }
 
   return (
     <>
@@ -52,7 +66,21 @@ export default function Home({ articles }) {
             />
           </div>
         </div>
-        <div className={`flex text-lg pt-6 md:px-0`}>
+        <div className={`flex max-w-full flex-wrap justify-center sm:justify-start text-lg pt-6 md:px-0`}>
+          <div className={'px-4 pt-0.5'}>
+            <Toggle
+              onClick={() => toggleLanguage('pl')}
+              className={`mr-2 ${languages.value.includes('pl') ? 'bg-white' : 'bg-gray-100'}`}
+            >
+              🇵🇱
+            </Toggle>
+            <Toggle
+              onClick={() => toggleLanguage('en')}
+              className={(languages.value.includes('en')) ? 'bg-white' : 'bg-gray-100'}
+            >
+              🌎
+            </Toggle>
+          </div>
           {tags.map((tag) => (
             <div key={tag.name} className={`p-2 px-6 font-semibold ${tag.tag === selectedTag ? 'text-purple-800' : ''}`}>
               <a href={`#${tag.tag}`} onClick={() => setSelectedTag(tag.tag)}>{tag.name}</a>
@@ -68,15 +96,15 @@ export default function Home({ articles }) {
             </div>
           </>
         )}
-        <div className={`pt-6 px-4 flex gap-4`}>
+        <div className={`pt-6 px-4 flex flex-col sm:flex-row gap-4`}>
           {!search && filteredArticles.length === 0 && (
-            <p className={`text-gray-500 text-sm`}>
+            <p className={`text-gray-500 text-sm text-center sm:text-left`}>
               No articles found in this category <span className={`italic font-semibold`}>(yet!)</span>
             </p>
           )}
           {filteredArticles.map((article, idx) => {
             return (
-              <div className={`md:w-1/3`} key={idx}>
+              <div className={`w-full sm:w-1/2 md:w-1/3`} key={idx}>
                 <a href={`/article/${article.url}`} >
                   <div key={`article-${idx}`} className={`bg-white rounded-lg cursor-pointer hover:scale-[1.02] hover:duration-200`}>
                     <img src={`/article/${article.image}`} alt={article.title} className={`rounded-t-2xl w-full h-32 object-cover`} />

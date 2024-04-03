@@ -2,6 +2,7 @@
 url: "fly-phoenix-fly"
 date: "2024-03-02"
 author: "crejk"
+language: "en"
 title: "Fly, Phoenix, Fly!"
 image: "/fly-phoenix-fly/boeing-faa.jpeg"
 tags: []
