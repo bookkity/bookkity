@@ -14,6 +14,8 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@mapbox/rehype-prism": "^0.9.0",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-toggle": "^1.0.3",
     "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
