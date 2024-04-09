@@ -1,0 +1,4 @@
+---
+location: "Poland, Warsaw"
+description: "\uD835\uDCBD\uD835\uDCBE I'm yet another software developer involved in open source activities. #onlypanda \uD83D\uDC95"
+---
