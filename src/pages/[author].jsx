@@ -33,7 +33,6 @@ export async function getStaticPaths() {
 
 
 export default function Author({ author, articles }) {
-  console.log(author)
   return (
     <>
       <Head>

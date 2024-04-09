@@ -1,10 +1,7 @@
 import path from 'path'
-import { serialize } from 'next-mdx-remote/serialize'
-import remarkGfm from 'remark-gfm'
 import matter from 'gray-matter'
-import rehypeSlug from "rehype-slug"
-import rehypePrettyCode from "rehype-pretty-code"
 import {readDirectory, readSpecificFile} from "@/helpers/fs"
+import {serializeMdx} from "@/helpers/mdx"
 
 const articlesPath = path.join(process.cwd(), "articles")
 
@@ -24,18 +21,3 @@ export async function readMdx(file) {
   }
 }
 
-function serializeMdx(mdx) {
-  return serialize(mdx, {
-    mdxOptions: {
-      remarkPlugins: [
-        remarkGfm,
-      ],
-      rehypePlugins: [
-        // rehypePrism,
-        rehypeSlug,
-        [rehypePrettyCode, { theme: "min-light"}],
-        // rehypeAutolinkHeadings
-      ]
-    }
-  })
-}
