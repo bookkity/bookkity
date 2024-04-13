@@ -1,7 +1,7 @@
 import {getArticles} from "@/helpers/articles"
 import Layout from "@/components/Layout"
 import Head from "next/head"
-import {getAuthor} from "@/helpers/authors"
+import {getAuthor, getAuthors} from "@/helpers/authors"
 
 export async function getStaticProps({ params: { author } }) {
   const articles = await getArticles()
@@ -19,12 +19,12 @@ export async function getStaticProps({ params: { author } }) {
 }
 
 export async function getStaticPaths() {
-  const articles = await getArticles()
+  const authors = await getAuthors()
 
   return ({
-    paths: articles.map(article => ({
+    paths: authors.map(author => ({
       params: {
-        author: article.author
+        author: author.name
       }
     })),
     fallback: false
