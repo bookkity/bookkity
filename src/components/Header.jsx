@@ -46,7 +46,7 @@ export default function Header() {
       </div>
       <div className={`w-1/4 flex flex-col md:flex-row justify-center md:justify-end items-center pt-1`}>
         <div className={`discord-parent bg-gray-200 rounded-lg h-7 flex items-center justify-between text-xs`}>
-          <div className={`bg-purple-900 w-8 flex items-center justify-center h-full rounded-l-lg`}>
+          <div className={`bg-purple-900 px-1.5 w-8 flex items-center justify-center h-full rounded-l-lg`}>
             {discordIcon}
           </div>
           <div className={`px-3 flex font-semibold text-gray-700`}>
