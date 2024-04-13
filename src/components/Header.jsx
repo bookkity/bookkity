@@ -22,7 +22,7 @@ export default function Header() {
   return (
     <div className={`header flex flex-col md:flex-row items-center justify-center md:justify-between h-18 border-b border-b-gray-200 shadow-xs w-full`}>
       <a href={"/"} className={`w-1/4`}>
-        <div className={'flex items-center px-4 py-4'}>
+        <div className={'flex items-center justify-center md:justify-start px-4 py-4'}>
           <div className={``}>
             <img
               src={`/images/boo.png`}
@@ -38,13 +38,13 @@ export default function Header() {
           <a
             key={index}
             href={item.link}
-            className={`px-3 py-4 hover:text-black ${currentPath === item.link ? 'font-semibold' : ''}`}
+            className={`px-3 py-2 md:py-4 hover:text-black ${currentPath === item.link ? 'font-semibold' : ''}`}
           >
             {item.name}
           </a>
         ))}
       </div>
-      <div className={`w-1/4 flex flex-col md:flex-row justify-center md:justify-end items-center pt-1`}>
+      <div className={`w-1/4 flex flex-col md:flex-row justify-center md:justify-end items-center pt-4 md:pt-1`}>
         <div className={`discord-parent bg-gray-200 rounded-lg h-7 flex items-center justify-between text-xs`}>
           <div className={`bg-purple-900 px-1.5 w-8 flex items-center justify-center h-full rounded-l-lg`}>
             {discordIcon}
