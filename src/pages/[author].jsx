@@ -33,10 +33,12 @@ export async function getStaticPaths() {
 
 
 export default function Author({ author, articles }) {
+  const title = `Bookkity - ${author.name}`
+
   return (
     <>
       <Head>
-        <title>Bookkity - {author.name}</title>
+        <title>{title}</title>
       </Head>
       <Layout>
         <p className={`text-sm text-gray-500 pt-12 px-1`}>
