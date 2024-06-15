@@ -205,14 +205,14 @@ To make it total, we can introduce new type which allows only to provide positiv
 Let's try to make it also pure.
 What if we make this object immutable?
 ```java
-    class Account {
+class Account {
     
-        private final BigDecimal balance;
+    private final BigDecimal balance;
         
-        Account deposit(BigDecimal amount) {
-            return new Account(balance + amount);
-        }
+    Account deposit(BigDecimal amount) {
+        return new Account(balance + amount);
     }
+}
 ```
 You may say it's still not pure, because it still depends on internal state. But what if we write it down like this
 
@@ -283,7 +283,7 @@ public String displayUsername(long userId) {
     Optional<User> userOpt = getUser(userId);
     if (userOpt.isPresent) {
         usernameOpt = userOpt.get().getUsername();
-        if(usernameOpt.isPresent) {
+        if (usernameOpt.isPresent) {
             return usernameOpt.get();
         }
     }
@@ -311,7 +311,7 @@ The hidden behavior also applies to validation.
 
 ```java
     public User createUser(String name) {
-        if(name.length < 3) {
+        if (name.length < 3) {
             throw new IllegalArgumentException("Name too short");
         }
         return new User(name);
@@ -327,7 +327,7 @@ How to do it better?
 
 ```java
     public Either<DomainError, User> createUser(String name) {
-        if(name.length < 3) {
+        if (name.length < 3) {
             return Either.left(DomainError.NAME_TOO_SHORT);
         }
         return Either.right(new User(name));
@@ -354,11 +354,11 @@ Let's write a code for loading CSV files.
     private Flight parse(String line){
         var args = line.split(",");
         String departure = args[0];
-        if(!isValidIcaoCode(departure)){
+        if (!isValidIcaoCode(departure)){
             throw new IllegalArgumentException("Departure is not valid icao airport code.");
         }
         String destination = args[1];
-        if(!isValidIcaoCode(destination)){
+        if (!isValidIcaoCode(destination)){
             throw new IllegalArgumentException("Desination is not valid icao airport code.");
         }
     }
