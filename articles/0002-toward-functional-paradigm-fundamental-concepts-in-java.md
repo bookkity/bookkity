@@ -277,6 +277,9 @@ How to do it better?
 ```
 
 Either allows explicitly showing our method has two paths. The success - right, and the failure - left.
+<References links={[
+{ title: "Either", url: "https://eed3si9n.com/learning-scalaz/Either.html" },
+]} />
 
 Thanks to that:
 - We don't need to open method code to discover alternative scenarios.
@@ -311,6 +314,9 @@ And let's image we want to upload CSV with hundreds rows and some of them contai
 If there are errors in our CSV file we won't be informed about all errors at once, but only **first** encountered error.
 In this case a list of errors would be more handful. For that purpose, we can use `Validation` from Vavr.
 Like `Either`, `Validation` contains two paths, valid and invalid. The main difference is that instead of chaining the result from the first event to the next, `Validation` validates all events.
+<References links={[
+{ title: "Either", url: "https://eed3si9n.com/learning-scalaz/Validation.html" },
+]} />
 
 ```java
    public List<Validation<Seq<String>, Flight> load(List<String> lines) {
