@@ -403,7 +403,7 @@ class ExternalFlightLoader implements FlightLoader {
     }
 }
 ```
-But that will affect change method signature in our interface
+But that will affect the method signature change in our interface.
 ```java
 interface FlightLoader {
 
