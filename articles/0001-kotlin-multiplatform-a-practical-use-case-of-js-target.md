@@ -5,7 +5,7 @@ author: "dzikoysk"
 language: "en"
 title: "Kotlin Multiplatform: A practical use-case of Kotlin/JS IR compiler"
 image: "/0001/create-your-kmm-library.webp"
-tags: []
+tags: ["kotlin", "jvm"]
 ---
 
 [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) _(KMP)_ tries to move Kotlin out of the JVM world and make it a universal language for all platforms.
