@@ -245,7 +245,33 @@ In this case `Optional` seems reasonable.
 ```
 
 The side effect still exists, but we encoded that fact using type system. It's not hidden like in the previous example.
-TU MOZE DOPISAC JAK UZYWAC OPTIONALA (NIE UZYWAC `get`)
+For those not familiar with FP the most straightforward way to use `Optional` will be
+```java
+Optional<User> userOpt = getUser(1);
+if (userOpt.isPresent()) {
+    User user = userOpt.get();    
+}
+```
+But it's not really how we do it functionally. 
+In most cases, we should avoid invoking `get()`. We want to use `map` and `flatMap`.
+❌
+```java
+public String displayUsername(long userId) {
+    Optional<User> userOpt = getUser(userId);
+    if (userOpt.isPresent) {
+        return userOpt.get().getName();
+    }
+    return "Annonymous";
+}
+```
+✅
+```java
+public String displayUsername(long userId) {
+    return getUser(userId)
+        .map(user -> user.getName())
+        .orElse("Annonymous");    
+}
+```
 
 In Kotlin, this is default behavior, we need to explicitly say if result of operation is nullable or not.
 `?` -> nullable
