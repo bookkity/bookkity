@@ -43,6 +43,9 @@ For years, Java ha not had a decent built-in way of defining immutable objects, 
 public record User(String username, int age) {
 }
 ```
+<References links={[
+{ title: "Record Classes", url: "https://docs.oracle.com/en/java/javase/17/language/records.html" },
+]} />
 
 The following code doesn't allow us any modification, the only way to "update" the object is to create new one with changed values.
 
