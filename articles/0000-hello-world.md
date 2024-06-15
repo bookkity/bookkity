@@ -1,0 +1,28 @@
+---
+url: "hello-world"
+date: "2024-06-01"
+author: "dzikoysk"
+language: "en"
+title: "Hello world"
+image: "/0000/progress-bar.jpg"
+tags: []
+---
+
+Welcome to Bookkity community, where a group of long-time friends come together to share their thoughts on tech related topics. <br/>
+Our journey began years ago, but so much more is still ahead of us.
+
+* [About Us](/about) - Meet the crew!
+* [Articles](/articles) - Check out our latest posts
+* [Series](/series) - Dive into our series of articles on specific topics
+
+#### What you can find here?
+
+- Articles about programming, software development, and technology
+- Tutorials and guides
+- Reviews of tools and libraries
+- News from the world of technology
+- Basically anything that we find interesting
+
+<AlignRight>
+    See you around! ✧ʕ̢̣̣̣̣̩̩̩̩·͡˔·ོɁ̡̣̣̣̣̩̩̩̩✧
+</AlignRight>

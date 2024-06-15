@@ -106,30 +106,32 @@ export default function Home({ articles }) {
             return (
               <div className={`w-full sm:w-1/2 md:w-1/3`} key={idx}>
                 <div key={`article-${idx}`} className={`bg-white rounded-lg cursor-pointer hover:scale-[1.02] hover:duration-200`}>
-                    <a href={`/article/${article.url}`} >
-                      <img
-                        src={`/article/${article.image}`}
-                        alt={article.title}
-                        className={`rounded-t-2xl w-full h-32 object-cover`}
-                      />
-                    </a>
-                    <div className={`flex items-center`}>
+                  <a href={`/article/${article.url}`} >
+                    <img
+                      src={`/article/${article.image}`}
+                      alt={article.title}
+                      className={`rounded-t-2xl w-full h-56 object-cover`}
+                    />
+                  </a>
+                  <div className={`flex items-center py-2`}>
                     <div className={`px-3 py-3`}>
                       <a href={`/${article.author}`}>
                         <img
                           src={`/author/${article.author}.jpg`}
                           alt={'Bookkity'}
-                          className={`rounded-full h-12 w-12`}
+                          className={`rounded-full h-12 w-12 min-w-12`}
                         />
                       </a>
                     </div>
                     <div className={`flex flex-col justify-center`}>
                       <a href={`/article/${article.url}`}>
-                        <h2 className={`text-xl font-semibold`}>{article.title}</h2>
+                        <h2 className={`text-lg font-semibold leading-5`}>{article.title}</h2>
                       </a>
-                      <p className={`text-xs text-gray-400`}>
-                        {article.date} by <a href={`/${article.author}`}><span
-                        className={`text-gray-700`}>{article.author}</span></a>
+                      <p className={`text-xs text-gray-400 pt-1`}>
+                        {article.date} by
+                        <a href={`/${article.author}`}>
+                          &nbsp;<span className={`text-gray-700`}>{article.author}</span>
+                        </a>
                       </p>
                     </div>
                   </div>
