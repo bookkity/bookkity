@@ -5,7 +5,6 @@ import {faSearch} from "@fortawesome/free-solid-svg-icons"
 import {useMemo, useState} from "react"
 import {getArticles} from "@/helpers/articles"
 import Head from "next/head"
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Toggle} from "@/components/ui/toggle"
 
 const tags = [
@@ -13,6 +12,7 @@ const tags = [
   { name: 'JVM', tag: 'jvm' },
   { name: 'Java', tag: 'java' },
   { name: 'Kotlin', tag: 'kotlin' },
+  { name: 'Rust', tag: 'rust' },
   { name: 'DevOps', tag: 'devops' },
   { name: 'Hardware', tag: 'hardware' },
 ]
