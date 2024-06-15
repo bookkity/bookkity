@@ -149,6 +149,7 @@ export default {
   ol: (props) => <ol className={`py-2 pl-8 list-decimal `} {...props} />,
   li: (props) => <li className={`py-0.5 pl-2`} {...props} />,
   img: (props) =>  <img className={`inline-block rounded-md -mb-1`} {...props} />,
+  blockquote: (props) => <blockquote className={`border-l-4 border-purple-200 pl-4 py-0.5 mt-2 mb-4 text-md bg-gray-50 rounded-r-md`} {...props} />,
   // Spoiler: (props) => <Spoiler {...props} />,
   // CodeVariants: (props) => <CodeVariants {...props} />,
   // CodeVariant: (props) => <CodeVariant {...props} />,

@@ -1,11 +1,11 @@
 ---
-url: "fp-basics"
-date: "2024-03-25"
+url: "toward-functional-paradigm-fundamental-concepts-in-java"
+date: "2024-06-20"
 author: "crejk"
 language: "en"
 title: "Toward Functional Paradigm: Fundamental Concepts in Java"
-image: "/hello-world/progress-bar.jpg"
-tags: [Java]
+image: "/0002/fp-aristarchusnull.jpg"
+tags: ["java"]
 ---
 
 ## Introduction
@@ -18,6 +18,7 @@ The primary concept with which we may already be familiar is immutability.
 
 #### Immutable objects
 Immutable objects, once created, cannot be modified. They remain the same throughout their entire life cycle.
+
 ```java
 // old fashion way
 public class User {
@@ -35,7 +36,8 @@ public class User {
 }
 ```
 
-For years, Java has not had a decent built-in way of defining immutable objects, but we lived to see records.
+For years, Java ha not had a decent built-in way of defining immutable objects, but we lived to see records.
+
 ```java
 // Java 14+
 public record User(String username, int age) {
@@ -43,6 +45,7 @@ public record User(String username, int age) {
 ```
 
 The following code doesn't allow us any modification, the only way to "update" the object is to create new one with changed values.
+
 ```java
 public record Reservation(ReservationId id, Status status) {
 
@@ -53,6 +56,7 @@ public record Reservation(ReservationId id, Status status) {
 ```
 
 Unfortunately, in Java we have to do it manually. In comparison, Kotlin provides us `copy` method.
+
 ```kotlin
 data class Reservation(val id: ReservationId, val status: Status) {
     
@@ -65,6 +69,7 @@ What are main benefits of using immutable objects?
 - immutable objects are thread-safe, they can be shared among multiple threads without restraint.
 - allows you to reason about a piece of code independently of the rest of the program, because our internal state can't be changed by other part of our system.
 - we can model things like they are, e.g. events - the fact already happened we can't change it.
+
 ```java
     public void handle(MoneyTransfered moneyTransfered) {
         moneyTransfered.setAmount(BigDecimal.valueOf(0)); // WTF?
@@ -73,6 +78,7 @@ What are main benefits of using immutable objects?
 
 #### Immutable collections
 Problem with mutable collection
+
 ```java
     ShowStats getShowStats(List<Reservation> reservations) {
         int activeReservations = calculateActiveReservations(reservations);
@@ -80,7 +86,9 @@ Problem with mutable collection
         return new ShowStats(activeReservations, totalReservations);
     }
 ```
+
 On the first look it looks fine, but what in case `activeReservations()` removes some elements from provided list?
+
 ```java
     public int calculateActiveReservations(List<Reservations> reservations) {
         reservations.removeIf(reservation -> reservation.getStatus() != Status.Active);
@@ -89,6 +97,7 @@ On the first look it looks fine, but what in case `activeReservations()` removes
 ```
 
 If we passed an ArrayList the `calculateActiveReservations` will modify the list and that will cause a bug
+
 ```java
     ShowStats getShowStats(List<Reservation> reservations){ // [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
         int activeReservations = calculateActiveReservations(reservations); // 2
@@ -97,7 +106,9 @@ If we passed an ArrayList the `calculateActiveReservations` will modify the list
         return new ShowStats(activeReservations, totalReservations);
     }
 ```
+
 If we created list using `List.of()` or `Stream#toList()` it created `ImmutableCollections.List`, which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
+
 ```java
     public int calculateActiveReservations(List<Reservations> reservations) {
         reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnusportedOperationException
@@ -121,10 +132,12 @@ Because we are held back by the compiler already during development stage.
 ```
 
 To modify a list we need to define it explicitly as `MutableList`
+
 ```kotlin
     val mutableList: MutableList<String> = arrayListOf("a")
     mutableList.add("b")
 ```
+
 It's better, but not perfect. Adding elements should be allowed, but it should create a new list that contains values from the source list along with the newly added value.
 
 But won't it be slow?
@@ -167,12 +180,14 @@ Let's review few methods and determine if they are total and pure.
         }
     }
 ```
+
 > As a rule of thumb, using `void` is usually bad practice. TU DOPISAC DLACZEGO 
 
 It's nor total nor pure.
 The method returns output only if argument is greater than 0, and it modifies internal state, so depend on the current state the method may behave differently.
 
 To make it total, we can introduce new type which allows only to provide positive BigDecimals. So now our method signature forces to use the appropriate parameter.
+
 ```java
     void deposit(PositiveBigDecimal amount) {
         balance += amount;
@@ -192,6 +207,7 @@ What if we make this object immutable?
     }
 ```
 You may say it's still not pure, because it still depends on internal state. But what if we write it down like this
+
 ```java
     static Account deposit(Account account, BigDecimal amount) {
         return new Account(account.balance() + amount);
@@ -200,6 +216,7 @@ You may say it's still not pure, because it still depends on internal state. But
 As you see, we can just treat our object as a first argument of our function. So the first approach is absolutely fine and can be acknowledged as pure.
 
 Let's take a look at another example
+
 ```java
     private Map<Long, User> users = new HashMap<>();
 
@@ -212,21 +229,25 @@ It's not, It can return User or null for the same argument.
 
 How can we fix it? We can present it explicitly using a type system.
 In this case `Optional` seems reasonable.
+
 ```java
     Optional<User> getUser(long id) {
         return Optional.ofNullabe(map.get(id));
     } 
 ```
+
 The side effect still exists, but we encoded that fact using type system. It's not hidden like in the previous example.
 TU MOZE DOPISAC JAK UZYWAC OPTIONALA (NIE UZYWAC `get`)
 
 In Kotlin, this is default behavior, we need to explicitly say if result of operation is nullable or not.
 `?` -> nullable
+
 ```kotlin
     fun getUser(id: Long): User? = map.get(id)
 ```
 
 The hidden behavior also applies to validation.
+
 ```java
     public User createUser(String name) {
         if(name.length < 3) {
@@ -235,12 +256,14 @@ The hidden behavior also applies to validation.
         return new User(name);
     }
 ```
+
 What's the problem here?
 - The method signature hides from us the fact there is validation inside method body.
 - The compiler doesn't force us to handle error.
 - Exceptions are not an excellent choice for business errors, they are more for **exception**al cases.
 
 How to do it better?
+
 ```java
     public Either<DomainError, User> createUser(String name) {
         if(name.length < 3) {
@@ -249,6 +272,7 @@ How to do it better?
         return Either.right(new User(name));
     }
 ```
+
 Either allows explicitly showing our method has two paths. The success - right, and the failure - left.
 
 Thanks to that:
@@ -257,6 +281,7 @@ Thanks to that:
 
 Another interesting class is `Validation`.
 Let's write a code for loading CSV files.
+
 ```java
     List<Flight> load(List<String> lines) {
         return lines.stream().map(it -> it.parse(it)).toList();
@@ -278,6 +303,7 @@ Let's write a code for loading CSV files.
         return icao.length() == 4;
     }
 ```
+
 And let's image we want to upload CSV with hundreds rows and some of them contain errors. Do you see a problem with above solution?
 If there are errors in our CSV file we won't be informed about all errors at once, but only **first** encountered.
 In this case a list of errors would be more handful. For that purpose, we can use `Validation` from Vavr.
@@ -304,10 +330,13 @@ In this case a list of errors would be more handful. For that purpose, we can us
         return Validation.invalid("%s is not valid ICAO code".formatted(icao));
     }
 ```
+
 Our code didn't change much. Instead of throwing an exception, we just return an object, so the flow is not terminated instantly.
-The load part is more problematic because we have to handle List<Validation<Seq<String>, Flight>>. The question is how to aggregate the data to easily display the number of loaded flights or the list of validation errors.
-For sake of humanity there is `Validation#sequence` which
-> Reduces many Validation instances into a single Validation by transforming an Iterable<Validation<? extends T>> into a Validation<Seq<T>>.
+The load part is more problematic because we have to handle `List<Validation<Seq<String>, Flight>>`. The question is how to aggregate the data to easily display the number of loaded flights or the list of validation errors.
+For sake of humanity there is `Validation#sequence` which:
+
+> Reduces many Validation instances into a single Validation by transforming an `Iterable<Validation<? extends T>>` into a `Validation<Seq<T>>`.
+
 ```java
         Validation<Seq<String>, Seq<Flight>> result = Validation.sequence(load(input));
         String message = result
@@ -316,6 +345,7 @@ For sake of humanity there is `Validation#sequence` which
                         flights -> "Successfully loaded " + flights.size() + " flights."
                 );
 ```
+
 Thanks to transforming to single `Validation` we can easily tell if the whole operation succeed or not. We utilize `<U> U fold(Function<? super E, ? extends U> ifInvalid, Function<? super T, ? extends U> ifValid) ` to map errors and flights to the same type.
 
 ## Summary
