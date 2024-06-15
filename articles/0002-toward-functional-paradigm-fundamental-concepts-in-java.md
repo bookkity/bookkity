@@ -442,5 +442,5 @@ class InMemoryFlightLoader extends FlightLoader[Option] {
   def load(gufi: UUID): Option[Flight]
 }
 ```
-Functional Programming offers us much more, but as Java developers we can't really apply more advanced stuff to our project. So we have to decide if we want to complain about lacking stuff or live in sweet unconsciousness.
-But looking at Java development we can observe it has a tendency to draw a bit from FP languages - immutable structures, ~~immutable~~ readonly collections, pattern matching etc. 
+Functional Programming offers us much more, but as Java developers, we can't really apply more advanced concepts to our projects. So, we have to decide if we want to complain about the missing features or live in blissful ignorance.
+However, looking at Java development, we can observe that it has a tendency to draw from functional programming languages, incorporating features such as immutable structures, ~~immutable~~ readonly collections, pattern matching, etc. 
