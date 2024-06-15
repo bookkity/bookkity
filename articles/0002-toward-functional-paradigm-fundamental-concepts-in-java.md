@@ -422,7 +422,7 @@ class InMemoryFlightLoader implements FlightLoader {
     }
 }
 ```
-What seems nonsense to me, because why the heck we should wrap non-asynchronous code in CompletableFuture. 
+Which seems like nonsense to me, because why the heck we should wrap non-asynchronous code in CompletableFuture. 
 And that's the place where we can apply HKT. But it's not a thing in Java, so we will switch to Scala for example purposes.
 ```scala
 trait FlightLoader[F[_]] {
