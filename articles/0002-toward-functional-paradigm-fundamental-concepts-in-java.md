@@ -347,7 +347,100 @@ For sake of humanity there is `Validation#sequence` which:
                 );
 ```
 
-Thanks to transforming to single `Validation` we can easily tell if the whole operation succeed or not. We utilize `<U> U fold(Function<? super E, ? extends U> ifInvalid, Function<? super T, ? extends U> ifValid) ` to map errors and flights to the same type.
+Thanks to transforming to single `Validation` we can easily tell if the whole operation succeed or not. We utilize `<U> U fold(Function<? super E, ? extends U> ifInvalid, Function<? super T, ? extends U> ifValid)` to map errors and flights to the same type.
 
 ## Summary
-TU DOPISAC PODSUMOWANIE 
+We've only touched the basics. There is much more in the world of Functional Programming, but Java doesn't have decent support for that. 
+However, that's not the only problem. Functional code may be incomprehensible for those not familiar with crucial concepts.
+TU MOZE JAKIS PRZYKLAD MALO ZROZUMIALEGO KODU
+I TU FAKTYCZNE PODSUWAMOWANIE TEGO CO BYLO
+
+So in Java, I would stick to the basics; otherwise, your colleagues might hate you. 
+Just for curiosity's sake, we can take a look at Higher-Kinded Types, which I found very interesting years ago because it was something I wanted to use in my Java project.
+However, I wasn't aware of it at the time, and later discovered that Java doesn't really support this concept anyway.
+
+Let's imagine we want to have code that allows us to load flight data.
+```java
+interface FlightLoader {
+
+    Flight load(UUID gufi);
+} 
+```
+And let's say we will get the flight data from some external source.
+```java
+class ExternalFlightLoader implements FlightLoader {
+    
+    @Override
+    public Flight load(UUID gufi) {
+        // http request or something
+        return new Flight();
+    }
+}
+```
+Awesome, and then we want to have an implementation which allows us to retrieve flights from memory.
+```java
+class InMemoryFlightLoader implements FlightLoader {
+
+    private final Map<UUID, Flight> flights;
+
+    @Override
+    public Flight load(UUID gufi) {
+        return flights.get(gufi);
+    }
+}
+```
+
+Okay, but what if we want to change our `ExternalFlightLoader` implementation to load flights asynchronously.
+```java
+class ExternalFlightLoader implements FlightLoader {
+
+    @Override
+    public CompletableFuture<Flight> load(UUID gufi) {
+        return CompletableFuture.supplyOf(() -> {
+            // http request
+            return new Flight();
+        });
+    }
+}
+```
+But that will affect change method signature in our interface
+```java
+interface FlightLoader {
+
+    CompletableFuture<Flight> load(UUID gufi);
+}
+```
+What will cause also change in our in memory implementation.
+```java
+class InMemoryFlightLoader implements FlightLoader {
+
+    private final Map<UUID, Flight> flights;
+
+    @Override
+    public CompletableFuture<Flight> load(UUID gufi) {
+        return CompletableFuture.completedFuture(flights.get(gufi));
+    }
+}
+```
+What seems nonsense to me, because why the heck we should wrap non-asynchronous code in CompletableFuture. 
+And that's the place where we can apply HKT. But it's not a thing in Java, so we will switch to Scala for example purposes.
+```scala
+trait FlightLoader[F[_]] {
+  
+  def load(gufi: UUID): F[Flight]
+}
+```
+As you can guess, we can wrap our method in a generic type. 
+```scala
+class ExternalFlightLoader extends FlightLoader[CompletableFuture] {
+  
+  def load(gufi: UUID): CompletableFuture[Flight]
+}
+
+class InMemoryFlightLoader extends FlightLoader[Option] {
+  
+  def load(gufi: UUID): Option[Flight]
+}
+```
+Functional Programming offers us much more, but as Java developers we can't really apply more advanced stuff to our project. So we have to decide if we want to complain about lacking stuff or live in sweet unconsciousness.
+But looking at Java development we can observe it has a tendency to draw a bit from FP languages - immutable structures, ~~immutable~~ readonly collections, pattern matching etc. 
