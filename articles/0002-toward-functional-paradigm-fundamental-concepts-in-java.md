@@ -265,11 +265,37 @@ public String displayUsername(long userId) {
     return "Annonymous";
 }
 ```
+
 ✅
 ```java
 public String displayUsername(long userId) {
     return getUser(userId)
         .map(user -> user.getName())
+        .orElse("Annonymous");    
+}
+```
+
+The first piece of code is not perfect, but we can live with that, but now let's image `User#getUsername` returns Optional<String>.
+
+❌
+```java
+public String displayUsername(long userId) {
+    Optional<User> userOpt = getUser(userId);
+    if (userOpt.isPresent) {
+        usernameOpt = userOpt.get().getUsername();
+        if(usernameOpt.isPresent) {
+            return usernameOpt.get();
+        }
+    }
+    return "Annonymous";
+}
+```
+
+✅
+```java
+public String displayUsername(long userId) {
+    return getUser(userId)
+        .flatMap(user -> user.getName()) // flatMap instead of map
         .orElse("Annonymous");    
 }
 ```
