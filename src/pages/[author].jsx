@@ -13,7 +13,10 @@ export async function getStaticProps({ params: { author } }) {
         ...authorInfo,
         name: author,
       },
-      articles: articles.filter(article => article.author === author)
+      articles:
+          articles
+              .filter(article => article.author === author)
+              .sort((a, b) => new Date(b.date) - new Date(a.date))
     }
   }
 }
@@ -60,10 +63,10 @@ export default function Author({ author, articles }) {
             <div>
               <h1 className={`text-xl font-bold`}>Articles</h1>
             </div>
-            <div className={`flex flex-col py-6`}>
+            <div className={`flex flex-col pt-3 pb-6`}>
               {articles && articles.map((article, idx) => {
                 return (
-                  <a key={idx} href={`/article/${article.url}`} >
+                  <a key={idx} href={`/article/${article.url}`} className={'mb-2'} >
                     <div className={`flex items-center w-full bg-white max-h-16 rounded-lg`}>
                       <p className={`text-sm pl-4 pr-4 border-r-gray-100 border-r-2`}>{article.date}</p>
                       <h2 className={`text-xl font px-4 py-1`}>{article.title}</h2>

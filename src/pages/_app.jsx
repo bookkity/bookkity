@@ -1,5 +1,6 @@
 import "@/styles/globals.css"
-import '@/components/mdx/MDX.css'
+import '@/components/mdx/MdxComponents.css'
+
 import IdentityContextProvider from "@/helpers/identity"
 import Head from "next/head"
 

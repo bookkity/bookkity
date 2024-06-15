@@ -2,7 +2,7 @@ import Layout from "@/components/Layout"
 import {getArticles} from "@/helpers/articles"
 import Head from "next/head"
 import {MDXRemote} from "next-mdx-remote"
-import MDX from "@/components/mdx/MDX"
+import MDX from "@/components/mdx/MdxComponents"
 
 export async function getStaticProps({ params: { url } }) {
   const articles = await getArticles()
@@ -46,11 +46,15 @@ export default function Article({ article }) {
             {article.title}
           </span>
         </p>
-        <h1 className={`pt-10 pb-3 font-semibold text-3xl`}>{article.title}</h1>
-        <div className={'mdx'}>
+        <h1 className={`pt-10 pb-0 font-semibold text-3xl`}>
+          {article.title}
+        </h1>
+        <span className={'text-xs text-gray-500'}>
+          by <a className={`text-purple-500`} href={`/${article.author}`}>{article.author}</a> on {article.date}
+        </span>
+        <div className={'mdx pt-2'}>
           <MDXRemote components={MDX} {...article.content} />
         </div>
-
       </Layout>
     </>
   )

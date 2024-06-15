@@ -4,7 +4,24 @@
     opacity: 1 !important;
 }
 
+.-ml-4 {
+    margin-left: -1rem;
+}
+
+.-ml-3 {
+    margin-left: -0.75rem;
+}
+
 /* Code */
+
+.mdx:not(pre) code {
+    background-color: white;
+    padding: 2px 4px 1px 4px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: rgb(111, 66, 193);
+    font-family: "JetBrains Mono", monospace;
+}
 
 .mdx pre {
     overflow-x: auto;
@@ -17,11 +34,20 @@
     padding: 0 0.7rem;
 }
 
-.mdx code {
+.mdx pre code span {
+    font-family: "JetBrains Mono", monospace;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-size: 0.9rem;
+    font-style: normal;
+    line-height: 1.35rem;
+}
+
+.mdx pre code .data-line-numbers {
     counter-reset: line;
 }
 
-.mdx code > [data-line]::before {
+.mdx pre code .data-line-numbers > [data-line]::before {
     counter-increment: line;
     content: counter(line);
 
@@ -115,4 +141,11 @@ table.rounded-corners > tbody:not(:last-child),
 table.rounded-corners > tfoot:not(:last-child) {
     border-bottom: 1px solid;
     @apply border-gray-200;
+}
+
+/* Keyboard */
+
+.hg-functionBtn {
+    font-size: 1rem;
+    text-transform: capitalize;
 }

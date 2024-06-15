@@ -22,7 +22,7 @@ export default function Header() {
 
   return (
     <div className={`header flex flex-col md:flex-row items-center justify-center md:justify-between h-18 border-b border-b-gray-200 shadow-xs w-full`}>
-      <a href={"/"} className={`w-1/4`}>
+      <a href={"/"} className={`md:w-1/4`}>
         <div className={'flex items-center justify-center md:justify-start px-4 py-4'}>
           <div className={``}>
             <img
@@ -34,7 +34,7 @@ export default function Header() {
           <p className={'font-semibold text-md pl-3'}>Bookkity</p>
         </div>
       </a>
-      <div className={`w-2/4 flex justify-center`}>
+      <div className={`md:w-2/4 flex justify-center`}>
         {menuItems.map((item, index) => (
           <a
             key={index}
@@ -45,7 +45,7 @@ export default function Header() {
           </a>
         ))}
       </div>
-      <div className={`w-1/4 flex flex-col md:flex-row justify-center md:justify-end items-center pt-4 md:pt-1`}>
+      <div className={`md:w-1/4 flex flex-col md:flex-row justify-center md:justify-end items-center pt-4 md:pt-1`}>
         <div className={`discord-parent bg-gray-200 rounded-lg h-7 flex items-center justify-between text-xs`}>
           <div className={`bg-purple-900 px-1.5 w-8 flex items-center justify-center h-full rounded-l-lg`}>
             {discordIcon}
