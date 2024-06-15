@@ -255,6 +255,7 @@ if (userOpt.isPresent()) {
 But it's not really how we do it functionally. 
 In most cases, we should avoid invoking `get()`. We want to use `map` and `flatMap`.
 
+
 ❌
 ```java
 public String displayUsername(long userId) {
@@ -276,6 +277,7 @@ public String displayUsername(long userId) {
 ```
 
 The first piece of code is not perfect, but we can live with that, but now let's image `User#getUsername` returns Optional<String>.
+
 
 ❌
 ```java
