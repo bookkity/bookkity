@@ -292,7 +292,7 @@ The first piece of code is not perfect, but we can live with it. Now, let's imag
                 return usernameOpt.get();
             }
         }
-        return "Annonymous";
+        return "Anonymous";
     }
 ```
 
@@ -301,7 +301,7 @@ The first piece of code is not perfect, but we can live with it. Now, let's imag
     public String displayUsername(long userId) {
         return getUser(userId)
             .flatMap(user -> user.getName()) // flatMap instead of map
-            .orElse("Annonymous");    
+            .orElse("Anonymous");    
     }
 ```
 
@@ -310,6 +310,12 @@ In Kotlin, this is default behavior, we need to explicitly say if result of oper
 
 ```kotlin
     fun getUser(id: Long): User? = map.get(id)
+```
+
+And has built-in `map` operation.
+```kotlin
+    fun displayUsername(userId: Long): String = 
+        getUser(userId)?.username ?: "Anonymous"
 ```
 
 The hidden behavior also applies to validation.
