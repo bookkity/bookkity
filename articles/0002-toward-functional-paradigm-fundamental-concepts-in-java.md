@@ -96,7 +96,7 @@ On the first look it looks fine, but what in case `activeReservations()` removes
     }
 ```
 
-If we passed an ArrayList the `calculateActiveReservations` will modify the list and that will cause a bug
+If we pass an ArrayList the `calculateActiveReservations` will modify the list and that will cause a bug
 
 ```java
     ShowStats getShowStats(List<Reservation> reservations){ // [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
@@ -305,8 +305,9 @@ Let's write a code for loading CSV files.
 ```
 
 And let's image we want to upload CSV with hundreds rows and some of them contain errors. Do you see a problem with above solution?
-If there are errors in our CSV file we won't be informed about all errors at once, but only **first** encountered.
+If there are errors in our CSV file we won't be informed about all errors at once, but only **first** encountered error.
 In this case a list of errors would be more handful. For that purpose, we can use `Validation` from Vavr.
+Like `Either`, `Validation` contains two paths, valid and invalid. The main difference is that instead of chaining the result from the first event to the next, `Validation` validates all events.
 
 ```java
    public List<Validation<Seq<String>, Flight> load(List<String> lines) {
