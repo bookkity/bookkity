@@ -204,6 +204,7 @@ To make it total, we can introduce new type which allows only to provide positiv
 
 Let's try to make it also pure.
 What if we make this object immutable?
+
 ```java
 class Account {
     
@@ -214,6 +215,7 @@ class Account {
     }
 }
 ```
+
 You may say it's still not pure, because it still depends on internal state. But what if we write it down like this
 
 ```java
