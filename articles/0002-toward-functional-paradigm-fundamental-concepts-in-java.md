@@ -176,7 +176,7 @@ Let's review few methods and determine if they are total and pure.
         private BigDecimal balance;
         
         void deposit(BigDecimal amount) {
-            if(amount <= 0) {
+            if (amount <= 0) {
                 throw new IllegalArgumentException();
             }
             balance += amount;
@@ -184,7 +184,12 @@ Let's review few methods and determine if they are total and pure.
     }
 ```
 
-> As a rule of thumb, using `void` is usually bad practice. TU DOPISAC DLACZEGO 
+> As a rule of thumb, using `void` is usually bad practice.
+> Methods that return void:
+> - cannot be used in method chaining. Instead of `account.map(ac -> ac.deposit(BigDecimal.of(10));`, we are forced to `account.map(ac -> {ac.deposit(BigDecimal.of(10)); return ac.getBalance();})`
+> - do not provide a way to return an error. Instead, exceptions must be used for error handling.
+> - are harder to write unit tests for it because you cannot assert on the return value. 
+> - make it more difficult to track changes that have been made.
 
 It's nor total nor pure.
 The method returns output only if argument is greater than 0, and it modifies internal state, so depend on the current state the method may behave differently.
@@ -412,7 +417,7 @@ class ExternalFlightLoader implements FlightLoader {
     }
 }
 ```
-But that will affect the method signature change in our interface.
+But that will affect the method signature change in our interface as well.
 ```java
 interface FlightLoader {
 
@@ -432,7 +437,7 @@ class InMemoryFlightLoader implements FlightLoader {
 }
 ```
 Which seems like nonsense to me, because why the heck we should wrap non-asynchronous code in CompletableFuture. 
-And that's the place where we can apply HKT. But it's not a thing in Java, so we will switch to Scala for example purposes.
+And that's the place where we can apply HKT. But it's not really a thing in Java, so we will switch to Scala for example purposes.
 ```scala
 trait FlightLoader[F[_]] {
   
