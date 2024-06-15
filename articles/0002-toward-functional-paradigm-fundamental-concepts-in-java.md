@@ -50,7 +50,7 @@ The following code doesn't allow us any modification, the only way to "update" t
 public record Reservation(ReservationId id, Status status) {
 
     Reservation cancel() {
-        return new Person(id, Status.Cancelled);
+        return new Reservation(id, Status.Cancelled);
     }
 }
 ```
