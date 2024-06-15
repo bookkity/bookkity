@@ -171,17 +171,17 @@ Functions are:
 Let's review few methods and determine if they are total and pure.
 
 ```java
-    class Account {
+class Account {
     
-        private BigDecimal balance;
+    private BigDecimal balance;
         
-        void deposit(BigDecimal amount) {
-            if (amount <= 0) {
-                throw new IllegalArgumentException();
-            }
-            balance += amount;
+    void deposit(BigDecimal amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException();
         }
+        balance += amount;
     }
+}
 ```
 
 > As a rule of thumb, using `void` is usually bad practice.
@@ -247,10 +247,10 @@ In this case `Optional` seems reasonable.
 The side effect still exists, but we encoded that fact using type system. It's not hidden like in the previous example.
 For those not familiar with FP the most straightforward way to use `Optional` will be
 ```java
-Optional<User> userOpt = getUser(1);
-if (userOpt.isPresent()) {
-    User user = userOpt.get();    
-}
+    Optional<User> userOpt = getUser(1);
+    if (userOpt.isPresent()) {
+        User user = userOpt.get();    
+    }
 ```
 But it's not really how we do it functionally. 
 In most cases, we should avoid invoking `get()`. We want to use `map` and `flatMap`.
@@ -258,48 +258,49 @@ In most cases, we should avoid invoking `get()`. We want to use `map` and `flatM
 
 ❌
 ```java
-public String displayUsername(long userId) {
-    Optional<User> userOpt = getUser(userId);
-    if (userOpt.isPresent) {
-        return userOpt.get().getName();
+    public String displayUsername(long userId){
+        Optional<User> userOpt=getUser(userId);
+        if(userOpt.isPresent){
+            return userOpt.get().getName();
+        }
+        return"Annonymous";
     }
-    return "Annonymous";
 }
 ```
 
 ✅
 ```java
-public String displayUsername(long userId) {
-    return getUser(userId)
-        .map(user -> user.getName())
-        .orElse("Annonymous");    
-}
+    public String displayUsername(long userId) {
+        return getUser(userId)
+            .map(user -> user.getName())
+            .orElse("Annonymous");    
+    }
 ```
 
-The first piece of code is not perfect, but we can live with that, but now let's image `User#getUsername` returns Optional<String>.
+The first piece of code is not perfect, but we can live with it. Now, let's imagine `User#getUsername` returns `Optional<String>`
 
 
 ❌
 ```java
-public String displayUsername(long userId) {
-    Optional<User> userOpt = getUser(userId);
-    if (userOpt.isPresent) {
-        usernameOpt = userOpt.get().getUsername();
-        if (usernameOpt.isPresent) {
-            return usernameOpt.get();
+    public String displayUsername(long userId) {
+        Optional<User> userOpt = getUser(userId);
+        if (userOpt.isPresent) {
+            usernameOpt = userOpt.get().getUsername();
+            if (usernameOpt.isPresent) {
+                return usernameOpt.get();
+            }
         }
+        return "Annonymous";
     }
-    return "Annonymous";
-}
 ```
 
 ✅
 ```java
-public String displayUsername(long userId) {
-    return getUser(userId)
-        .flatMap(user -> user.getName()) // flatMap instead of map
-        .orElse("Annonymous");    
-}
+    public String displayUsername(long userId) {
+        return getUser(userId)
+            .flatMap(user -> user.getName()) // flatMap instead of map
+            .orElse("Annonymous");    
+    }
 ```
 
 In Kotlin, this is default behavior, we need to explicitly say if result of operation is nullable or not.
