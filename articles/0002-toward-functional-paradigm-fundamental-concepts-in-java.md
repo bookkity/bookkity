@@ -339,12 +339,12 @@ For sake of humanity there is `Validation#sequence` which:
 > Reduces many Validation instances into a single Validation by transforming an `Iterable<Validation<? extends T>>` into a `Validation<Seq<T>>`.
 
 ```java
-        Validation<Seq<String>, Seq<Flight>> result = Validation.sequence(load(input));
-        String message = result
-                .fold(
-                        strings -> strings.mkString("Failed to load flights: \n", "\n", ""),
-                        flights -> "Successfully loaded " + flights.size() + " flights."
-                );
+    Validation<Seq<String>, Seq<Flight>> result = Validation.sequence(load(input));
+    String message = result
+        .fold(
+                strings -> strings.mkString("Failed to load flights: \n", "\n", ""),
+                flights -> "Successfully loaded " + flights.size() + " flights."
+        );
 ```
 
 Thanks to transforming to single `Validation` we can easily tell if the whole operation succeed or not. We utilize `<U> U fold(Function<? super E, ? extends U> ifInvalid, Function<? super T, ? extends U> ifValid)` to map errors and flights to the same type.
