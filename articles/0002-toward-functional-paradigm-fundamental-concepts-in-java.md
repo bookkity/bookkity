@@ -187,7 +187,6 @@ class Account {
 }
 ```
 
-> [!NOTE]
 > As a rule of thumb, using `void` is usually bad practice.
 > Methods that return void:
 > - cannot be used in method chaining. Instead of
