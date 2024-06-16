@@ -203,14 +203,6 @@ The method returns output only if argument is greater than 0, and it modifies in
 To make it total, we can introduce new type which allows only to provide positive BigDecimals. So now our method signature forces to use the appropriate parameter.
 
 ```java
-    void deposit(PositiveBigDecimal amount) {
-        balance += amount;
-    }
-```
-
-VS
-
-```java
 void deposit(PositiveBigDecimal amount) {
     balance += amount;
 }
@@ -233,20 +225,20 @@ class Account {
 You may say it's still not pure, because it still depends on internal state. But what if we write it down like this
 
 ```java
-    static Account deposit(Account account, BigDecimal amount) {
-        return new Account(account.balance() + amount);
-    }
+static Account deposit(Account account, BigDecimal amount) {
+    return new Account(account.balance() + amount);
+}
 ```
 As you see, we can just treat our object as a first argument of our function. So the first approach is absolutely fine and can be acknowledged as pure.
 
 Let's take a look at another example
 
 ```java
-    private Map<Long, User> users = new HashMap<>();
+private Map<Long, User> users = new HashMap<>();
 
-    User getUser(long id) {
-        return users.get(id);
-    }
+User getUser(long id) {
+    return users.get(id);
+}
 ```
 Is the function pure?
 It's not, It can return User or null for the same argument.
@@ -255,9 +247,9 @@ How can we fix it? We can present it explicitly using a type system.
 In this case `Optional` seems reasonable.
 
 ```java
-    Optional<User> getUser(long id) {
-        return Optional.ofNullabe(map.get(id));
-    } 
+Optional<User> getUser(long id) {
+    return Optional.ofNullabe(map.get(id));
+} 
 ```
 
 The side effect still exists, but we encoded that fact using type system. It's not hidden like in the previous example.
@@ -266,17 +258,17 @@ In Kotlin, this is default behavior, we need to explicitly say if result of oper
 `?` -> nullable
 
 ```kotlin
-    fun getUser(id: Long): User? = map.get(id)
+fun getUser(id: Long): User? = map.get(id)
 ```
 
 #### Optional
 
 For those not familiar with FP the most straightforward way to use `Optional` will be
 ```java
-    Optional<User> userOpt = getUser(1);
-    if (userOpt.isPresent()) {
-        User user = userOpt.get();    
-    }
+Optional<User> userOpt = getUser(1);
+if (userOpt.isPresent()) {
+    User user = userOpt.get();    
+}
 ```
 But it's not really how we do it functionally. 
 In most cases, we should avoid invoking `get()`. We want to use `map` and `flatMap` operations.
@@ -337,12 +329,12 @@ The first piece of code is not perfect, but we can live with it. Now, let's imag
 The hidden behavior also applies to validation.
 
 ```java
-    public User createUser(String name) {
-        if (name.length < 3) {
-            throw new IllegalArgumentException("Name too short");
-        }
-        return new User(name);
+public User createUser(String name) {
+    if (name.length < 3) {
+        throw new IllegalArgumentException("Name too short");
     }
+    return new User(name);
+}
 ```
 
 What's the problem here?
@@ -353,12 +345,12 @@ What's the problem here?
 How to do it better?
 
 ```java
-    public Either<DomainError, User> createUser(String name) {
-        if (name.length < 3) {
-            return Either.left(DomainError.NAME_TOO_SHORT);
-        }
-        return Either.right(new User(name));
+public Either<DomainError, User> createUser(String name) {
+    if (name.length < 3) {
+        return Either.left(DomainError.NAME_TOO_SHORT);
     }
+    return Either.right(new User(name));
+}
 ```
 
 Either allows explicitly showing our method has two paths. The success - right, and the failure - left.
@@ -377,25 +369,25 @@ Another interesting class is `Validation`. Like `Either`, `Validation` contains 
 To see the utility, let's write a code for loading CSV files.
 
 ```java
-    List<Flight> load(List<String> lines) {
-        return lines.stream().map(it -> it.parse(it)).toList();
-    }
+List<Flight> load(List<String> lines) {
+    return lines.stream().map(it -> it.parse(it)).toList();
+}
     
-    private Flight parse(String line){
-        var args = line.split(",");
-        String departure = args[0];
-        if (!isValidIcaoCode(departure)){
-            throw new IllegalArgumentException("Departure is not valid icao airport code.");
-        }
-        String destination = args[1];
-        if (!isValidIcaoCode(destination)){
-            throw new IllegalArgumentException("Desination is not valid icao airport code.");
-        }
+private Flight parse(String line) {
+    var args = line.split(",");
+    String departure = args[0];
+    if (!isValidIcaoCode(departure)){
+        throw new IllegalArgumentException("Departure is not valid icao airport code.");
     }
+    String destination = args[1];
+    if (!isValidIcaoCode(destination)){
+        throw new IllegalArgumentException("Desination is not valid icao airport code.");
+    }
+}
     
-    private boolean isValidIcaoCode(String icaoCode){
-        return icao.length() == 4;
-    }
+private boolean isValidIcaoCode(String icaoCode) {
+    return icao.length() == 4;
+}
 ```
 
 And let's image we want to upload CSV with hundreds rows and some of them contain errors. Do you see a problem with above solution?
@@ -403,26 +395,26 @@ If there are errors in our CSV file we won't be informed about all errors at onc
 In this case a list of errors would be more handful. For that purpose, we can use `Validation` from Vavr.
 
 ```java
-   public List<Validation<Seq<String>, Flight> load(List<String> lines) {
-        return lines.map(this::parse);
-    }
+public List<Validation<Seq<String>, Flight> load(List<String> lines) {
+    return lines.map(this::parse);
+}
 
-    private Validation<Seq<String>, Flight> parse(String line) {
-        var args = line.split(",");
-        String departure = args[0];
-        String destination = args[1];
-        return Validation.combine(
-                validateIcaoCode(departure),
-                validateIcaoCode(destination)
+private Validation<Seq<String>, Flight> parse(String line) {
+    var args = line.split(",");
+    String departure = args[0];
+    String destination = args[1];
+    return Validation.combine(
+            validateIcaoCode(departure),
+            validateIcaoCode(destination)
         ).ap(Flight::new);
-    }
+}
 
-    private Validation<String, String> validateIcaoCode(String icao) {
-        if (icao.length() == 4) {
-            return Validation.valid(icao);
-        }
-        return Validation.invalid("%s is not valid ICAO code".formatted(icao));
+private Validation<String, String> validateIcaoCode(String icao) {
+    if (icao.length() == 4) {
+        return Validation.valid(icao);
     }
+    return Validation.invalid("%s is not valid ICAO code".formatted(icao));
+}
 ```
 
 Our code didn't change much. Instead of throwing an exception, we just return an object, so the flow is not terminated instantly.
@@ -432,8 +424,8 @@ For sake of humanity there is `Validation#sequence` which:
 > Reduces many Validation instances into a single Validation by transforming an `Iterable<Validation<? extends T>>` into a `Validation<Seq<T>>`.
 
 ```java
-    Validation<Seq<String>, Seq<Flight>> result = Validation.sequence(load(input));
-    String message = result
+Validation<Seq<String>, Seq<Flight>> result = Validation.sequence(load(input));
+String message = result
         .fold(
                 strings -> strings.mkString("Failed to load flights: \n", "\n", ""),
                 flights -> "Successfully loaded " + flights.size() + " flights."
