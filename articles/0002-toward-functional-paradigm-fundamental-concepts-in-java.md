@@ -74,49 +74,49 @@ What are main benefits of using immutable objects?
 - we can model things like they are, e.g. events - the fact already happened we can't change past.
 
 ```java
-    public void handle(MoneyTransfered moneyTransfered) {
-        moneyTransfered.setAmount(BigDecimal.valueOf(0)); // WTF?
-    }
+public void handle(MoneyTransfered moneyTransfered) {
+    moneyTransfered.setAmount(BigDecimal.valueOf(0)); // WTF?
+}
 ```
 
 #### Immutable collections
 Problem with mutable collection
 
 ```java
-    ShowStats getShowStats(List<Reservation> reservations) {
-        int activeReservations = calculateActiveReservations(reservations);
-        int totalReservations = reservations.size();
-        return new ShowStats(activeReservations, totalReservations);
-    }
+ShowStats getShowStats(List<Reservation> reservations) {
+    int activeReservations = calculateActiveReservations(reservations);
+    int totalReservations = reservations.size();
+    return new ShowStats(activeReservations, totalReservations);
+}
 ```
 
 On the first look it looks fine, but what in case `activeReservations()` removes some elements from provided list?
 
 ```java
-    public int calculateActiveReservations(List<Reservations> reservations) {
-        reservations.removeIf(reservation -> reservation.getStatus() != Status.Active);
-        return reservations.size();
-    }
+public int calculateActiveReservations(List<Reservations> reservations) {
+    reservations.removeIf(reservation -> reservation.getStatus() != Status.Active);
+    return reservations.size();
+}
 ```
 
 If we pass an ArrayList the `calculateActiveReservations` will modify the list and that will cause a bug
 
 ```java
-    ShowStats getShowStats(List<Reservation> reservations) { // [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
-        int activeReservations = calculateActiveReservations(reservations); // 2
-        // reservations = [Reservation[status=Active], Reservation[status=Active]]
-        int totalReservations = reservations.size(); // 2
-        return new ShowStats(activeReservations, totalReservations);
-    }
+ShowStats getShowStats(List<Reservation> reservations) { // [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
+    int activeReservations = calculateActiveReservations(reservations); // 
+    // reservations = [Reservation[status=Active], Reservation[status=Active]]
+    int totalReservations = reservations.size(); // 2
+    return new ShowStats(activeReservations, totalReservations);
+}
 ```
 
 If we created list using `List.of()` or `Stream#toList()` it created `ImmutableCollections.List`, which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
 
 ```java
-    public int calculateActiveReservations(List<Reservations> reservations) {
-        reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnusportedOperationException
-        return reservations.size();
-    }
+public int calculateActiveReservations(List<Reservations> reservations) {
+    reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnusportedOperationException
+    return reservations.size();
+}
 ```
 
 But there are few problems with standard "immutable" Java collections:
@@ -130,15 +130,15 @@ And that sounds much more reasonable than throwing `UnsupportedOperationExceptio
 Because we are held back by the compiler already during development stage.
 
 ```kotlin
-    val immutableList: List<String> = arrayListOf("a")
-    immutableList.add("b") // doesn't work, there is no method like 'add'
+val immutableList: List<String> = arrayListOf("a")
+immutableList.add("b") // doesn't work, there is no method like 'add'
 ```
 
 To modify a list we need to define it explicitly as `MutableList`
 
 ```kotlin
-    val mutableList: MutableList<String> = arrayListOf("a")
-    mutableList.add("b")
+val mutableList: MutableList<String> = arrayListOf("a")
+mutableList.add("b")
 ```
 
 It's better, but not perfect. Adding elements should be allowed, but it should create a new list that contains values from the source list along with the newly added value.
