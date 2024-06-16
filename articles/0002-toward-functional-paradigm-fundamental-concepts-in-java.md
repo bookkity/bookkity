@@ -265,32 +265,32 @@ For those not familiar with FP the most straightforward way to use `Optional` wi
     }
 ```
 But it's not really how we do it functionally. 
-In most cases, we should avoid invoking `get()`. We want to use `map` and `flatMap`.
+In most cases, we should avoid invoking `get()`. We want to use `map` and `flatMap` operations.
 
-
-❌
-```java
-    public String displayUsername(long userId){
-        Optional<User> userOpt = getUser(userId);
-        if(userOpt.isPresent){
-            return userOpt.get().getName();
+<CodeVariants tabs={false}>
+    <CodeVariant name="Bad  ❌">
+        ```java
+        public String displayUsername(long userId){
+            Optional<User> userOpt = getUser(userId);
+            if(userOpt.isPresent){
+                return userOpt.get().getName();
+            }
+            return"Anonymous";
         }
-        return"Annonymous";
-    }
-}
-```
-
-✅
-```java
-    public String displayUsername(long userId) {
-        return getUser(userId)
-            .map(user -> user.getName())
-            .orElse("Annonymous");    
-    }
-```
+        ```
+    </CodeVariant>
+    <CodeVariant name="Good  ✅">
+        ```java
+        public String displayUsername(long userId) {
+            return getUser(userId)
+                .map(user -> user.getName())
+                .orElse("Anonymous");
+        }
+        ```
+    </CodeVariant>
+</CodeVariants>
 
 The first piece of code is not perfect, but we can live with it. Now, let's imagine `User#getUsername` returns `Optional<String>`
-
 
 ❌
 ```java
