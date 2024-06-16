@@ -151,6 +151,7 @@ Instead, when we add a value, we create a new object that contains reference to 
 
 ```java
 class ImmutableList<T> {
+    
     private ImmutableList<T> head;
     private T tail;
 
