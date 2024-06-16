@@ -63,7 +63,7 @@ Unfortunately, in Java we have to do it manually. In comparison, Kotlin provides
 ```kotlin
 data class Reservation(val id: ReservationId, val status: Status) {
     
-    fun cancel(): Reservation  =
+    fun cancel(): Reservation =
         copy(status = Status.Cancelled)
 }
 ```
@@ -102,7 +102,7 @@ On the first look it looks fine, but what in case `activeReservations()` removes
 If we pass an ArrayList the `calculateActiveReservations` will modify the list and that will cause a bug
 
 ```java
-    ShowStats getShowStats(List<Reservation> reservations){ // [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
+    ShowStats getShowStats(List<Reservation> reservations) { // [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
         int activeReservations = calculateActiveReservations(reservations); // 2
         // reservations = [Reservation[status=Active], Reservation[status=Active]]
         int totalReservations = reservations.size(); // 2
@@ -187,6 +187,7 @@ class Account {
 }
 ```
 
+> [!NOTE]
 > As a rule of thumb, using `void` is usually bad practice.
 > Methods that return void:
 > - cannot be used in method chaining. Instead of
