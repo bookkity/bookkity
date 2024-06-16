@@ -21,14 +21,14 @@ Immutable objects, once created, cannot be modified. They remain the same throug
 
 ```java
 // old fashion way
-public class User {
+public class Reservation {
     
-    private final String username;
-    private final int age;
+    private final ReservationId reservationId;
+    private final ReservationStatus status;
     
-    public User(String username, int age) {
-        this.username = username;
-        this.age = age;
+    public Reservation(ReservationId reservationId, ReservationStatus status) {
+        this.reservationId = reservationId;
+        this.status = status;
     }
     
     // getters
@@ -40,7 +40,7 @@ For years, Java ha not had a decent built-in way of defining immutable objects, 
 
 ```java
 // Java 14+
-public record User(String username, int age) {
+public record Reservation(ReservationId reservationId, ReservationStatus status) {
 }
 ```
 <References links={[
@@ -50,10 +50,10 @@ public record User(String username, int age) {
 The following code doesn't allow us any modification, the only way to "update" the object is to create new one with changed values.
 
 ```java
-public record Reservation(ReservationId id, Status status) {
+public record Reservation(ReservationId id, ReservationStatus status) {
 
     Reservation cancel() {
-        return new Reservation(id, Status.Cancelled);
+        return new Reservation(id, ReservationStatus.Cancelled);
     }
 }
 ```
@@ -61,10 +61,10 @@ public record Reservation(ReservationId id, Status status) {
 Unfortunately, in Java we have to do it manually. In comparison, Kotlin provides us `copy` method.
 
 ```kotlin
-data class Reservation(val id: ReservationId, val status: Status) {
+data class Reservation(val id: ReservationId, val status: ReservationStatus) {
     
     fun cancel(): Reservation =
-        copy(status = Status.Cancelled)
+        copy(status = ReservationStatus.Cancelled)
 }
 ```
 
