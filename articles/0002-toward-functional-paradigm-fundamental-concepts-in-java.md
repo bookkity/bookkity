@@ -188,6 +188,7 @@ class Account {
 }
 ```
 
+<Alert type={'note'}>
 > As a rule of thumb, using `void` is usually bad practice.
 > Methods that return void:
 > - cannot be used in method chaining. Instead of
@@ -197,6 +198,7 @@ class Account {
 > - do not provide a way to return an error. Instead, exceptions must be used for error handling.
 > - are harder to write unit tests for it because you cannot assert on the return value. 
 > - make it more difficult to track changes that have been made.
+</Alert>
 
 It's nor total nor pure.
 The method returns output only if argument is greater than 0, and it modifies internal state, so depend on the current state the method may behave differently.
