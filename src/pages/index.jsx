@@ -6,6 +6,8 @@ import {useMemo, useState} from "react"
 import {getArticles} from "@/helpers/articles"
 import Head from "next/head"
 import {Toggle} from "@/components/ui/toggle"
+import generateRssFeed from "@/helpers/rss";
+import {RssIcon} from "lucide-react";
 
 const tags = [
   { name: 'All', tag: '' },
@@ -19,6 +21,7 @@ const tags = [
 
 export async function getStaticProps() {
   const articles = await getArticles()
+  generateRssFeed(articles)
 
   return {
     props: {
@@ -63,14 +66,21 @@ export default function Home({ articles }) {
       <Layout>
         <div className={`md:px-4 pt-8 md:pt-16`}>
           <div className={`flex items-center bg-white rounded-lg text-gray-500`}>
-            <div className={`px-5 pt-1`}>
-              <FontAwesomeIcon icon={faSearch} size="lg" />
+            <div className={`pl-4`}>
+              <div className={`h-5 w-5`}>
+                <FontAwesomeIcon icon={faSearch}/>
+              </div>
             </div>
             <Input
-              className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-none focus-visible:ring-0 placeholder:focus-visible:text-white`}
+                className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-none focus-visible:ring-0 placeholder:focus-visible:text-white`}
               placeholder={`Search articles`}
               onChange={(e) => setSearch(e.target.value)}
             />
+            <div className={`pr-4 text-purple-400`}>
+              <a title={"RSS"} href={'/rss.xml'}>
+                <RssIcon />
+              </a>
+            </div>
           </div>
         </div>
         <div className={`flex max-w-full flex-wrap justify-center sm:justify-start text-lg pt-6 md:px-0`}>
