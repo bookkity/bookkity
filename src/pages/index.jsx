@@ -32,11 +32,18 @@ export default function Home({ articles }) {
   const [search, setSearch] = useState('')
   const [languages, setLanguages] = useState({ value: ['pl', 'en'] })
 
+  const satisfiesSearch = (article, search) => {
+    search = search.toLowerCase()
+    if (article.title.toLowerCase().includes(search)) return true
+    if (article.tags.some(it => it.toLowerCase().includes(search))) return true
+    return false
+  }
+
   const filteredArticles = useMemo(() => {
     return articles
       .filter(article => languages.value.includes(article.language))
       .filter(article => selectedTag ? article.tags.includes(selectedTag) : true)
-      .filter(article => search ? article.title.toLowerCase().includes(search.toLowerCase()) : true)
+      .filter(article => search ? satisfiesSearch(article, search) : true)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
   }, [articles, languages, selectedTag, search])
 
@@ -106,7 +113,7 @@ export default function Home({ articles }) {
             return (
               <div className={`w-full sm:w-1/2 md:w-1/3`} key={idx}>
                 <div key={`article-${idx}`} className={`bg-white rounded-lg cursor-pointer hover:scale-[1.02] hover:duration-200`}>
-                  <a href={`/article/${article.url}`} >
+                  <a href={`/article/${article.url}`} className={`bg-black`}>
                     <img
                       src={`/article/${article.image}`}
                       alt={article.title}
