@@ -19,13 +19,15 @@ export default async function generateRssFeed(allArticles) {
 
     const feed = new RSS(feedOptions);
 
-    allArticles.map((article) => {
-        feed.item({
-            title: article.title,
-            url: `${site_url}/article/${article.url}`,
-            date: article.date,
+    allArticles
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .forEach((article) => {
+            feed.item({
+                title: article.title,
+                url: `${site_url}/article/${article.url}`,
+                date: article.date,
+            });
         });
-    });
 
     fs.writeFileSync("./public/rss.xml", feed.xml({ indent: true }));
 }

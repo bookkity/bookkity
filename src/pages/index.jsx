@@ -121,7 +121,7 @@ export default function Home({ articles }) {
           )}
           {filteredArticles.map((article, idx) => {
             return (
-              <div className={`w-full sm:w-1/2 md:w-1/3`} key={idx}>
+              <div className={`w-full sm:w-1/2 lg:w-1/3`} key={idx}>
                 <div key={`article-${idx}`} className={`bg-white rounded-lg cursor-pointer hover:scale-[1.02] hover:duration-200`}>
                   <a href={`/article/${article.url}`} className={`bg-black`}>
                     <img
