@@ -523,3 +523,4 @@ class InMemoryFlightLoader extends FlightLoader[Option] {
 ```
 Functional Programming offers us much more, but as Java developers, we can't really apply more advanced concepts to our projects. So, we have to decide if we want to complain about the missing features or live in blissful ignorance.
 However, looking at Java development, we can observe that it has a tendency to draw from functional programming languages, incorporating features such as immutable structures, ~~immutable~~ readonly collections, pattern matching, etc. 
+
