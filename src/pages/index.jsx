@@ -5,20 +5,23 @@ import {faSearch} from "@fortawesome/free-solid-svg-icons"
 import {useMemo, useState} from "react"
 import {getArticles} from "@/helpers/articles"
 import Head from "next/head"
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Toggle} from "@/components/ui/toggle"
+import generateRssFeed from "@/helpers/rss";
+import {RssIcon} from "lucide-react";
 
 const tags = [
   { name: 'All', tag: '' },
   { name: 'JVM', tag: 'jvm' },
   { name: 'Java', tag: 'java' },
   { name: 'Kotlin', tag: 'kotlin' },
+  { name: 'Rust', tag: 'rust' },
   { name: 'DevOps', tag: 'devops' },
   { name: 'Hardware', tag: 'hardware' },
 ]
 
 export async function getStaticProps() {
   const articles = await getArticles()
+  generateRssFeed(articles)
 
   return {
     props: {
@@ -32,11 +35,18 @@ export default function Home({ articles }) {
   const [search, setSearch] = useState('')
   const [languages, setLanguages] = useState({ value: ['pl', 'en'] })
 
+  const satisfiesSearch = (article, search) => {
+    search = search.toLowerCase()
+    if (article.title.toLowerCase().includes(search)) return true
+    if (article.tags.some(it => it.toLowerCase().includes(search))) return true
+    return false
+  }
+
   const filteredArticles = useMemo(() => {
     return articles
       .filter(article => languages.value.includes(article.language))
       .filter(article => selectedTag ? article.tags.includes(selectedTag) : true)
-      .filter(article => search ? article.title.toLowerCase().includes(search.toLowerCase()) : true)
+      .filter(article => search ? satisfiesSearch(article, search) : true)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
   }, [articles, languages, selectedTag, search])
 
@@ -56,14 +66,21 @@ export default function Home({ articles }) {
       <Layout>
         <div className={`md:px-4 pt-8 md:pt-16`}>
           <div className={`flex items-center bg-white rounded-lg text-gray-500`}>
-            <div className={`px-5 pt-1`}>
-              <FontAwesomeIcon icon={faSearch} size="lg" />
+            <div className={`pl-4`}>
+              <div className={`h-5 w-5`}>
+                <FontAwesomeIcon icon={faSearch}/>
+              </div>
             </div>
             <Input
-              className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-none focus-visible:ring-0 placeholder:focus-visible:text-white`}
+                className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-none focus-visible:ring-0 placeholder:focus-visible:text-white`}
               placeholder={`Search articles`}
               onChange={(e) => setSearch(e.target.value)}
             />
+            <div className={`pr-4 text-purple-400`}>
+              <a title={"RSS"} href={'/rss.xml'}>
+                <RssIcon />
+              </a>
+            </div>
           </div>
         </div>
         <div className={`flex max-w-full flex-wrap justify-center sm:justify-start text-lg pt-6 md:px-0`}>
@@ -106,7 +123,7 @@ export default function Home({ articles }) {
             return (
               <div className={`w-full sm:w-1/2 md:w-1/3`} key={idx}>
                 <div key={`article-${idx}`} className={`bg-white rounded-lg cursor-pointer hover:scale-[1.02] hover:duration-200`}>
-                  <a href={`/article/${article.url}`} >
+                  <a href={`/article/${article.url}`} className={`bg-black`}>
                     <img
                       src={`/article/${article.image}`}
                       alt={article.title}

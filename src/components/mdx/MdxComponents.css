@@ -12,6 +12,14 @@
     margin-left: -0.75rem;
 }
 
+.-ml-2 {
+    margin-left: -0.5rem;
+}
+
+.-mb-4 {
+    margin-bottom: -1rem;
+}
+
 /* Code */
 
 .mdx:not(pre) code {
@@ -148,4 +156,24 @@ table.rounded-corners > tfoot:not(:last-child) {
 .hg-functionBtn {
     font-size: 1rem;
     text-transform: capitalize;
+}
+
+/* Code Variants */
+
+.code-variant div {
+    width: 100%;
+    flex: 1 1 0;
+}
+
+.code-variant pre {
+    min-height: 100%;
+}
+
+.code-variant figure {
+    width: 100%;
+    min-height: 100%s;
+}
+
+.code-variant figure pre {
+    min-height: 100%;
 }

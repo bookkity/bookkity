@@ -45,8 +45,8 @@ export default function Author({ author, articles }) {
       </Head>
       <Layout>
         <p className={`text-sm text-gray-500 pt-12 px-1`}>
-          <a href={`/`} className={`hover:underline hover:decoration-gray-400`}>
-            Author
+          <a href={`/about`} className={`hover:underline hover:decoration-gray-400`}>
+            Authors
           </a>
           &nbsp;/&nbsp;
           <span className={`font-semibold`}>
@@ -55,13 +55,17 @@ export default function Author({ author, articles }) {
         </p>
         <div className={'flex px-1'}>
           <div className={'flex flex-col pt-12 max-w-64'}>
-            <img src={`/author/${author.name}.jpg`} alt={author.name} className={`rounded-full w-64`}/>
-            <h1 className={`pt-10 pb-3 font-semibold text-3xl`}>{author.name}</h1>
+            <img src={`/author/${author.avatar}`} alt={author.name} className={`rounded-full w-64`}/>
+            <h1 className={`pt-10 pb-3 font-semibold text-3xl`}>
+              {author.name}
+            </h1>
             <p className={'text-sm'}>{author.description}</p>
           </div>
           <div className={`flex flex-col w-full pl-12 pt-12`}>
             <div>
-              <h1 className={`text-xl font-bold`}>Articles</h1>
+              <h1 className={`text-xl font-bold`}>
+                Articles
+              </h1>
             </div>
             <div className={`flex flex-col pt-3 pb-6`}>
               {articles && articles.map((article, idx) => {

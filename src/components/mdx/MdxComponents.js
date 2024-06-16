@@ -1,6 +1,7 @@
 import React from "react"
 import {ArrowUpRightFromSquareIcon} from "lucide-react";
 import KhangulKeyboard from "@/components/mdx/KhangulKeyboard";
+import {CodeVariant, CodeVariants} from "@/components/mdx/CodeVariants";
 
 function getAnchor(text) {
   return text
@@ -28,44 +29,7 @@ const H = ({ children, as, size }) => {
   )
 }
 
-// const CodeVariant = ({ children, name }) => {
-//   return (
-//     <Box name={name}>
-//       {children}
-//     </Box>
-//   )
-// }
 
-// const CodeVariants = ({ children }) => {
-//   const [ bg, bgCss ] = useColorModeValue('code-variant-bg', chakraColor('gray.50'), chakraColor('gray.700'))
-//   children = Array.isArray(children) ? children : [children]
-//
-//   return (
-//     <>
-//       <Tabs
-//         variant='enclosed'
-//         colorScheme={''}
-//         marginTop={4}
-//         marginBottom={4}
-//         backgroundColor={bg}
-//         borderRadius={'lg'}
-//       >
-//         <TabList>
-//           {children.map(({ props }) => (
-//             <Tab key={props.name}>{props.name}</Tab>
-//           ))}
-//         </TabList>
-//         <TabPanels>
-//           {children.map(variant => (
-//             <TabPanel key={variant.props.name} paddingY={2} paddingX={6}>
-//               {variant}
-//             </TabPanel>
-//           ))}
-//         </TabPanels>
-//       </Tabs>
-//     </>
-//   )
-// }
 
 // `text`
 const Highlight = (props) => (
@@ -151,8 +115,8 @@ export default {
   img: (props) =>  <img className={`inline-block rounded-md -mb-1`} {...props} />,
   blockquote: (props) => <blockquote className={`border-l-4 border-purple-200 pl-4 py-0.5 mt-2 mb-4 text-md bg-gray-50 rounded-r-md`} {...props} />,
   // Spoiler: (props) => <Spoiler {...props} />,
-  // CodeVariants: (props) => <CodeVariants {...props} />,
-  // CodeVariant: (props) => <CodeVariant {...props} />,
+  CodeVariants: (props) => <CodeVariants {...props} />,
+  CodeVariant: (props) => <CodeVariant {...props} />,
   AlignRight: (props) => <div className={`text-right`} {...props} />,
   KhangulKeyboard,
   Snippet,
