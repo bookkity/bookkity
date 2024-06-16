@@ -376,11 +376,11 @@ List<Flight> load(List<String> lines) {
 private Flight parse(String line) {
     var args = line.split(",");
     String departure = args[0];
-    if (!isValidIcaoCode(departure)){
+    if (!isValidIcaoCode(departure)) {
         throw new IllegalArgumentException("Departure is not valid icao airport code.");
     }
     String destination = args[1];
-    if (!isValidIcaoCode(destination)){
+    if (!isValidIcaoCode(destination)) {
         throw new IllegalArgumentException("Desination is not valid icao airport code.");
     }
 }
