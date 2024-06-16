@@ -284,7 +284,7 @@ In most cases, we should avoid invoking `get()`. We want to use `map` and `flatM
         ```java
         public String displayUsername(long userId){
             Optional<User> userOpt = getUser(userId);
-            if (userOpt.isPresent) {
+            if (userOpt.isPresent()) {
                 return userOpt.get().getName();
             }
             return "Anonymous";
@@ -311,7 +311,7 @@ The first piece of code is not perfect, but we can live with it. Now, let's imag
         ```java
         public String displayUsername(long userId) {
             Optional<User> userOpt = getUser(userId);
-            if (userOpt.isPresent) {
+            if (userOpt.isPresent()) {
                 usernameOpt = userOpt.get().getUsername();
                 if (usernameOpt.isPresent) {
                     return usernameOpt.get();
@@ -489,7 +489,7 @@ return Mono.fromCallable(
 <References links={[
 { title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
 ]} />
-
+The real "fun" started
 So in Java, I would stick to the basics; otherwise, your colleagues might hate you. 
 
 I TU FAKTYCZNE PODSUWAMOWANIE TEGO CO BYLO
