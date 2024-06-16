@@ -438,7 +438,7 @@ Thanks to transforming to single `Validation` we can easily tell if the whole op
 ## Summary
 We've only touched the basics. There is much more in the world of Functional Programming, but Java doesn't have decent support for that. 
 However, that's not the only problem. Functional code may be incomprehensible for those not familiar with crucial concepts.
-![img.png](../public/article/0002/how_not_to_write_reactive_code.png)
+![how_not_to_write_reactive_code.png](/0002/how_not_to_write_reactive_code.png)
 <References links={[
 { title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
 ]} />
