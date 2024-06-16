@@ -74,8 +74,8 @@ What are main benefits of using immutable objects?
 - we can model things like they are, e.g. events - the fact already happened we can't change past.
 
 ```java
-public void handle(MoneyTransfered moneyTransfered) {
-    moneyTransfered.setAmount(BigDecimal.valueOf(0)); // WTF?
+public void handle(MoneyTransferred moneyTransferred) {
+    moneyTransferred.setAmount(BigDecimal.valueOf(0)); // WTF?
 }
 ```
 
@@ -197,10 +197,10 @@ account.map(ac -> {
     ac.deposit(BigDecimal.of(10));
     return ac.getBalance();
 });
+```
 Instead of
 ```java
 account.map(ac -> ac.deposit(BigDecimal.of(10));
-```
 ```
 - do not provide a way to return an error. Instead, exceptions must be used for error handling.
 - are harder to write unit tests for it because you cannot assert on the return value.
@@ -446,7 +446,7 @@ Thanks to transforming to single `Validation` we can easily tell if the whole op
 
 ## Summary
 We've only touched the basics. There is much more in the world of Functional Programming, but Java doesn't have decent support for that. 
-However, that's not the only problem. Functional code may be incomprehensible for those not familiar with crucial concepts.
+However, that's not the only problem. Functional programming may be a double-edged weapon for those not familiar with crucial concepts.
 ![how not to write reactive code](/article/0002/how_not_to_write_reactive_code.png)
 <References links={[
 { title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
