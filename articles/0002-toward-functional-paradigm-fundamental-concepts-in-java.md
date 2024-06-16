@@ -159,6 +159,9 @@ class ImmutableList<T> {
     }
 }
 ```
+<References links={[
+{ title: "io.vavr.collection.List.java", url: "https://github.com/vavr-io/vavr/blob/master/src/main/java/io/vavr/collection/List.java" },
+]} />
 
 Unfortunately, such collections are not build-in Java, so we need to use external libraries like Vavr.io
 
@@ -186,7 +189,10 @@ class Account {
 
 > As a rule of thumb, using `void` is usually bad practice.
 > Methods that return void:
-> - cannot be used in method chaining. Instead of `account.map(ac -> ac.deposit(BigDecimal.of(10));`, we are forced to `account.map(ac -> {ac.deposit(BigDecimal.of(10)); return ac.getBalance();})`
+> - cannot be used in method chaining. Instead of
+> `account.map(ac -> ac.deposit(BigDecimal.of(10));`
+> we are forced to 
+> `account.map(ac -> { ac.deposit(BigDecimal.of(10)); return ac.getBalance(); })`
 > - do not provide a way to return an error. Instead, exceptions must be used for error handling.
 > - are harder to write unit tests for it because you cannot assert on the return value. 
 > - make it more difficult to track changes that have been made.
