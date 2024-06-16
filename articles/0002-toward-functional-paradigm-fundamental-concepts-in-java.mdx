@@ -450,11 +450,6 @@ Thanks to transforming to single `Validation` we can easily tell if the whole op
 ## Summary
 We've only touched the basics. There is much more in the world of Functional Programming, but Java doesn't have decent support for that. 
 However, that's not the only problem. Functional programming may be a double-edged weapon for those not familiar with crucial concepts.
-![how not to write reactive code](/article/0002/how_not_to_write_reactive_code.png)
-<References links={[
-{ title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
-]} />
-
 ```java
 return Mono.fromCallable(
     () -> pullEVSEDataToKafkaSynchronizationTransformer.transformEntitiesToEvents(entityList, operatorId)
@@ -491,6 +486,9 @@ return Mono.fromCallable(
         .reduce(NumberUtils.INTEGER_ZERO, (integer, integer2) -> integer + integer2)
 );
 ```
+<References links={[
+{ title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
+]} />
 
 So in Java, I would stick to the basics; otherwise, your colleagues might hate you. 
 
