@@ -481,7 +481,7 @@ class ExternalFlightLoader implements FlightLoader {
 
     @Override
     public CompletableFuture<Flight> load(UUID gufi) {
-        return CompletableFuture.supplyOf(() -> {
+        return CompletableFuture.supplyAsync(() -> {
             // http request
             return new Flight();
         });
