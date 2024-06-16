@@ -489,8 +489,24 @@ return Mono.fromCallable(
 <References links={[
 { title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
 ]} />
-The real "fun" started
-So in Java, I would stick to the basics; otherwise, your colleagues might hate you. 
+The real "fun" begins when we mixing stuff like `Mono` with for example `Either`
+```java
+public Mono<Either<AppError, UserDTO>> registerUser(RegisterUserDTO dto) {
+        return userFactory
+                .create(dto.username(), dto.password(), UserRole.COMMON)
+                .flatMap(it -> it
+                        .map(user -> reactiveUserRepository
+                                .add(user)
+                                .map(u -> Either.<AppError, UserDTO>right(u.toDTO()))
+                        )
+                        .mapLeft(error -> Mono.just(Either.<AppError, UserDTO>left(error))).getOrElse(error -> error)
+                );
+    }
+```
+<References links={[
+{ title: "mixing Mono with Either", url: "https://4programmers.net/Forum/Java/362708-problem_z_mono_w_either?p=1860236#id1860236" },
+]} />
+So in Java, I would stick to the basics; otherwise, your colleagues might hate you.
 
 I TU FAKTYCZNE PODSUWAMOWANIE TEGO CO BYLO
 
