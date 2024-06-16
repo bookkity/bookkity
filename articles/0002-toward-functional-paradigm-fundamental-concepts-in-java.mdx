@@ -288,10 +288,10 @@ In most cases, we should avoid invoking `get()`. We want to use `map` and `flatM
         ```java
         public String displayUsername(long userId){
             Optional<User> userOpt = getUser(userId);
-            if(userOpt.isPresent){
+            if (userOpt.isPresent) {
                 return userOpt.get().getName();
             }
-            return"Anonymous";
+            return "Anonymous";
         }
         ```
     </CodeVariant>
@@ -302,6 +302,8 @@ In most cases, we should avoid invoking `get()`. We want to use `map` and `flatM
                 .map(user -> user.getName())
                 .orElse("Anonymous");
         }
+
+
         ```
     </CodeVariant>
 </CodeVariants>
@@ -330,6 +332,11 @@ The first piece of code is not perfect, but we can live with it. Now, let's imag
                 .flatMap(user -> user.getName()) 
                 .orElse("Anonymous");    
         }
+
+
+
+
+
         ```
     </CodeVariant>
 </CodeVariants>
