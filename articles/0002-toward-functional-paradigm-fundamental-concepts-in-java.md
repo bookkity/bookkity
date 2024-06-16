@@ -23,11 +23,11 @@ Immutable objects, once created, cannot be modified. They remain the same throug
 // old fashion way
 public class Reservation {
     
-    private final ReservationId reservationId;
+    private final ReservationId id;
     private final ReservationStatus status;
     
-    public Reservation(ReservationId reservationId, ReservationStatus status) {
-        this.reservationId = reservationId;
+    public Reservation(ReservationId id, ReservationStatus status) {
+        this.id = id;
         this.status = status;
     }
     
@@ -40,7 +40,7 @@ For years, Java ha not had a decent built-in way of defining immutable objects, 
 
 ```java
 // Java 14+
-public record Reservation(ReservationId reservationId, ReservationStatus status) {
+public record Reservation(ReservationId id, ReservationStatus status) {
 }
 ```
 <References links={[
