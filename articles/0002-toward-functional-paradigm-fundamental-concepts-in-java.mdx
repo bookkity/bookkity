@@ -282,7 +282,7 @@ In most cases, we should avoid invoking `get()`. We want to use `map` and `flatM
 <CodeVariants tabs={false}>
     <CodeVariant name="Bad  ❌">
         ```java
-        public String displayUsername(long userId){
+        public String displayUsername(long userId) {
             Optional<User> userOpt = getUser(userId);
             if (userOpt.isPresent()) {
                 return userOpt.get().getName();
@@ -584,7 +584,7 @@ trait FlightLoader[F[_]] {
   def load(gufi: UUID): F[Flight]
 }
 ```
-As you can guess, we can wrap our method in a generic type. 
+As you can guess, we can wrap our method result in generic type.
 ```scala
 class ExternalFlightLoader extends FlightLoader[CompletableFuture] {
   
