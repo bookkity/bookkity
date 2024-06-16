@@ -292,28 +292,31 @@ In most cases, we should avoid invoking `get()`. We want to use `map` and `flatM
 
 The first piece of code is not perfect, but we can live with it. Now, let's imagine `User#getUsername` returns `Optional<String>`
 
-❌
-```java
-    public String displayUsername(long userId) {
-        Optional<User> userOpt = getUser(userId);
-        if (userOpt.isPresent) {
-            usernameOpt = userOpt.get().getUsername();
-            if (usernameOpt.isPresent) {
-                return usernameOpt.get();
+<CodeVariants tabs={false}>
+    <CodeVariant name="Bad  ❌">
+        ```java
+        public String displayUsername(long userId) {
+            Optional<User> userOpt = getUser(userId);
+            if (userOpt.isPresent) {
+                usernameOpt = userOpt.get().getUsername();
+                if (usernameOpt.isPresent) {
+                    return usernameOpt.get();
+                }
             }
+            return "Anonymous";
         }
-        return "Anonymous";
-    }
-```
-
-✅
-```java {3}
-    public String displayUsername(long userId) {
-        return getUser(userId)
-            .flatMap(user -> user.getName()) 
-            .orElse("Anonymous");    
-    }
-```
+        ```
+    </CodeVariant>
+    <CodeVariant name="Good  ✅">
+        ```java {3}
+        public String displayUsername(long userId) {
+            return getUser(userId)
+                .flatMap(user -> user.getName()) 
+                .orElse("Anonymous");    
+        }
+        ```
+    </CodeVariant>
+</CodeVariants>
 
 Kotlin has built-in `map` operation.
 ```kotlin
