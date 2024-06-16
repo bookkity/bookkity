@@ -71,7 +71,7 @@ data class Reservation(val id: ReservationId, val status: Status) {
 What are main benefits of using immutable objects?
 - immutable objects are thread-safe, they can be shared among multiple threads without restraint.
 - allows you to reason about a piece of code independently of the rest of the program, because our internal state can't be changed by other part of our system.
-- we can model things like they are, e.g. events - the fact already happened we can't change it.
+- we can model things like they are, e.g. events - the fact already happened we can't change past.
 
 ```java
     public void handle(MoneyTransfered moneyTransfered) {
@@ -165,8 +165,8 @@ Unfortunately, such collections are not build-in Java, so we need to use externa
 ### Functions
 Functional programming is all about programming with functions.
 Functions are:
-1. Total. For every input, they return an output.
-2. Pure. The function return values are identical for identical arguments, and the function has no side effects.
+- Total. For every input, they return an output. 
+- Pure. The function return values are identical for identical arguments, and the function has no side effects.
 
 Let's review few methods and determine if they are total and pure.
 
@@ -247,6 +247,16 @@ In this case `Optional` seems reasonable.
 ```
 
 The side effect still exists, but we encoded that fact using type system. It's not hidden like in the previous example.
+
+In Kotlin, this is default behavior, we need to explicitly say if result of operation is nullable or not.
+`?` -> nullable
+
+```kotlin
+    fun getUser(id: Long): User? = map.get(id)
+```
+
+#### Optional
+
 For those not familiar with FP the most straightforward way to use `Optional` will be
 ```java
     Optional<User> userOpt = getUser(1);
@@ -261,7 +271,7 @@ In most cases, we should avoid invoking `get()`. We want to use `map` and `flatM
 ❌
 ```java
     public String displayUsername(long userId){
-        Optional<User> userOpt=getUser(userId);
+        Optional<User> userOpt = getUser(userId);
         if(userOpt.isPresent){
             return userOpt.get().getName();
         }
@@ -297,26 +307,21 @@ The first piece of code is not perfect, but we can live with it. Now, let's imag
 ```
 
 ✅
-```java
+```java {3}
     public String displayUsername(long userId) {
         return getUser(userId)
-            .flatMap(user -> user.getName()) // flatMap instead of map
+            .flatMap(user -> user.getName()) 
             .orElse("Anonymous");    
     }
 ```
 
-In Kotlin, this is default behavior, we need to explicitly say if result of operation is nullable or not.
-`?` -> nullable
-
-```kotlin
-    fun getUser(id: Long): User? = map.get(id)
-```
-
-And has built-in `map` operation.
+Kotlin has built-in `map` operation.
 ```kotlin
     fun displayUsername(userId: Long): String = 
         getUser(userId)?.username ?: "Anonymous"
 ```
+
+#### Validation
 
 The hidden behavior also applies to validation.
 
@@ -384,7 +389,7 @@ If there are errors in our CSV file we won't be informed about all errors at onc
 In this case a list of errors would be more handful. For that purpose, we can use `Validation` from Vavr.
 Like `Either`, `Validation` contains two paths, valid and invalid. The main difference is that instead of chaining the result from the first event to the next, `Validation` validates all events.
 <References links={[
-{ title: "Either", url: "https://eed3si9n.com/learning-scalaz/Validation.html" },
+{ title: "Validation", url: "https://eed3si9n.com/learning-scalaz/Validation.html" },
 ]} />
 
 ```java
