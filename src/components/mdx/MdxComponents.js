@@ -130,7 +130,9 @@ const Alert = ({type, children}) => {
       <div className={`pl-0.5 pr-4`}>
         {icon}
       </div>
-      {children}
+      <div>
+        {children}
+      </div>
     </div>
   )
 }
@@ -155,7 +157,7 @@ export default {
   ul: (props) => <ul className={`py-1 pl-5 list-disc`} {...props} />,
   ol: (props) => <ol className={`py-2 pl-8 list-decimal `} {...props} />,
   li: (props) => <li className={`py-0.5 pl-2`} {...props} />,
-  img: (props) =>  <img className={`inline-block rounded-md -mb-1`} {...props} />,
+  img: (props) =>  <img className={`inline-block rounded-md -mb-1 mt-2`} {...props} />,
   blockquote: (props) => <blockquote className={`border-l-4 border-purple-200 py-0 pl-4 mt-2 mb-4 text-md bg-gray-50 rounded-r-md`} {...props} />,
   // Spoiler: (props) => <Spoiler {...props} />,
   CodeVariants: (props) => <CodeVariants {...props} />,
