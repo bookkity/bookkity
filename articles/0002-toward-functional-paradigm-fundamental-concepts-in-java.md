@@ -438,10 +438,15 @@ Thanks to transforming to single `Validation` we can easily tell if the whole op
 ## Summary
 We've only touched the basics. There is much more in the world of Functional Programming, but Java doesn't have decent support for that. 
 However, that's not the only problem. Functional code may be incomprehensible for those not familiar with crucial concepts.
-TU MOZE JAKIS PRZYKLAD MALO ZROZUMIALEGO KODU
-I TU FAKTYCZNE PODSUWAMOWANIE TEGO CO BYLO
+![img.png](../public/article/0002/how_not_to_write_reactive_code.png)
+<References links={[
+{ title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
+]} />
 
 So in Java, I would stick to the basics; otherwise, your colleagues might hate you. 
+
+I TU FAKTYCZNE PODSUWAMOWANIE TEGO CO BYLO
+
 Just for curiosity's sake, we can take a look at Higher-Kinded Types, which I found very interesting years ago because it was something I wanted to use in my Java project.
 However, I wasn't aware of it at the time, and later discovered that Java doesn't really support this concept anyway.
 
