@@ -195,12 +195,8 @@ Methods that return void:
 ```java
 account.map(ac -> {
     ac.deposit(BigDecimal.of(10));
-    return ac.getBalance();
+    return ac;
 });
-```
-Instead of
-```java
-account.map(ac -> ac.deposit(BigDecimal.of(10));
 ```
 - do not provide a way to return an error. Instead, exceptions must be used for error handling.
 - are harder to write unit tests for it because you cannot assert on the return value.
