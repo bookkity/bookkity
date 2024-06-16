@@ -198,7 +198,7 @@ account.map(ac -> {
     return ac;
 });
 ```
-- do not provide a way to return an error. Instead, exceptions must be used for error handling.
+- force to use exceptions for error handling.
 - are harder to write unit tests for it because you cannot assert on the return value.
 - make it more difficult to track changes that have been made.
 </Alert>
