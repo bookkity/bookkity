@@ -208,6 +208,14 @@ To make it total, we can introduce new type which allows only to provide positiv
     }
 ```
 
+VS
+
+```java
+void deposit(PositiveBigDecimal amount) {
+    balance += amount;
+}
+```
+
 Let's try to make it also pure.
 What if we make this object immutable?
 
