@@ -1,5 +1,12 @@
 import React from "react"
-import {ArrowUpRightFromSquareIcon} from "lucide-react";
+import {
+  ArrowUpRightFromSquareIcon,
+  CircleAlertIcon,
+  InfoIcon,
+  LightbulbIcon,
+  StarIcon,
+  TriangleAlertIcon
+} from "lucide-react";
 import KhangulKeyboard from "@/components/mdx/KhangulKeyboard";
 import {CodeVariant, CodeVariants} from "@/components/mdx/CodeVariants";
 
@@ -92,6 +99,42 @@ const References = ({links}) => {
   )
 }
 
+const alertTypes = {
+  'note': {
+    icon: <InfoIcon size={20} color={'rgb(96, 165, 250)'} />,
+    border: 'border-blue-400'
+  },
+  'tip': {
+    icon: <LightbulbIcon size={20} color={'rgb(234,189,20)'}/>,
+    border: 'border-yellow-400'
+  },
+  'important': {
+    icon: <StarIcon size={20} color={'rgb(192, 132, 252)'} />,
+    border: 'border-purple-400',
+  },
+  'warning': {
+    icon: <TriangleAlertIcon size={20} color={'rgb(251, 146, 60)'} />,
+    border: 'border-orange-400',
+  },
+  'caution': {
+    icon: <CircleAlertIcon size={20} color={'rgb(239, 68, 68)'} />,
+    border: 'border-red-500',
+  },
+}
+
+const Alert = ({type, children}) => {
+  const { icon, border } = alertTypes[type]
+
+  return (
+    <div className={`${border} flex items-center border-l-4 pl-4 py-0.5 mt-2 mb-4 text-md bg-gray-50 rounded-r-md`}>
+      <div className={`pl-0.5 pr-4`}>
+        {icon}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export default {
   a: (props) => <a className={'text-purple-500'} {...props} />,
   p: (props) => <div className={'py-2'} {...props} />,
@@ -113,11 +156,13 @@ export default {
   ol: (props) => <ol className={`py-2 pl-8 list-decimal `} {...props} />,
   li: (props) => <li className={`py-0.5 pl-2`} {...props} />,
   img: (props) =>  <img className={`inline-block rounded-md -mb-1`} {...props} />,
+  blockquote: (props) => <blockquote className={`border-l-4 border-purple-200 py-0 pl-4 mt-2 mb-4 text-md bg-gray-50 rounded-r-md`} {...props} />,
   // Spoiler: (props) => <Spoiler {...props} />,
   CodeVariants: (props) => <CodeVariants {...props} />,
   CodeVariant: (props) => <CodeVariant {...props} />,
   AlignRight: (props) => <div className={`text-right`} {...props} />,
   KhangulKeyboard,
+  Alert,
   Snippet,
   Highlight,
   References,
