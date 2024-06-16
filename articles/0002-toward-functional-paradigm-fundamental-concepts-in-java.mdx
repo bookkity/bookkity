@@ -455,6 +455,43 @@ However, that's not the only problem. Functional programming may be a double-edg
 { title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
 ]} />
 
+```java
+return Mono.fromCallable(
+    () -> pullEVSEDataToKafkaSynchronizationTransformer.transformEntitiesToEvents(entityList, operatorId)
+)
+.zipWith(statuses)
+.map(
+    tuple -> {
+        tuple.getT1().forEach(
+            event -> event.getOcpiLocation().getEvses().forEach(
+                evse -> Optional.ofNullable(tuple.getT2().get(evse.getEvseId()))
+                    .map(EvseStatusRecord::getEvseStatus)
+                    .ifPresentOrElse(
+                        sstatus -> evse.setStatus(OcpiEvseStatusPatchedEventBuilder.mapStatus(sstatus)),
+                        () -> evse.setStatus(OcpiEvse.Status.UNKNOWN)
+                    )
+            )
+        );
+        return tuple;
+    }
+)
+.flatMapMany(tuple -> sendEventToKafkaAndUpdateDb(tuple.getT1()))
+.then(
+    Flux.fromIterable(entityList)
+        .map(
+            entity -> {
+                entity.setSyncedKafka(Boolean.TRUE);
+                return entity;
+            }
+        )
+        .limitRate(500)
+        .map(SqlQueryBuilder::buildSavePullEvseDataQuery)
+        .buffer(500)
+        .concatMap(sqlList -> evseDataReactiveClientRepository.saveAll(sqlList))
+        .reduce(NumberUtils.INTEGER_ZERO, (integer, integer2) -> integer + integer2)
+);
+```
+
 So in Java, I would stick to the basics; otherwise, your colleagues might hate you. 
 
 I TU FAKTYCZNE PODSUWAMOWANIE TEGO CO BYLO
