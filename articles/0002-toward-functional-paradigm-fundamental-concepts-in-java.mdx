@@ -600,7 +600,9 @@ class InMemoryFlightLoader extends FlightLoader[Option] {
 ```
 
 ## Summary
- TU FAKTYCZNE PODSUWAMOWANIE TEGO CO BYLO
-
+We have learned several key concepts of functional programming. These are the basics that are well-supported by the language and should not disturb our team members.
+Immutability should be our default choice. Use record classes, and the same goes for collections, although you may already be doing this, perhaps unknowingly? `List.of` returns `ImmutableCollections.List`, `Stream#toList()` returns `Collections.unmodifiableList`.
+For domain errors, prefer `Either` and `Validation`. The latter allows holding a list of errors. Reserve *exception*s for *exception*al situations.
+Avoid `void`.
 Functional Programming offers us much more, but as Java developers, we can't really apply more advanced concepts to our projects. So, we have to decide if we want to complain about the missing features or live in blissful ignorance.
-However, looking at Java development, we can observe that it has a tendency to draw from functional programming languages, incorporating features such as immutable structures, ~~immutable~~ readonly collections, pattern matching, etc. 
+However, looking at Java development, we can observe that it has a tendency to draw from functional programming languages.
