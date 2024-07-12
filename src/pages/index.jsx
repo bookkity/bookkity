@@ -8,6 +8,7 @@ import Head from "next/head"
 import {Toggle} from "@/components/ui/toggle"
 import generateRssFeed from "@/helpers/rss";
 import {RssIcon} from "lucide-react";
+import {getSeries} from "@/helpers/series";
 
 const tags = [
   { name: 'All', tag: '' },
@@ -20,27 +21,82 @@ const tags = [
 ]
 
 export async function getStaticProps() {
-  const articles = await getArticles()
-  generateRssFeed(articles)
+  const allArticles = await getArticles()
+  const allSeries = await getSeries()
+  generateRssFeed(allArticles)
 
   return {
     props: {
-      articles
+      allArticles,
+      allSeries
     }
   }
 }
 
-export default function Home({ articles }) {
+/**
+ * @typedef {Object} Preview
+ * @property {'article' | 'chapter'} type
+ * @property {string} title
+ * @property {Array<string>} tags
+ * @property {Array<string>} authors
+ * @property {string} language
+ * @property {Date} date
+ * @property {Article | { chapter: ChapterDetails, series: SeriesDetails }} data
+ */
+
+/**
+ * @param article {Article}
+ * @param search {string}
+ * @returns {boolean}
+ */
+const satisfiesSearch = (article, search) => {
+  search = search.toLowerCase()
+  if (article.title.toLowerCase().includes(search)) return true
+  if (article.tags.some(it => it.toLowerCase().includes(search))) return true
+  return false
+}
+
+/**
+ * @param allArticles {Array<Article>}
+ * @param allSeries {Array<Series>}
+ */
+export default function Home({ allArticles, allSeries }) {
   const [selectedTag, setSelectedTag] = useState('')
   const [search, setSearch] = useState('')
   const [languages, setLanguages] = useState({ value: ['pl', 'en'] })
 
-  const satisfiesSearch = (article, search) => {
-    search = search.toLowerCase()
-    if (article.title.toLowerCase().includes(search)) return true
-    if (article.tags.some(it => it.toLowerCase().includes(search))) return true
-    return false
-  }
+  /** @type {Array<Preview>} */
+  const articlePreviews = allArticles.map(article => {
+    return {
+      type: 'article',
+      title: article.title,
+      tags: article.tags,
+      authors: Array.of(article.author),
+      language: article.language,
+      date: new Date(article.date),
+      data: article
+    }
+  })
+
+  /** @type {Array<Preview>} */
+  const chapterPreviews = allSeries.flatMap(series => {
+    return series.chapters.map(chapter => {
+      return {
+        type: 'chapter',
+        title: chapter.title,
+        tags: series.details.tags,
+        authors: series.details.authors,
+        language: series.details.language,
+        date: new Date(chapter.date),
+        data: {
+          chapter: chapter,
+          series: series.details
+        }
+      }
+    })
+  })
+
+  const articles = articlePreviews.concat(chapterPreviews)
 
   const filteredArticles = useMemo(() => {
     return articles
@@ -145,7 +201,7 @@ export default function Home({ articles }) {
                         <h2 className={`text-lg font-semibold leading-5`}>{article.title}</h2>
                       </a>
                       <p className={`text-xs text-gray-400 pt-1`}>
-                        {article.date} by
+                        {article.date.toLocaleDateString()} by
                         <a href={`/${article.author}`}>
                           &nbsp;<span className={`text-gray-700`}>{article.author}</span>
                         </a>

@@ -6,11 +6,18 @@ import {serializeMdx} from "@/helpers/mdx"
 const seriesPath = path.join(process.cwd(), "series")
 
 /**
+ * @typedef {Object} Series
+ * @property {SeriesDetails} details
+ * @property {Array<ChapterDetails>} chapters
+ */
+
+/**
  * @typedef {Object} SeriesDetails
  * @property {string} url
  * @property {string} title
  * @property {string} description
  * @property {string} authors
+ * @property {string} language
  * @property {string} image
  * @property {string[]} tags
  */
@@ -24,7 +31,7 @@ const seriesPath = path.join(process.cwd(), "series")
  */
 
 /**
- * @returns {Promise<Array<{details: SeriesDetails, chapters: Array<ChapterDetails>}>>}
+ * @returns {Promise<Array<Series>>}
  */
 export async function getSeries() {
   const seriesList = await readDirectory(seriesPath)
