@@ -39,7 +39,7 @@ export default function Header() {
           <a
             key={index}
             href={item.link}
-            className={`px-3 md:pt-2 pb-2 md:py-4 hover:text-black ${currentPath === item.link ? 'font-semibold' : ''}`}
+            className={`px-3 sm:pt-2 pb-2 md:py-4 hover:text-black ${currentPath === item.link ? 'font-semibold' : ''}`}
           >
             {item.name}
           </a>
