@@ -55,6 +55,9 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
                       href={`/series/${series.details.url}/${chapter.order}`}
                       className={`hover:underline hover:text-gray-500 ${chapter.order === selectedChapter.order ? 'font-semibold' : ''}`}
                     >
+                      {chapter.published !== true && (
+                        <span className={`mr-1 text-gray-400`}>[DRAFT]</span>
+                      )}
                       {chapter.title}
                     </a>
                   </div>
