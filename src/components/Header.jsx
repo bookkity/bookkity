@@ -23,7 +23,7 @@ export default function Header() {
   return (
     <div className={`header flex flex-col md:flex-row items-center justify-center md:justify-between h-18 border-b border-b-gray-200 shadow-xs w-full`}>
       <a href={"/"} className={`md:w-1/4`}>
-        <div className={'flex items-center justify-center md:justify-start px-4 py-4'}>
+        <div className={'flex flex-col md:flex-row items-center justify-center md:justify-start px-4 py-4'}>
           <div className={``}>
             <img
               src={`/images/boo.png`}
@@ -31,7 +31,7 @@ export default function Header() {
               className={`rounded-xl h-10 min-w-10`}
             />
           </div>
-          <p className={'font-semibold text-md pl-3'}>Bookkity</p>
+          <p className={'font-semibold text-md md:pl-3 pt-1 md:pt-0'}>Bookkity</p>
         </div>
       </a>
       <div className={`md:w-2/4 flex justify-center`}>
@@ -39,7 +39,7 @@ export default function Header() {
           <a
             key={index}
             href={item.link}
-            className={`px-3 py-2 md:py-4 hover:text-black ${currentPath === item.link ? 'font-semibold' : ''}`}
+            className={`px-3 md:pt-2 pb-2 md:py-4 hover:text-black ${currentPath === item.link ? 'font-semibold' : ''}`}
           >
             {item.name}
           </a>
