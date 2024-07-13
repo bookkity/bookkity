@@ -130,7 +130,7 @@ export default function Home({ allArticles, allSeries }) {
         <title>Bookkity</title>
       </Head>
       <Layout>
-        <div className={`md:px-4 pt-8 md:pt-16`}>
+        <div className={`md:px-4 pt-6 md:pt-16`}>
           <div className={`flex items-center bg-white rounded-lg text-gray-500`}>
             <div className={`pl-4`}>
               <div className={`h-5 w-5`}>
