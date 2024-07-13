@@ -63,8 +63,13 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
             })}
           </div>
           <div className={`flex flex-col pl-8 pt-8 w-full h-full`}>
+            {selectedChapter.published !== true && (
+              <div className={`mr-2 mb-6 text-center text-purple-900 font-semibold text-xs py-1 px-4 bg-gray-300 rounded-3xl`}>
+                This chapter is not published yet
+              </div>
+            )}
             <h1 className={`text-3xl font-bold`}>
-              {selectedChapter.title}
+                {selectedChapter.title}
             </h1>
             <span className={'text-xs text-gray-500 pt-2'}>
               by {series.details.authors.map((author, idx) => (
