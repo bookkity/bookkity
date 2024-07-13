@@ -12,6 +12,7 @@ const articlesPath = path.join(process.cwd(), "articles")
  * @property {String} author
  * @property {String} language
  * @property {String} title
+ * @property {String} image
  * @property {Array<String>} tags
  * @property {JSX.Element} content
  */
