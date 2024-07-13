@@ -149,9 +149,13 @@ export default function Home({ allArticles, allSeries }) {
             </div>
           </div>
         </div>
-        <div className={`flex flex-nowrap flex-row max-w-full justify-center sm:justify-start text-lg pt-6 md:px-0`}>
+        <div className={
+          `flex flex-nowrap flex-col md:flex-row 
+          max-w-full justify-center sm:justify-start
+           text-lg pt-6 md:px-0`
+        }>
           <div className={'px-4 pt-0.5 min-w-44'}>
-            <div className={`flex gap-2`}>
+            <div className={`flex justify-center gap-2`}>
               <Toggle
                 onClick={() => toggleLanguage('pl')}
                 className={`${languages.value.includes('pl') ? 'bg-white' : 'bg-gray-100'}`}
@@ -174,11 +178,8 @@ export default function Home({ allArticles, allSeries }) {
                 Series
               </Toggle>
             </div>
-            <div>
-
-            </div>
           </div>
-          <div className={`flex flex-wrap`}>
+          <div className={`flex flex-wrap pt-4 md:pt-0 justify-center md:justify-start`}>
             {tags.map((tag) => (
               <div key={tag.name} className={`p-2 px-6 font-semibold ${tag.tag === selectedTag ? 'text-purple-800' : ''}`}>
                 <a href={`#${tag.tag}`} onClick={() => setSelectedTag(tag.tag)}>{tag.name}</a>

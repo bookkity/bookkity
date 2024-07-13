@@ -45,16 +45,29 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
         <title>Bookkity - Series</title>
       </Head>
       <Layout>
-        <div className={`flex min-h-full`}>
-          <div id={`chapter-border`} className={`flex flex-col max-w-80 b-1 b-r text-sm pr-4 border-1 border-r pt-8 pb-32 min-h-full`}>
+        <div className={`flex min-h-full flex-col md:flex-row`}>
+          <div
+            id={`chapter-border`}
+            className={`
+              flex flex-col md:max-w-80 
+              md:border-1 md:border-r md:b-1 md:b-r 
+              text-sm md:pr-4
+              pt-4 md:pt-8
+              md:pb-32
+              min-h-full`}
+          >
+            <h2 className={`pt-1 pb-4 font-bold text-gray-900`}>
+              {series.details.title}
+            </h2>
             {series.chapters.map((chapter, idx) => {
               return (
-                <div key={idx} className={`flex py-2 text-gray-700`}>
+                <div key={idx} className={`flex pl-4 py-2 text-gray-700`}>
                   <div className={`flex`}>
                     <a
                       href={`/series/${series.details.url}/${chapter.order}`}
-                      className={`hover:underline hover:text-gray-500 ${chapter.order === selectedChapter.order ? 'font-semibold' : ''}`}
+                      className={`hover:underline hover:text-gray-500 ${chapter.order === selectedChapter.order ? 'font-semibold text-purple-800' : ''}`}
                     >
+                      {idx + 1}.&nbsp;
                       {chapter.published !== true && (
                         <span className={`mr-1 text-gray-400`}>[DRAFT]</span>
                       )}
@@ -65,7 +78,7 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
               )
             })}
           </div>
-          <div className={`flex flex-col pl-8 pt-8 w-full h-full`}>
+          <div className={`flex flex-col md:pl-8 pt-4 md:pt-8 w-full h-full`}>
             {selectedChapter.published !== true && (
               <div className={`mr-2 mb-6 text-center text-purple-900 font-semibold text-xs py-1 px-4 bg-gray-300 rounded-3xl`}>
                 This chapter is not published yet
@@ -84,6 +97,28 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
             </span>
             <div className={`pt-4`}>
               <MDXRemote components={MDX} {...selectedChapter.content} />
+            </div>
+            <div className={`flex w-full pt-4 justify-between`}>
+              {selectedChapter.order > 1 && (
+                <div className={`w-full flex`}>
+                  <a
+                    href={`/series/${series.details.url}/${selectedChapter.order - 1}`}
+                    className={`bg-white text-purple-900 rounded px-4 py-2 font-semibold text-sm`}
+                  >
+                    &larr; Previous Chapter
+                  </a>
+                </div>
+              )}
+              {series.chapters.length > selectedChapter.order && (
+                <div className={`w-full flex`}>
+                  <a
+                    href={`/series/${series.details.url}/${selectedChapter.order + 1}`}
+                    className={`bg-white text-purple-900 rounded px-4 py-2 font-semibold text-sm`}
+                  >
+                    Next Chapter &rarr;
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>
