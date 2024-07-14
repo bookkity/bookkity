@@ -69,7 +69,7 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
                     >
                       {idx + 1}.&nbsp;
                       {chapter.published !== true && (
-                        <span className={`mr-1 text-gray-400`}>[DRAFT]</span>
+                        <span className={`mr-1 text-gray-400 text-xs`}>[UNPUBLISHED]</span>
                       )}
                       {chapter.title}
                     </a>
