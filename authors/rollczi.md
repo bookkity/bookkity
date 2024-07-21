@@ -1,6 +1,6 @@
 ---
-id: 4
-name: "Rollczi"
+id: 7
+name: "rollczi"
 location: "Poland"
 description: "Ohh boy"
 avatar: "rollczi.jpg"
