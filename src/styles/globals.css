@@ -85,3 +85,7 @@
 .discord-parent:hover .icon {
   @apply animate-spin;
 }
+
+#chapter-border {
+    border-image: linear-gradient(to bottom, rgb(229, 231, 235), rgba(243, 244, 246, 0)) 1 100%;
+}

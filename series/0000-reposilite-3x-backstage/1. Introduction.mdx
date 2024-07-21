@@ -1,0 +1,130 @@
+---
+order: 1
+shortTitle: "Introduction"
+title: "Introduction - General overview"
+date: "2024-06-30"
+published: true
+---
+
+Reposilite 3.x has been released on August 1st, 2022.
+We're slowly getting closer to the 4.x,
+so it's a good time for reflection on what we've achieved so far in this release,
+but also what didn't pay off.
+
+<References
+    links={[
+        {
+            title: "GitHub / Reposilite - Repository manager for Maven based artifacts",
+            url: "https://github.com/dzikoysk/reposilite"
+        },
+    ]}
+/>
+
+In this introduction, we'll cover the general overview of changes made between 2.x and 3.x.
+Next chapters will focus on some selected topics in more detail.
+
+### Tech stack
+
+Reposilite consists of three modules:
+
+1. `reposilite-backend` - the core http server and the main logic of the application
+2. `reposilite-frontend` - the web interface
+3. `reposilite-site` - the website with documentation & plugins
+
+The rewrite that happened in 3.x was focused on all of them. Let's take a look at the tech stack changes:
+
+| Module   | 2.x                                                                                                                                | 3.x                                                                                                                               |
+|----------|------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| Backend  | Java, [Javalin](https://github.com/javalin/javalin), [Groovy _(tests)_](https://groovy-lang.org/)                                  | [Kotlin](https://kotlinlang.org/), [Javalin](https://github.com/javalin/javalin), [Exposed](https://github.com/JetBrains/Exposed) |
+| Frontend | [Vue2](https://vuejs.org/), [Pug](https://pugjs.org), [Stylus](https://stylus-lang.com/) , [TailwindCSS](https://tailwindcss.com/) | [Vue3](https://jsonforms.io/), [Vite](https://vitejs.dev/), [WindiCSS](https://windicss.org/), [JsonForms](https://jsonforms.io/) |
+| Site     | [Docusaurus 1.x](https://docusaurus.io/)                                                                                           | [Next.js](https://nextjs.org/), [Chakra UI](https://chakra-ui.com/)                                                               |
+
+<Alert type={'note'}>
+    The less significant libraries have been omitted from the table above, but I may mention some of them later.
+</Alert>
+
+Bringing up so many changes required a bit of effort - the question is, was it worth it?
+
+## Backend module
+
+Java vs Kotlin topic has been discussed many times, so it'd be a waste of time to repeat the same arguments.
+One of the main reasons why I decided to make a switch was simply the fact,
+that Java was not enough for me in a way I used it in 2.x (improved safety with a cost of pseudo-functional programming wrappers).
+To quickly summarize the outcomes for me in this particular case:
+
+1. The codebase is smaller and easier to maintain - A lot of noise has been removed from sources
+2. Kotlin did not scare away contributors - more contributions in 3.x than in 2.x*
+3. Despite having the core implementation in Kotlin, we're still allowing external plugins to be written in Java
+4. With libraries like Javalin or Exposed, we could consume more type-safe APIs
+5. Codebase is more consistent - Kotlin is used in build scripts, core implementation and tests
+
+<Alert type={'note'}>
+    _`*` - Having this issue in mind,
+    Reposilite 3.x had a quick Kotlin guide in docs to help newcomers: [Reposilite / Kotlin](https://reposilite.com/guide/kotlin)_
+</Alert>
+
+[Javalin](https://github.com/javalin/javalin) stayed with us in 3.x,
+and it's still a great choice for a lightweight http library.
+The library is written in Kotlin, so it exposes native Kotlin APIs that was even safer to use and extend.
+Some of you may notice that having Kotlin,
+[Ktor](https://ktor.io/) could be a better choice,
+but I don't quite agree with that.
+While their marketing is great,
+the library itself is just unnecessarily more complex and does not really offer anything more in return for me.
+
+[Exposed](https://github.com/JetBrains/Exposed) will probably get its own chapter in this series.
+For the time being, I can say that the concept of utilizing Kotlin's DSL this way is great,
+but the implementation is far from perfect.
+
+**Overall, the new backend of Reposilite 3.x is a huge improvement** over 2.x.
+There are some minor issues related to the decisions at implementation level, but as a whole, there's nothing to complain about.
+
+## Frontend module
+
+In opposite to the backend, the frontend part of Reposilite 3.x is not such a good story.
+Visually, the new interface is an improvement over the old one, but the implementation didn't go that well.
+Issues already started with Vue 3.0, but let's put all of that in order:
+
+1. [JsonForms](https://jsonforms.io/) - primitive support for Vue, lack of documentation, overcomplicated API. We achieved the general goal, but it works poorly, and we need to use via fork
+2. [WindiCSS](https://windicss.org/) - Tailwind CSS like library that lost an edge over Tailwind and has been abandoned
+3. [Vue](https://vuejs.org/) - Vue 3.0 was just a huge disappointment. It's hard to point just one thing, but over time it just looks like crippled React.
+
+I'll focus on 1st and 3rd point in the next chapters, but for now I'd say that the rewrite of the frontend did not pay off.
+We've ended up with quite the same issues as before, and as a backend developer I'm a bit tired of all latest frontend trends.
+If I had to make a choice again,
+I'd probably go with React these days - not because it's "better",
+but because of the variety of libraries and tools available out there.
+
+If you're a bit more crazy,
+you can try to go the old-fashioned way and try to utilize something similar to [HTMX](https://htmx.org/).
+That's actually the goal for Reposilite 4.x - not only to get rid of the Node-based frontend module,
+but to also minimize the transfer layer by simply rendering HTML on the server side.
+
+## Site module
+
+I moved from documentation generator to a regular Next.js site,
+but it was just a matter of personal preferences that in most cases would be just hard to justify.
+It required more work at the beginning, and that's a fact, but I like the outcome - I have a full control over the site.
+For most projects, I'd just recommend to go with:
+
+1. [Vuepress](https://vuepress.vuejs.org/)
+2. Or newer versions of [Docusaurus](https://docusaurus.io/)
+
+> _Especially for backend developers_
+
+## Summary
+
+Overall, I'm quite happy with the final result.
+Considering the amount of work and number of new functionalities that have been added,
+the stability and low requirements have been preserved.
+
+<References
+    links={[
+        {
+            title: "GitHub / Reposilite - 3.0.0 Release (changelist)",
+            url: "https://github.com/dzikoysk/reposilite/releases/tag/3.0.0"
+        },
+    ]}
+/>
+
+In the next chapters, we'll dive into some more technical and detailed topics.
