@@ -18,7 +18,6 @@ const tags = [
   { name: 'Rust', tag: 'rust' },
   { name: 'DevOps', tag: 'devops' },
   { name: 'Hardware', tag: 'hardware' },
-  { name: 'IntelliJ', tag: 'intellij' },
 ]
 
 export async function getStaticProps() {
