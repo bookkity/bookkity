@@ -39,11 +39,11 @@ export default function About({ authors }) {
                     <div className={`w-full bg-gray-200 h-20 rounded-t-lg`}></div>
                     <img
                       src={`/author/${author.avatar}`}
-                      alt={author.name}
+                      alt={author.displayname}
                       className={`absolute mx-auto rounded-full w-28 top-4 left-1/2 -ml-14 border border-black`}
                     />
                     <div className={`flex flex-col items-center px-2 pt-10 pb-8`}>
-                      <h3 className={`text-lg font-semibold mt-4`}>{author.name}</h3>
+                      <h3 className={`text-lg font-semibold mt-4`}>{author.displayname}</h3>
                       <p className={`text-gray-600 text-sm mt-2`}>{author.description}</p>
                     </div>
                   </a>

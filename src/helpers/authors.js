@@ -9,6 +9,7 @@ const authorsPath = path.join(process.cwd(), "authors")
  * @typedef {Object} Author
  * @property {string} id
  * @property {string} name
+ * @property {string} displayname
  * @property {string} description
  * @property {string} avatar
  * @property {string} content

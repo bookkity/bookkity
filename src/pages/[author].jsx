@@ -36,7 +36,7 @@ export async function getStaticPaths() {
 
 
 export default function Author({ author, articles }) {
-  const title = `Bookkity - ${author.name}`
+  const title = `Bookkity - ${author.displayname}`
 
   return (
     <>
@@ -50,14 +50,14 @@ export default function Author({ author, articles }) {
           </a>
           &nbsp;/&nbsp;
           <span className={`font-semibold`}>
-              {author.name}
+              {author.displayname}
             </span>
         </p>
         <div className={'flex px-1'}>
           <div className={'flex flex-col pt-12 max-w-64'}>
-            <img src={`/author/${author.avatar}`} alt={author.name} className={`rounded-full w-64`}/>
+            <img src={`/author/${author.avatar}`} alt={author.displayname} className={`rounded-full w-64`}/>
             <h1 className={`pt-10 pb-3 font-semibold text-3xl`}>
-              {author.name}
+              {author.displayname}
             </h1>
             <p className={'text-sm'}>{author.description}</p>
           </div>

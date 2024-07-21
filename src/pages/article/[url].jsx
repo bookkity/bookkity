@@ -50,7 +50,7 @@ export default function Article({ article }) {
           {article.title}
         </h1>
         <span className={'text-xs text-gray-500'}>
-          by <a className={`text-purple-500`} href={`/${article.author}`}>{article.author}</a> on {article.date}
+          by <a className={`text-purple-500`} href={`/${article.author.name}`}>{article.author.displayname}</a> on {article.date}
         </span>
         <div className={'mdx pt-2'}>
           <MDXRemote components={MDX} {...article.content} />

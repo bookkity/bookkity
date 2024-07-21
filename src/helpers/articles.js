@@ -2,6 +2,7 @@ import path from 'path'
 import matter from 'gray-matter'
 import {readDirectory, readSpecificFile} from "@/helpers/fs"
 import {serializeMdx} from "@/helpers/mdx"
+import {getAuthor} from "@/helpers/authors";
 
 const articlesPath = path.join(process.cwd(), "articles")
 
@@ -9,7 +10,7 @@ const articlesPath = path.join(process.cwd(), "articles")
  * @typedef {Object} Article
  * @property {String} url
  * @property {String} date
- * @property {String} author
+ * @property {Author} author
  * @property {String} language
  * @property {String} title
  * @property {String} image
@@ -22,7 +23,17 @@ const articlesPath = path.join(process.cwd(), "articles")
  */
 export async function getArticles() {
   const articles = await readDirectory(articlesPath)
-  return Promise.all(articles.map(async file => readArticleMdx(path.join(articlesPath, file))))
+  return Promise.all(articles
+      .map(async file => {
+        return readArticleMdx(path.join(articlesPath, file))
+            .then(async article => {
+                article.author = await getAuthor(article.author);
+
+                console.log(article.author.name)
+                return article;
+            });
+      })
+  )
 }
 
 /**

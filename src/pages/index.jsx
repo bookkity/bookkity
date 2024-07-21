@@ -38,7 +38,7 @@ export async function getStaticProps() {
  * @property {'article' | 'chapter'} type
  * @property {string} title
  * @property {Array<string>} tags
- * @property {Array<string>} authors
+ * @property {Array<Author>} authors
  * @property {string} language
  * @property {string} image
  * @property {string} url
@@ -227,9 +227,9 @@ export default function Home({ allArticles, allSeries }) {
                   <div className={`flex flex-1 items-center py-2`}>
                     <div className={`px-3 py-3`}>
                       {article.authors.map((author, idx) => (
-                        <a key={`author-avatar-${author}`} href={`/${author}`}>
+                        <a key={`author-avatar-${author.name}`} href={`/${author.name}`}>
                         <img
-                            src={`/author/${author}.jpg`}
+                            src={`/author/${author.name}.jpg`}
                             alt={'Bookkity'}
                             className={`rounded-full h-12 w-12 min-w-12`}
                           />
@@ -245,8 +245,8 @@ export default function Home({ allArticles, allSeries }) {
                       <p className={`text-xs text-gray-400 pt-1`}>
                         {article.date.toLocaleDateString()} by
                         {article.authors.map((author, idx) => (
-                          <a key={`author-url-${author}`} href={`/${author}`}>
-                            &nbsp;<span className={`text-gray-700`}>{author}</span>
+                          <a key={`author-url-${author.name}`} href={`/${author.name}`}>
+                            &nbsp;<span className={`text-gray-700`}>{author.displayname}</span>
                           </a>
                         ))}
                       </p>
