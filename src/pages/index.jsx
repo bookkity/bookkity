@@ -94,7 +94,7 @@ export default function Home({ allArticles, allSeries }) {
           tags: series.details.tags,
           authors: series.details.authors,
           language: series.details.language,
-          image: `/series/${series.details.image}`,
+          image: chapter.image ? `/series/${chapter.image}` : `/series/${series.details.image}`,
           url: `/series/${series.details.url}/${chapter.order}`,
           date: new Date(chapter.date),
           data: {
