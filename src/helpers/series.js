@@ -28,7 +28,7 @@ const seriesPath = path.join(process.cwd(), "series")
  * @property {string} shortTitle
  * @property {string} title
  * @property {string} date
- * @property {string} image
+ * @property {?string} [url] image
  * @property {boolean} published
  */
 
