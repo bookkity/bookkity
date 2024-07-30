@@ -10,11 +10,11 @@ tags: ["java"]
 
 ## Introduction
 As Java Developers, we are pretty familiar with OOP, because we obviously use object-oriented programming language, but that doesn't mean we can't draw from other paradigms, and can't combine them together.
-Functional Programming is paradigm that emphasizes the use of immutability, pure functions, and expressions over statements. TU COS MOZE TEZ DOPISAC
+Functional Programming offers valuable concepts that can enhance our code quality and maintainability. By using immutable data structures and pure functions, we can reduce side effects, making our code more predictable and easier to debug.
 We will dig into the basics and explore how we can benefit from them as a Java developer.
 
 ### Immutability
-The primary concept with which we may already be familiar is immutability.
+The primary concept, with which we may already be familiar, is immutability.
 
 #### Immutable objects
 Immutable objects, once created, cannot be modified. They remain the same throughout their entire life cycle.
@@ -374,14 +374,14 @@ Either allows explicitly showing our method has two paths. The success - right, 
 ]} />
 
 Thanks to that:
-- We don't need to open method code to discover alternative scenarios.
+- There's no need to examine the method code to identify alternative scenarios.
 - compiler forces us to handle errors.
 
 Another interesting class is `Validation`. Like `Either`, `Validation` contains two paths, valid and invalid. The main difference is that instead of chaining the result from the first event to the next, `Validation` validates all events.
 <References links={[
 { title: "Validation", url: "https://eed3si9n.com/learning-scalaz/Validation.html" },
 ]} />
-To see the utility, let's write a code for loading CSV files.
+To demonstrate the usage, let's write a code for loading CSV files.
 
 ```java
 List<Flight> load(List<String> lines) {
@@ -392,11 +392,11 @@ private Flight parse(String line) {
     var args = line.split(",");
     String departure = args[0];
     if (!isValidIcaoCode(departure)) {
-        throw new IllegalArgumentException("Departure is not valid icao airport code.");
+        throw new IllegalArgumentException("Departure is not valid ICAO airport code.");
     }
     String destination = args[1];
     if (!isValidIcaoCode(destination)) {
-        throw new IllegalArgumentException("Desination is not valid icao airport code.");
+        throw new IllegalArgumentException("Destination is not valid ICAO airport code.");
     }
 }
     
@@ -493,7 +493,7 @@ return Mono.fromCallable(
 { title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
 ]} />
 That's not all.
-The real "fun" begins when we mixing stuff like `Mono` with for example `Either`
+The real "fun" begins when we mixing stuff like `Mono` and `Either`
 ```java
 public Mono<Either<AppError, UserDTO>> registerUser(RegisterUserDTO dto) {
         return userFactory
