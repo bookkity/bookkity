@@ -86,7 +86,7 @@ Let's consider following example:
 
 ```java
 ShowStats getShowStats(List<Reservation> reservations) {
-    int activeReservations = calculateActiveReservations(reservations);
+    int activeReservations = calculateActiveReservations(reservations); 🃏
     int totalReservations = reservations.size();
     return new ShowStats(activeReservations, totalReservations);
 }
