@@ -82,6 +82,8 @@ public void handle(MoneyTransferred moneyTransferred) {
 #### Immutable collections
 Problem with mutable collection
 
+Let's consider following example:
+
 ```java
 ShowStats getShowStats(List<Reservation> reservations) {
     int activeReservations = calculateActiveReservations(reservations);
@@ -90,7 +92,7 @@ ShowStats getShowStats(List<Reservation> reservations) {
 }
 ```
 
-On the first look it looks fine, but what in case `activeReservations()` removes some elements from provided list?
+On the first look it looks fine, but what in case `calculateActiveReservations()` removes some elements from provided list?
 
 ```java
 public int calculateActiveReservations(List<Reservations> reservations) {
@@ -99,7 +101,7 @@ public int calculateActiveReservations(List<Reservations> reservations) {
 }
 ```
 
-If we pass an ArrayList the `calculateActiveReservations` will modify the list and that will cause a bug
+If we pass an `ArrayList` the method will modify the list and that will cause a bug
 
 ```java
 ShowStats getShowStats(List<Reservation> reservations) { // [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
@@ -110,7 +112,7 @@ ShowStats getShowStats(List<Reservation> reservations) { // [Reservation[status=
 }
 ```
 
-If we created list using `List.of()` or `Stream#toList()` it created `ImmutableCollections.List`, which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
+If we create list using `List.of()` or `Stream#toList()` it creates `ImmutableCollections.List`, which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
 
 ```java
 public int calculateActiveReservations(List<Reservations> reservations) {
@@ -120,8 +122,8 @@ public int calculateActiveReservations(List<Reservations> reservations) {
 ```
 
 But there are few problems with standard "immutable" Java collections:
-- First of all, this behavior seems more like read-only than immutable. The immutable collection should return us a copy.
-- Second thing, and this applies to all runtime exceptions, they only occur during runtime. And it's usually too late.
+- Behavior seems more like read-only than immutable. Immutable collections should return us a copy.
+- Informs about illegal operations at runtime.
 
 So let's see how else we can approach the subject.
 
