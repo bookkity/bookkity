@@ -16,6 +16,9 @@ They help you to maintain the code quality and improve the development process, 
 
 IntelliJ Development seems to be a hard topic, but I will show you that it's not that difficult to implement these features.
 
+<br/>
+<br/>
+
 ## Pretty use cases
 
 When I decided to write this article, I was thinking about the most common use cases,
@@ -39,6 +42,9 @@ There are a few examples of the issues that I wanted to solve:
 
 4. **Invalid value for the annotation**: The developer used an invalid value for the annotation.
 <img alt="Image description" src="/series/0001/01/example-4.png" width="70%" style={{borderRadius: "18px"}}/>
+
+<br/>
+<br/>
 
 ## What is the plan?
 
@@ -110,6 +116,9 @@ In this case, we are using `PsiMethod` and `PsiAnnotation` to check if the metho
 Also, we are registering a problem for the `PsiTypeElement` to highlight the return type of the method. See how cool it is!
 
 <img alt="Image description" src="/series/0001/01/inspection.png" width="60%" style={{borderRadius: "18px"}}/>
+
+<br/>
+<br/>
 
 ## But what about the quick fix?
 
@@ -263,16 +272,21 @@ And add the extension in the `plugin.xml` file:
 
 That's it! Now you can build and install the plugin in your IDE.
 
+<br/>
+<br/>
+
 ## Results and summary
 
-### Before
-<img alt="Image description" src="/series/0001/01/before.png" width="60%" style={{borderRadius: "18px"}}/>
-
-### After
-<img alt="Image description" src="/series/0001/01/after.png" width="60%" style={{borderRadius: "18px"}}/>
-
-In this article, I showed you how to create custom inspections and quick fixes in the IntelliJ Plugin.
+In this article, I showed you how to create custom inspections and quick fixes in the IntelliJ Plugin.<br/>
 I hope you enjoyed it and learned something new.
+
+Before
+<img alt="Image description" src="/series/0001/01/before.png" width="50%" style={{borderRadius: "18px"}}/>
+
+After
+<img alt="Image description" src="/series/0001/01/after.png" width="50%" style={{borderRadius: "18px"}}/>
+
+
 
 <References links={[
     { title: "IntelliJ Platform SDK Documentation", url: "https://plugins.jetbrains.com/docs/intellij/welcome.html" },
