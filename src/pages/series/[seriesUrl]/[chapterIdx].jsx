@@ -95,7 +95,7 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
               ))}
               <span> on {selectedChapter.date}</span>
             </span>
-            <div className={`pt-4`}>
+            <div className={`mdx pt-4`}>
               <MDXRemote components={MDX} {...selectedChapter.content} />
             </div>
             <div className={`flex w-full pt-4 justify-between`}>
