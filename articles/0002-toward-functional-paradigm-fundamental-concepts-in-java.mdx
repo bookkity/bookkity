@@ -9,9 +9,12 @@ tags: ["java"]
 ---
 
 ## Introduction
-We are pretty familiar with OOP, because we use object-oriented programming language, but that doesn't mean we can't draw from other paradigms, and can't combine them.
+
 Functional Programming offers valuable concepts that can enhance our code quality and maintainability. By using immutable data structures and pure functions, we can reduce side effects, making our code more predictable and easier to debug.
-We will dig into the basics and explore how we can benefit from them as a Java developer.
+We will dig into the basics, covering the following topics:
+- [Immutability](#Immutability)
+- [Functions](#Functions)
+- [Monads](#Optional)
 
 ### Immutability
 The primary concept, with which we may already be familiar, is immutability.
@@ -168,7 +171,7 @@ Let's review a few methods and determine if they are total and pure.
 
 ```java
 class Account {
-    
+
     private BigDecimal balance;
         
     void deposit(BigDecimal amount) {
