@@ -109,7 +109,7 @@ If we create a list using `List.of()` or `Stream#toList()` it creates `Immutable
 
 ```java
 public int calculateActiveReservations(List<Reservations> reservations) {
-    reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnusportedOperationException
+    reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnsupportedOperationException
     return reservations.size();
 }
 ```
@@ -122,7 +122,7 @@ So let's see how else we can approach the subject.
 
 For example, In Kotlin `List` interface doesn't contain methods like `add`, `remove`, etc.
 And that sounds much more reasonable than throwing `UnsupportedOperationException`.
-Because we are held back by the compiler  thedevelopment stage.
+Because we are held back by the compiler during at the development stage.
 
 ```kotlin
 val immutableList: List<String> = arrayListOf("a")
