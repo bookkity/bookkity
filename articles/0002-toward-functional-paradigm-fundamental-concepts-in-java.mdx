@@ -109,7 +109,7 @@ If we create a list using `List.of()` or `Stream#toList()` it creates `Immutable
 
 ```java
 public int calculateActiveReservations(List<Reservations> reservations) {
-    reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnusportedOperationException
+    reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnsupportedOperationException
     return reservations.size();
 }
 ```
