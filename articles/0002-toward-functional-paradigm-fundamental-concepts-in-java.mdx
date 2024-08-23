@@ -9,7 +9,7 @@ tags: ["java"]
 ---
 
 ## Introduction
-As Java Developers, we are pretty familiar with OOP, because we use object-oriented programming language, but that doesn't mean we can't draw from other paradigms, and can't combine them.
+We are pretty familiar with OOP, because we use object-oriented programming language, but that doesn't mean we can't draw from other paradigms, and can't combine them.
 Functional Programming offers valuable concepts that can enhance our code quality and maintainability. By using immutable data structures and pure functions, we can reduce side effects, making our code more predictable and easier to debug.
 We will dig into the basics and explore how we can benefit from them as a Java developer.
 
@@ -58,20 +58,10 @@ public record Reservation(ReservationId id, ReservationStatus status) {
 }
 ```
 
-Unfortunately in Java, we have to do it manually. In comparison, Kotlin provides us `copy` method.
-
-```kotlin
-data class Reservation(val id: ReservationId, val status: ReservationStatus) {
-    
-    fun cancel(): Reservation =
-        copy(status = ReservationStatus.Cancelled)
-}
-```
-
 What are the main benefits of using immutable objects?
-- immutable objects are thread-safe, they can be shared among multiple threads without restraint.
-- allows you to reason about a piece of code independently of the rest of the program because our internal state can't be changed by another part of our system.
-- we can model things like they are, e.g. events - the fact already happened we can't change past.
+- Immutable objects are thread-safe, they can be shared among multiple threads without restraint.
+- Allows you to reason about a piece of code independently of the rest of the program because our internal state can't be changed by another part of our system.
+- We can model things like they are, e.g. events - the fact already happened we can't change past.
 
 ```java
 public void handle(MoneyTransferred moneyTransferred) {
