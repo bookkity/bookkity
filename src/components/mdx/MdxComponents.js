@@ -27,7 +27,7 @@ const H = ({ children, as, size }) => {
     {
       className: `py-2 -ml-${size.includes('xl') ? '4' : '3'} font-bold text-${size}`,
     },
-    <a className={`paragraph`} href={`#${anchor}`}>
+    <a id={anchor} className={`paragraph`} href={`#${anchor}`}>
       <abbr className={`opacity-0.5 text-gray-400 font-normal opacity-0`}>§ </abbr>
       <span className={`hover:underline hover:decoration-gray-300`}>
         {children}
