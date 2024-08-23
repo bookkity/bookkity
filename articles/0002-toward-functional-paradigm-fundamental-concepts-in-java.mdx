@@ -190,9 +190,9 @@ account.map(ac -> {
     return ac;
 });
 ```
-- force to use exceptions for error handling.
-- are harder to write unit tests for it because you cannot assert on the return value.
-- make it more difficult to track changes that have been made.
+- Force to use exceptions for error handling.
+- Are harder to write unit tests for it because you cannot assert on the return value.
+- Make it more difficult to track changes that have been made.
 </Alert>
 
 It's not total nor pure.
@@ -251,13 +251,6 @@ Optional<User> getUser(long id) {
 ```
 
 The side effect still exists, but we encoded that fact using type system. It's not hidden like in the previous example.
-
-In Kotlin, this is the default behavior, we need to explicitly say if the result of the operation is nullable or not.
-`?` -> nullable
-
-```kotlin
-fun getUser(id: Long): User? = map.get(id)
-```
 
 #### Optional
 
@@ -503,93 +496,6 @@ public Mono<Either<AppError, UserDTO>> registerUser(RegisterUserDTO dto) {
 { title: "mixing Mono with Either", url: "https://4programmers.net/Forum/Java/362708-problem_z_mono_w_either?p=1860236#id1860236" },
 ]} />
 So in Java, I would stick to the basics; otherwise, your colleagues might hate you.
-
-Just for curiosity's sake, we can take a look at Higher-Kinded Types, which I found very interesting years ago because it was something I wanted to use in my Java project.
-However, I wasn't aware of it at the time and later discovered that Java doesn't really support this concept anyway.
-
-Let's imagine we want to have code that allows us to load flight data.
-```java
-interface FlightLoader {
-
-    Flight load(UUID gufi);
-}
-```
-And let's say we will get the flight data from some external source.
-```java
-class ExternalFlightLoader implements FlightLoader {
-
-    @Override
-    public Flight load(UUID gufi) {
-        // HTTP request or something
-        return new Flight();
-    }
-}
-```
-Awesome, and then we want to have an implementation which allows us to retrieve flights from memory.
-```java
-class InMemoryFlightLoader implements FlightLoader {
-
-    private final Map<UUID, Flight> flights;
-
-    @Override
-    public Flight load(UUID gufi) {
-        return flights.get(gufi);
-    }
-}
-```
-
-Okay, but what if we want to change our `ExternalFlightLoader` implementation to load flights asynchronously?
-```java
-class ExternalFlightLoader implements FlightLoader {
-
-    @Override
-    public CompletableFuture<Flight> load(UUID gufi) {
-        return CompletableFuture.supplyAsync(() -> {
-            // http request
-            return new Flight();
-        });
-    }
-}
-```
-But that will affect the method signature change in our interface as well.
-```java
-interface FlightLoader {
-
-    CompletableFuture<Flight> load(UUID gufi);
-}
-```
-This will cause also a change in our in-memory implementation.
-```java
-class InMemoryFlightLoader implements FlightLoader {
-
-    private final Map<UUID, Flight> flights;
-
-    @Override
-    public CompletableFuture<Flight> load(UUID gufi) {
-        return CompletableFuture.completedFuture(flights.get(gufi));
-    }
-}
-```
-This seems like nonsense to me, because why the heck should we wrap non-asynchronous code in `CompletableFuture`.
-And that's the place where we can apply HKT. But it's not really a thing in Java so we will switch to Scala for example purposes.
-```scala
-trait FlightLoader[F[_]] {
-
-  def load(gufi: UUID): F[Flight]
-}
-```
-As you can guess, we can wrap our method result in a generic type.
-```scala
-class ExternalFlightLoader extends FlightLoader[CompletableFuture] {
-
-  def load(gufi: UUID): CompletableFuture[Flight]
-}
-
-class InMemoryFlightLoader extends FlightLoader[Option] {
-
-  def load(gufi: UUID): Option[Flight]
-}
-```
 
 ## Summary
 We have learned several key concepts of functional programming. These basics are well-supported by the language and should not disturb our team members.
