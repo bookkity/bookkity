@@ -17,7 +17,7 @@ We will dig into the basics, covering the following topics:
 * [Monads](#optional) - desc
 
 ### Immutability
-The primary concept, with which we may already be familiar, is immutability.
+The primary concept with which we may already be familiar is immutability.
 
 #### Immutable objects
 Immutable objects, once created, cannot be modified. They remain the same throughout their entire life cycle.
@@ -67,9 +67,8 @@ What are the main benefits of using immutable objects?
 - We can model things like they are, e.g. events - the fact already happened we can't change past.
 
 #### Immutable collections
-Problem with mutable collection
-
-Let's consider the following example:
+Immutable collections, like immutable objects, cannot be updated after creation. The only way to add or remove an element is to create a new instance of the collection. Immutable List in Java can be created using `List.of("a", "b", "c")`, any modification on this list will cause an exception. 
+Let's find out if it is worth using in comparison to its mutable counterpart. We'll start with the main problem of mutable collections = they can be modified by anyone.
 
 ```java
 ShowStats getShowStats(List<Reservation> reservations) {
@@ -78,8 +77,7 @@ ShowStats getShowStats(List<Reservation> reservations) {
     return new ShowStats(activeReservations, totalReservations);
 }
 ```
-
-On the first look, it looks fine, but what in case `calculateActiveReservations()` removes some elements from the provided list?
+On the first look, it looks fine. But what in case `calculateActiveReservations()` removes some elements from the provided list?
 
 ```java
 public int calculateActiveReservations(List<Reservations> reservations) {
@@ -100,7 +98,7 @@ ShowStats getShowStats(List<Reservation> reservations) {
 }
 ```
 
-If we create a list using `List.of()` or `Stream#toList()` it creates `ImmutableCollections.List`, which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
+If we create a list using `List.of()` or `Stream#toList()` it will create `ImmutableCollections.List`, which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
 
 ```java
 public int calculateActiveReservations(List<Reservations> reservations) {
@@ -116,8 +114,7 @@ But there are a few problems with standard "immutable" Java collections:
 So let's see how else we can approach the subject.
 
 For example, In Kotlin `List` interface doesn't contain methods like `add`, `remove`, etc.
-And that sounds much more reasonable than throwing `UnsupportedOperationException`.
-Because we are held back by the compiler during at the development stage.
+And that sounds much more reasonable than throwing `UnsupportedOperationException`, because we are held back by the compiler during at the development stage.
 
 ```kotlin
 val immutableList: List<String> = arrayListOf("a")
@@ -207,7 +204,6 @@ What if we make this object immutable?
 
 ```java
 class Account {
-    
     private final BigDecimal balance;
         
     Account deposit(BigDecimal amount) {
@@ -414,8 +410,8 @@ private Validation<String, String> validateIcaoCode(String icao) {
 ```
 
 Our code didn't change much. Instead of throwing an exception, we just return an object, so the flow is not terminated instantly.
-The load part is more problematic because we have to handle `List<Validation<Seq<String>, Flight>>`. The question is how to aggregate the data to easily display the number of loaded flights or the list of validation errors.
-For the sake of humanity there is `Validation#sequence` which:
+The loading part is more problematic because we have to handle `List<Validation<Seq<String>, Flight>>`. The question is how to aggregate the data to easily display the number of loaded flights or the list of validation errors.
+For the sake of humanity, there is `Validation#sequence` which:
 
 > Reduces many Validation instances into a single Validation by transforming an `Iterable<Validation<? extends T>>` into a `Validation<Seq<T>>`.
 
