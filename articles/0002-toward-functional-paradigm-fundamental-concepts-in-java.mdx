@@ -66,12 +66,6 @@ What are the main benefits of using immutable objects?
 - Allows you to reason about a piece of code independently of the rest of the program because our internal state can't be changed by another part of our system.
 - We can model things like they are, e.g. events - the fact already happened we can't change past.
 
-```java
-public void handle(MoneyTransferred moneyTransferred) {
-    moneyTransferred.setAmount(BigDecimal.valueOf(0)); // WTF?
-}
-```
-
 #### Immutable collections
 Problem with mutable collection
 
@@ -97,7 +91,8 @@ public int calculateActiveReservations(List<Reservations> reservations) {
 If we pass an `ArrayList` the method will modify the list and that will cause a bug
 
 ```java
-ShowStats getShowStats(List<Reservation> reservations) { // [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
+ShowStats getShowStats(List<Reservation> reservations) { 
+    // reservations = [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
     int activeReservations = calculateActiveReservations(reservations); // 
     // reservations = [Reservation[status=Active], Reservation[status=Active]]
     int totalReservations = reservations.size(); // 2
@@ -136,17 +131,16 @@ val mutableList: MutableList<String> = arrayListOf("a")
 mutableList.add("b")
 ```
 
-It's better, but not perfect. Adding elements should be allowed, but it should create a new list that contains values from the source list along with the newly added value.
+It's better, but not perfect. Adding elements should be allowed, but it should create a new list containing values from the source list and the newly added value.
 
 But won't it be slow?
 Theoretically, yes, but actually no.
 The collection size is usually small, so it doesn't really matter. Additionally, we don't have to copy all values to the new list.
 
-Instead, when we add a value, we create a new object that contains a reference to the previous one along with the new element.
+Instead, when we add a value, we create a new object that contains a reference to the previous object along with the new element.
 
 ```java
 class ImmutableList<T> {
-    
     private ImmutableList<T> head;
     private T tail;
 
@@ -171,7 +165,6 @@ Let's review a few methods and determine if they are total and pure.
 
 ```java
 class Account {
-
     private BigDecimal balance;
         
     void deposit(BigDecimal amount) {
@@ -194,14 +187,14 @@ account.map(ac -> {
 });
 ```
 - Force to use exceptions for error handling.
-- Are harder to write unit tests for it because you cannot assert on the return value.
+- Are harder to test.
 - Make it more difficult to track changes that have been made.
 </Alert>
 
 It's not total nor pure.
-The method returns output only if the argument is greater than 0, and it modifies internal state, so depending on the current state the method may behave differently.
+The method returns output only if the argument is greater than 0, and it modifies the internal state, so depending on the current state the method may behave differently.
 
-To make it total, we can introduce a new type that allows only to provide positive BigDecimals. So now our method signature forces to use the appropriate parameter.
+To make it total, we can introduce a new type that allows only to provide positive BigDecimals. So now our method signature forces us to use the appropriate parameter.
 
 ```java
 void deposit(PositiveBigDecimal amount) {
