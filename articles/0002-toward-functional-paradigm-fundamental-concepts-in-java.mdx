@@ -103,7 +103,7 @@ ShowStats getShowStats(List<Reservation> reservations) {
 If we create a list using `List.of()` or `Stream#toList()` it will create `ImmutableCollections.List`, which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
 
 ```java
-public int calculateActiveReservations(List<Reservations> reservations) {
+public int calculateActiveReservations(List<Reservations> reservations) { // List.of();
     reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnsupportedOperationException
     return reservations.size();
 }
