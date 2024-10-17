@@ -67,8 +67,10 @@ What are the main benefits of using immutable objects?
 - We can model things like they are, e.g. events - the fact already happened we can't change past.
 
 #### Immutable collections
-Immutable collections, like immutable objects, cannot be updated after creation. The only way to add or remove an element is to create a new instance of the collection. Immutable List in Java can be created using `List.of("a", "b", "c")`, any modification on this list will cause an exception. 
-Let's find out if it is worth using in comparison to its mutable counterpart. We'll start with the main problem of mutable collections = they can be modified by anyone.
+Immutable collections, like immutable objects, cannot be updated after creation. The only way to add or remove an element is to create a new collection instance. Immutable List in Java can be created using `List.of("a", "b", "c")`, any modification on this list will cause an exception. 
+
+##### Immutable vs Mutable collections
+We'll start with the main problem of mutable collections: they **can be modified by anyone**.
 
 ```java
 ShowStats getShowStats(List<Reservation> reservations) {
@@ -77,7 +79,7 @@ ShowStats getShowStats(List<Reservation> reservations) {
     return new ShowStats(activeReservations, totalReservations);
 }
 ```
-On the first look, it looks fine. But what in case `calculateActiveReservations()` removes some elements from the provided list?
+At first glance, it looks fine, but what if `calculateActiveReservations()` removes some elements from the provided list?
 
 ```java
 public int calculateActiveReservations(List<Reservations> reservations) {
