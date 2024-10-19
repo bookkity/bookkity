@@ -1,0 +1,154 @@
+---
+url: "hexagonal-architecture-is-simpler-than-you-think"
+date: "2024-10-19"
+author: "crejk"
+language: "en"
+title: "Hexagonal Architecture is simpler than you think"
+image: "/0000/progress-bar.jpg"
+tags: ["java"]
+---
+
+## Introduction
+
+### What is Ports and Adapters Architecture?
+The term might sound complex but it essentially boils down to creating interfaces.
+![Minionki](/0003/minionki.gif)
+
+Can something called an architectural pattern be so simple? Let's break it into pieces.
+
+TU DODAC WSTEP
+
+These components can be understood as anything that performs I/O, such as database queries, HTTP calls, etc.
+```java
+class UserRepository {
+
+    void save(User user) {
+        // perform a SQL query to save the user
+    }
+}
+```
+So regarding the definition, our goal is to make components performing IO exchangeable. To achieve that, we create an interface based on the class signature mentioned above.
+```java
+interface UserRepository {
+    void save(User user);
+}
+```
+And voilà, you've created a Port. 😃
+But the interface alone is quite useless; we still need its implementation.
+```java
+class SqlUserRepository implements UserRepository {
+
+    void save(User user) {
+        // perform a SQL query to save the user
+    }
+}
+```
+This is what we determine as an Adapter.
+Now, with both the port and the adapter in place, you can confidently state that you have implemented the Hexagonal Architecture 🥳
+
+### Benefits
+Okay, but what are the benefits?
+I could mention that you can easily change the database whenever you want, but this isn't often necessary due to the use of frameworks that already provide that level of abstraction.
+So, let's explore what the author of this approach has to say:
+> Create your application to work without either a UI or a database so you can run automated regression-tests against the application, work when the database becomes unavailable, and link applications together without any user involvement.
+> https://alistair.cockburn.us/hexagonal-architecture/
+Testing is the part that brings the value of Hexagonal Architecture. We can test our application without the need for a real database!!!
+To achieve this, all we need to do is create an additional adapter that acts as a mock. This can be as simple as an in-memory implementation.
+```java
+class InMemoryBookRepository implements BookRepository {
+
+    private final Map<UUID, Book> map = new ConcurrentHashMap<>();
+
+    void save(Book book) {
+        map.put(book.getId(), book);
+    }
+
+    Book find(UUID bookId) {
+        return map.get(bookId);
+    }
+}
+```
+Now for testing purposes, we can swap out the database implementation within our facade.
+```java
+var bookFacade = new BookFacade(new InMemoryBookRepository());
+```
+And that prepared piece of code is ready for unit testing. To test such code we don't even need Mockito 😲😲😲
+```java
+    private BookFacade bookFacade;
+
+    @BeforeEach
+    void setUp() {
+        this.bookFacade = new BookFacade(new InMemoryBookRepository());
+    }
+
+    @Test
+    void bookShouldBeRented() {
+        Book book = bookFacade.addBook();
+
+        Result result = bookFacade.rentBook(book.id, 1);
+
+        assertThat(result).isEqual(Result.Success);
+    }
+}
+```
+#### Why is it so important?
+As a rule of thumb mocking your own classes is ridiculous. Because instead of actual writing tests, you're wasting your time playing with mocks.
+I don't think the tool itself is inherently bad, but programmers tend to overuse it. So try to avoid mocking unless you have a good reason to.
+
+### When is it not worth using Hexagonal Architecture?
+When your module mainly performs IO operations without involving complex business logic. For example, consider the following code:
+```java
+class UserFacade {
+
+    private UserRepository userRepository;
+
+    void addUser(String username) {
+        userRepository.save(new User(username);
+    }
+
+    void deleteUser(String username) {
+        userRepository.deleteByName(username);
+    }
+}
+```
+We have a facade that only delegates tasks to the repository. So, what is the point of unit testing it when it only relies on database operations? There is no value in testing the `UserFacade` using a repository mock in this case.
+The only test that makes sense here is one with the actual implementation.
+My suggestion is to write an integration test using [TestContainers](https://testcontainers.com/) or, at the very least, some in-memory database like [H2](https://www.h2database.com/) in-memory mode.
+
+### Spring Data
+If you use Spring Data you likely don't want to implement all possible methods from Spring Data's interfaces. Therefore instead of implementing CrudRepository, JpaRepository and so on, just implement Repository. This is a superior solution that even solves The Spring Data [findAll Anti-Pattern](https://vladmihalcea.com/spring-data-findall-anti-pattern/). 😎
+```java
+interface BookRepository implements Repository<Book, UUID> {
+
+    Book save(Book book);
+
+    Optional<Book> findById(UUID bookId);
+}
+```
+
+### Driving vs drive adapters
+We employ two types of adapters: "driving" and "driven".
+The driving adapter drives the application. It is the entry point of our application to the end user. In most cases, it is an HTTP endpoint.
+```java
+@RestController
+class BookController {
+
+    @PostMapping
+    ResponseEntity<?> rentBook(@RequestBody RentBookRequest request) {
+        var result = bookFacade.rentBook(request.bookId());
+
+        return switch (result) {
+            case BookNotExists -> ResponseEntity.notFound().build();
+            case BookPlacedOnHold -> ResponseEntity.noContent().build();
+        };
+    }
+}
+```
+
+We won't swap the driving part of the application in the unit tests, so there is no need to create an interface. This layer should be as simple as invoking the facade, but mapping the result from our domain result to the HTTP response is absolutely fine.
+On the other hand, the "driven" adapter is the one that the application drives. In our example "driven" adapters were `SqlBookRepository` and `InMemoryBookRepository`.
+
+### Conclusion
+Hexagonal architecture is something much simpler that is often presented.
+Its primary advantage is running the application without relying on any software environment dependencies.
+Keeping application logic inside adapters should be avoided because we can't test them in the unit tests.
