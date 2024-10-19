@@ -52,6 +52,7 @@ I could mention that you can easily change the database whenever you want, but t
 So, let's explore what the author of this approach has to say:
 > Create your application to work without either a UI or a database so you can run automated regression-tests against the application, work when the database becomes unavailable, and link applications together without any user involvement.
 > https://alistair.cockburn.us/hexagonal-architecture/
+
 Testing is the part that brings the value of Hexagonal Architecture. We can test our application without the need for a real database!!!
 To achieve this, all we need to do is create an additional adapter that acts as a mock. This can be as simple as an in-memory implementation.
 ```java
