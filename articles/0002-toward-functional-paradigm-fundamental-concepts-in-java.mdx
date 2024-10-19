@@ -12,12 +12,12 @@ tags: ["java"]
 
 Functional Programming offers valuable concepts that can enhance our code quality and maintainability. By using immutable data structures and pure functions, we can reduce side effects, making our code more predictable and easier to debug.
 We will dig into the basics, covering the following topics:
-* [Immutability](#Immutability) - desc
-* [Functions](#Functions) - desc
-* [Monads](#Optional) - desc
+* [Immutability](#immutability) - State management.
+* [Functions](#functions) - Functional programming fundament.
+* [Monads](#optional) - Wrappers for side effects.
 
 ### Immutability
-The primary concept, with which we may already be familiar, is immutability.
+The primary concept with which we may already be familiar is immutability. Immutability ensures that data remains consistent and predictable, making it easier to reason about the state of an application.
 
 #### Immutable objects
 Immutable objects, once created, cannot be modified. They remain the same throughout their entire life cycle.
@@ -66,16 +66,11 @@ What are the main benefits of using immutable objects?
 - Allows you to reason about a piece of code independently of the rest of the program because our internal state can't be changed by another part of our system.
 - We can model things like they are, e.g. events - the fact already happened we can't change past.
 
-```java
-public void handle(MoneyTransferred moneyTransferred) {
-    moneyTransferred.setAmount(BigDecimal.valueOf(0)); // WTF?
-}
-```
-
 #### Immutable collections
-Problem with mutable collection
+Immutable collections, like immutable objects, cannot be updated after creation. The only way to add or remove an element is to create a new collection instance. Immutable List in Java can be created using `List.of("a", "b", "c")`, any modification on this list will cause an exception. 
 
-Let's consider the following example:
+##### Immutable vs Mutable collections
+We'll start with the main problem of mutable collections: they **can be modified by anyone**.
 
 ```java
 ShowStats getShowStats(List<Reservation> reservations) {
@@ -84,8 +79,7 @@ ShowStats getShowStats(List<Reservation> reservations) {
     return new ShowStats(activeReservations, totalReservations);
 }
 ```
-
-On the first look, it looks fine, but what in case `calculateActiveReservations()` removes some elements from the provided list?
+At first glance, it looks fine, but what if `calculateActiveReservations()` removes some elements from the provided list?
 
 ```java
 public int calculateActiveReservations(List<Reservations> reservations) {
@@ -97,7 +91,8 @@ public int calculateActiveReservations(List<Reservations> reservations) {
 If we pass an `ArrayList` the method will modify the list and that will cause a bug
 
 ```java
-ShowStats getShowStats(List<Reservation> reservations) { // [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
+ShowStats getShowStats(List<Reservation> reservations) { 
+    // reservations = [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
     int activeReservations = calculateActiveReservations(reservations); // 
     // reservations = [Reservation[status=Active], Reservation[status=Active]]
     int totalReservations = reservations.size(); // 2
@@ -105,10 +100,10 @@ ShowStats getShowStats(List<Reservation> reservations) { // [Reservation[status=
 }
 ```
 
-If we create a list using `List.of()` or `Stream#toList()` it creates `ImmutableCollections.List`, which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
+If we create a list using `List.of()` or `Stream#toList()` it will create `ImmutableCollections.List`, which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
 
 ```java
-public int calculateActiveReservations(List<Reservations> reservations) {
+public int calculateActiveReservations(List<Reservations> reservations) { // List.of();
     reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnsupportedOperationException
     return reservations.size();
 }
@@ -121,8 +116,7 @@ But there are a few problems with standard "immutable" Java collections:
 So let's see how else we can approach the subject.
 
 For example, In Kotlin `List` interface doesn't contain methods like `add`, `remove`, etc.
-And that sounds much more reasonable than throwing `UnsupportedOperationException`.
-Because we are held back by the compiler during at the development stage.
+And that sounds much more reasonable than throwing `UnsupportedOperationException`, because we are held back by the compiler during at the development stage.
 
 ```kotlin
 val immutableList: List<String> = arrayListOf("a")
@@ -136,17 +130,16 @@ val mutableList: MutableList<String> = arrayListOf("a")
 mutableList.add("b")
 ```
 
-It's better, but not perfect. Adding elements should be allowed, but it should create a new list that contains values from the source list along with the newly added value.
+It's better, but not perfect. Adding elements should be allowed, but it should create a new list containing values from the source list and the newly added value.
 
 But won't it be slow?
 Theoretically, yes, but actually no.
 The collection size is usually small, so it doesn't really matter. Additionally, we don't have to copy all values to the new list.
 
-Instead, when we add a value, we create a new object that contains a reference to the previous one along with the new element.
+Instead, when we add a value, we create a new object that contains a reference to the previous object along with the new element.
 
 ```java
 class ImmutableList<T> {
-    
     private ImmutableList<T> head;
     private T tail;
 
@@ -171,7 +164,6 @@ Let's review a few methods and determine if they are total and pure.
 
 ```java
 class Account {
-
     private BigDecimal balance;
         
     void deposit(BigDecimal amount) {
@@ -194,14 +186,14 @@ account.map(ac -> {
 });
 ```
 - Force to use exceptions for error handling.
-- Are harder to write unit tests for it because you cannot assert on the return value.
+- Are harder to test.
 - Make it more difficult to track changes that have been made.
 </Alert>
 
 It's not total nor pure.
-The method returns output only if the argument is greater than 0, and it modifies internal state, so depending on the current state the method may behave differently.
+The method returns output only if the argument is greater than 0, and it modifies the internal state, so depending on the current state the method may behave differently.
 
-To make it total, we can introduce a new type that allows only to provide positive BigDecimals. So now our method signature forces to use the appropriate parameter.
+To make it total, we can introduce a new type that allows only to provide positive BigDecimals. So now our method signature forces us to use the appropriate parameter.
 
 ```java
 void deposit(PositiveBigDecimal amount) {
@@ -214,7 +206,6 @@ What if we make this object immutable?
 
 ```java
 class Account {
-    
     private final BigDecimal balance;
         
     Account deposit(BigDecimal amount) {
@@ -421,8 +412,8 @@ private Validation<String, String> validateIcaoCode(String icao) {
 ```
 
 Our code didn't change much. Instead of throwing an exception, we just return an object, so the flow is not terminated instantly.
-The load part is more problematic because we have to handle `List<Validation<Seq<String>, Flight>>`. The question is how to aggregate the data to easily display the number of loaded flights or the list of validation errors.
-For the sake of humanity there is `Validation#sequence` which:
+The loading part is more problematic because we have to handle `List<Validation<Seq<String>, Flight>>`. The question is how to aggregate the data to easily display the number of loaded flights or the list of validation errors.
+For the sake of humanity, there is `Validation#sequence` which:
 
 > Reduces many Validation instances into a single Validation by transforming an `Iterable<Validation<? extends T>>` into a `Validation<Seq<T>>`.
 
