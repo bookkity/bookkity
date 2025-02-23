@@ -21,7 +21,7 @@ export default function Header() {
   const [discordIcon, setDiscordIcon] = useState(discordIcons.default)
 
   return (
-    <div className={`header flex flex-col md:flex-row items-center justify-center md:justify-between h-18 border-b border-b-gray-200 shadow-xs w-full`}>
+    <div className={`header flex flex-col md:flex-row items-center justify-center md:justify-between h-18 border-b border-b-gray-200 shadow-2xs w-full`}>
       <a href={"/"} className={`md:w-1/4`}>
         <div className={'flex flex-col md:flex-row items-center justify-center md:justify-start px-4 py-4'}>
           <div className={``}>
