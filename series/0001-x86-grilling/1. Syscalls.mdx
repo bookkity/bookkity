@@ -1,0 +1,103 @@
+---
+order: 1
+shortTitle: "Syscalls"
+title: "Syscalls"
+date: "2025-02-23"
+published: true
+---
+
+Let's begin by answering a simple question: What are syscalls and why do we even need them? 
+
+Well, when the era of multiple programs running simultaneously came, 
+it became important to separate processes from themselves and from the operating system,
+so that a single faulty program wouldn't corrupt other programs or even the operating system itself and crash the whole computer, leading to the loss of progress and/or data.
+
+That created a new problem though, we needed a way to communicate with the operating system to ask it to do certain operations for us, 
+like writing to a file, as we lost the ability to do that, because it was unsafe to allow arbitrary programs to talk to the hardware directly. 
+It also created other problems, such as applications needing to have dedicated code for each type of hardware they wanted to support. 
+You can especially see this in the early games.
+It was a big mess.
+
+Simple enough, just call a function provided by the operating system, right? Well, not quite. 
+
+The operating system is running with completely different privileges than regular user space programs to provide the separation we've been talking about.
+On x86_64 there's a concept called rings responsible for exactly this and regular programs are running in ring 3 (the lowest one),
+while the operating system is running in ring 0 (the highest one). 
+Drivers use anything between ring 0 and ring 3, depending on the needs. 
+
+A regular function call won't be able to switch from ring 3 to ring 0 (as that would defeat the whole purpose of having them in the first place), 
+We need something more sophisticated than a function call yet somewhat similar.
+
+Engineers of that time found that something.
+It's a very simple instruction, intended for making software interrupts (e.g. for debugging purposes) called `int` and we can execute it from any ring, even ring 3!
+We can even specify which software interrupt we want to make and there's a whole bunch of them (256 to be precise) to pick from,
+so we won't lose the ability to easily debug our operating system or do other similar things by using `int`,
+as we still have 255 other software interrupts for those purposes.
+A perfect solution, right?
+Would seem so but there's an issue. `int` was never intended for this purpose, so as you can probably guess, it does a lot more than what we need. That leads to worse performance than we'd want. 
+
+Is there a better way? Well, depends on what would you call a better way. There's a faster way but it's way more messy.
+
+To explain it, we'll have to start with the basics.
+What happens if your code uses an unsupported instruction or accesses an invalid region of memory?
+On Linux you'd get `SIGILL` and `SIGSEGV`.
+On Windows it's `EXCEPTION_ILLEGAL_INSTRUCTION` and `EXCEPTION_ACCESS_VIOLATION`.
+That poses an interesting question though - how does Windows or Linux or any operating system for that matter know that you did something invalid?
+Well, it doesn't. At least not by itself.
+It's the CPU that tells the operating system that something invalid happened. 
+How so?
+When an invalid thing happens (called an exception), the CPU looks up a function pointer in an array called the `IDT` (interrupt descriptor table) <sup>1</sup> according to the type of that invalid thing that has happened (each has a unique index) and calls that function.
+This way, it's possible for the operating system to register their own handlers for non-fatal errors (like a program accessing an invalid memory) and do something about this (e.g. immediately terminate such faulty program).
+
+What any of this has to do with making syscalls though?
+It turns out that in 16 bits,
+executing an invalid opcode or accessing an invalid address that we specifically picked to represent a syscall is faster than the `int` instruction.
+
+That's certainly less than ideal.
+It's why both Intel and AMD decided to make a dedicated instruction specifically for calling the operating system kernel.
+There's a teeny tiny problem though. It looked somewhat like this:
+
+![alt](/series/0001/standards.png)
+
+Thus, in x86, we got two instructions dedicated to this specific task: `syscall` by AMD and `sysenter` by Intel. 
+Neither of them work in 16 bit mode. 
+`sysenter` also might not even be available in 32 bit mode.
+Not even mentioning the fact it's god awful.
+
+Hence, only `syscall` made it to the x86_64. With some caveats - it works differently in 32 bit mode and in 64 bit mode.
+
+To summarize the availability, let's put some tables together.
+
+**int**
+
+|                    | Intel | AMD |
+| ------------------ | ----- | --- |
+| 16 bit             | Yes   | Yes |
+| 32 bit             | Yes   | Yes |
+| Compatibility mode | Yes   | Yes |
+| 64 bit             | Yes   | Yes |
+
+**syscall**
+
+|                    | Intel | AMD |
+| ------------------ | ----- | --- |
+| 16 bit             | No    | No  |
+| 32 bit             | No    | Yes |
+| Compatibility mode | No    | Yes |
+| 64 bit             | Yes   | Yes |
+
+**sysenter**
+
+|                    | Intel | AMD |
+| ------------------ | ----- | --- |
+| 16 bit             | No    | No  |
+| 32 bit             | Yes   | Yes |
+| Compatibility mode | Yes   | No  |
+| 64 bit             | No    | No  |
+
+That certainly did not make it easy for programmers.
+Windows picks between `syscall` and `int` based on availability. With `syscall` being the preferred one as it's faster.
+
+![alt](/series/0001/ntdll-syscall-int.png)
+
+1 - That's only true for 32 and 64 bit modes but I didn't want to convolute the explanation.
