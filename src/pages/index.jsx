@@ -9,6 +9,7 @@ import {Toggle} from "@/components/ui/toggle"
 import generateRssFeed from "@/helpers/rss";
 import {RssIcon} from "lucide-react";
 import {getSeries} from "@/helpers/series";
+import {getAuthors} from "@/helpers/authors";
 
 const tags = [
   { name: 'All', tag: '' },
@@ -23,12 +24,14 @@ const tags = [
 export async function getStaticProps() {
   const allArticles = await getArticles()
   const allSeries = await getSeries()
+  const allAuthors = await getAuthors()
   generateRssFeed(allArticles)
 
   return {
     props: {
       allArticles,
-      allSeries
+      allSeries,
+      allAuthors
     }
   }
 }
@@ -61,8 +64,9 @@ const satisfiesSearch = (article, search) => {
 /**
  * @param allArticles {Array<Article>}
  * @param allSeries {Array<Series>}
+ * @param allAuthors {Array<Author>}
  */
-export default function Home({ allArticles, allSeries }) {
+export default function Home({ allArticles, allSeries, allAuthors }) {
   const [selectedTag, setSelectedTag] = useState('')
   const [search, setSearch] = useState('')
   const [languages, setLanguages] = useState({ value: ['pl', 'en'] })
@@ -224,16 +228,24 @@ export default function Home({ allArticles, allSeries }) {
                       />
                     </a>
                   </div>
-                  <div className={`flex flex-1 items-center py-2`}>
-                    <div className={`px-3 py-3`}>
+                  <div className={`flex flex-1 items-center py-2 pl-3`}>
+                    <div className={`h-16 relative flex items-center justify-center ` + (article.authors.length > 1 ? 'min-w-20' : 'min-w-14')}>
                       {article.authors.map((author, idx) => (
-                        <a key={`author-avatar-${author}`} href={`/${author}`}>
-                        <img
-                            src={`/author/${author}.jpg`}
-                            alt={'Bookkity'}
-                            className={`rounded-full h-12 w-12 min-w-12`}
-                          />
-                        </a>
+                        <div
+                          key={`author-avatar-${author}`}
+                          className={`absolute w-12 h-12 hover:z-[10] rounded-full`}
+                          style={{
+                            left: `${idx * 1.45}rem`,
+                          }}
+                        >
+                          <a href={`/${author}`}>
+                            <img
+                              src={`/author/${allAuthors.find(it => it.name === author).avatar}`}
+                              alt={'Bookkity'}
+                              className={`rounded-full `}
+                            />
+                          </a>
+                        </div>
                       ))}
                     </div>
                     <div className={`flex flex-col justify-center`}>
@@ -242,14 +254,19 @@ export default function Home({ allArticles, allSeries }) {
                           {article.title}
                         </h2>
                       </a>
-                      <p className={`text-xs text-gray-400 pt-1`}>
-                        {article.date.toLocaleDateString()} by
+                      <div className={`text-xs text-gray-400 pt-1 flex`}>
+                        <div className={`pr-1`}>
+                          {article.date.toLocaleDateString()} by
+                        </div>
                         {article.authors.map((author, idx) => (
-                          <a key={`author-url-${author}`} href={`/${author}`}>
-                            &nbsp;<span className={`text-gray-700`}>{author}</span>
-                          </a>
+                          <div key={`author-url-${author}`} >
+                            {idx > 0 ? ', ' : ' '}
+                            <a href={`/${author}`}>
+                              <span className={`text-gray-700`}>{author}</span>
+                            </a>
+                          </div>
                         ))}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>
