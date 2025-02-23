@@ -142,7 +142,7 @@ export default function Home({ allArticles, allSeries, allAuthors }) {
               </div>
             </div>
             <Input
-              className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-hidden focus-visible:ring-0 focus-visible:placeholder:text-white`}
+              className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-none focus-visible:ring-0 placeholder:focus-visible:text-white`}
               placeholder={`Browse articles & series`}
               onChange={(e) => setSearch(e.target.value)}
             />

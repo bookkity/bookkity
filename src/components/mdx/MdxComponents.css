@@ -80,8 +80,7 @@
 }
 
 [data-rehype-pretty-code-figure] pre {
-    padding-left: 0;
-    padding-right: 0;
+    @apply px-0;
 }
 
 [data-rehype-pretty-code-figure] code {
