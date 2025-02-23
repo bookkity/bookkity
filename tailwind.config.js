@@ -78,5 +78,18 @@ module.exports = {
       },
     },
   },
+  safelist: [
+    "z-10",
+    "z-9",
+    "z-8",
+    "z-7",
+    "z-6",
+    "z-5",
+    "z-4",
+    "z-3",
+    "z-2",
+    "z-1",
+    "z-0",
+  ],
   plugins: [require("tailwindcss-animate")],
 }
