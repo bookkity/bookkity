@@ -86,8 +86,10 @@ class RentServiceTest {
 At first glance, this approach does make sense. We can quickly test our code without libraries like Mockito.
 But do we really need a fake implementation of the entire service?
 What if our service logic is more complicated than simply `bookRepository.save(new Book(title));`?
+
 For instance, our service might validate input, check rules, fetch data from another source, or publish an event. Do we want to duplicate this behavior in our fake service implementation?
 To meet the requirements posed by these questions, the easiest solution might be to use our actual implementation.
+
 This shouldn't be hard to do, as we already have tests for our `BookService`.
 
 ```java
