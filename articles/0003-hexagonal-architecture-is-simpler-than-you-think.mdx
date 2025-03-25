@@ -8,32 +8,114 @@ image: "/0000/progress-bar.jpg"
 tags: ["java"]
 ---
 
-## Introduction
-
 ### What is Ports and Adapters Architecture?
-The term might sound complex but it essentially boils down to creating interfaces.
-![Minionki](/0003/minionki.gif)
+The term might sound complex, but it essentially boils down to creating interfaces.
+But can an architectural pattern really be this simple?
+Let's figure it out!
+Most of us encountered code like this:
 
-Can something called an architectural pattern be so simple? Let's break it into pieces.
-
-TU DODAC WSTEP
-
-These components can be understood as anything that performs I/O, such as database queries, HTTP calls, etc.
 ```java
-class UserRepository {
+interface BookService {
 
-    void save(User user) {
-        // perform a SQL query to save the user
+    void addBook(String title);
+
+    Book getBook(String title);
+}
+
+# And its only implementation.
+class BookServiceImpl implements BookService {
+
+    private final BookRepository bookRepository;
+
+    public void addBook(String title) {
+        bookRepository.save(new Book(title));
+    }
+
+    public Book getBook(String title) {
+        return bookRepository.findByTitle(title);
     }
 }
 ```
-So regarding the definition, our goal is to make components performing IO exchangeable. To achieve that, we create an interface based on the class signature mentioned above.
+
+You’ve probably heard that creating interfaces is considered good practice, but that's not entirely true. I have nothing against interfaces, but we shouldn’t create them blindly.
+For me, the suffix `Impl` itself indicates there’s no strong reason to have this interface. But okay, let’s not bother about names.
+Have you ever seen a second or even more implementations of this kind of interface? Are you really going to create `UserServiceImpl2`?
+
+How about testing? Maybe this approach could be a pleasant surprise here.
+I once heard:
+> Creating interfaces for services is the only native way to enable mocking them in tests; without this, you have to rely on third-party frameworks like Mockito.
+And while this isn’t completely false, we would not create a mock just to test our service itself, because that would be unnecessary - we want to test the actual implementation.
+Ok, but what if another module relies on this service?
+
+```java
+class RentService {
+
+    private final BookService bookService;
+    private final RentRepository rentRepository;
+
+    public Result rentBook(String title) {
+        var book = bookService.getBook(title);
+        if (book == null) {
+            return Result.Not_Found;
+        }
+        rentRepository.save(new Rent(title));
+        return Result.Success;
+    }
+}
+```
+And the unit test
+```java
+class RentServiceTest {
+
+    private BookService fakeBookService = new FakeBookService(); // our fake implementation of BookService
+    private RentService rentService = new RentService(fakeBookService);
+
+    @Test
+    void rentBook() {
+        var title = "Harry Potter";
+        fakeBookService.addBook(title);
+
+        var result = rentService.rent(title);
+
+        Assertions.assertThat(result).isEqual(Result.Success);
+    }
+}
+```
+At first glance, this approach does make sense. We can quickly test our code without libraries like Mockito.
+But do we really need a fake implementation of the entire service?
+What if our service logic is more complicated than simply `bookRepository.save(new Book(title));`?
+For instance, our service might validate input, check rules, fetch data from another source, or publish an event. Do we want to duplicate this behavior in our fake service implementation?
+To meet the requirements posed by these questions, the easiest solution might be to use our actual implementation.
+This shouldn't be hard to do, as we already have tests for our `BookService`.
+
+```java
+class BookServiceTest {
+
+    private BookService bookService = new BookServiceImpl(new InMemoryBookRepository());
+}
+```
+
+So do we really need fake service if we already have prepared code that can be easily used by other components? Why just not:
+```java
+class RentServiceTest {
+
+    private bookService bookService = new BookServiceImpl(new InMemoryBookRepository()); // instead of `FakeBookService`
+    private RentService rentService = new RentService(bookService);
+}
+```
+In this way, we eliminated the need for `FakeBookService`.
+Thanks to this approach, we are using an implementation that is closer to the one used in production.
+This improves the quality of our tests. For example, our `BookService` might include some validation that we likely did not replicate in our mock.
+As a result, from a system perspective, our mock might allow adding invalid books.
+
+Now, you might wonder what all this has to do with the Ports and Adapters Architecture.
+Even though I didn't find a compelling reason to have an interface for this service, I see a reason to have interfaces for components that perform I/O, such as database queries, HTTP calls, etc.
+And in Hexagonal Architecture these interfaces are called Ports.
 ```java
 interface UserRepository {
     void save(User user);
 }
 ```
-And voilà, you've created a Port. 😃
 But the interface alone is quite useless; we still need its implementation.
 ```java
 class SqlUserRepository implements UserRepository {
@@ -44,16 +126,13 @@ class SqlUserRepository implements UserRepository {
 }
 ```
 This is what we determine as an Adapter.
-Now, with both the port and the adapter in place, you can confidently state that you have implemented the Hexagonal Architecture 🥳
 
 ### Benefits
-Okay, but what are the benefits?
-I could mention that you can easily change the database whenever you want, but this isn't often necessary due to the use of frameworks that already provide that level of abstraction.
-So, let's explore what the author of this approach has to say:
 > Create your application to work without either a UI or a database so you can run automated regression-tests against the application, work when the database becomes unavailable, and link applications together without any user involvement.
+>
 > https://alistair.cockburn.us/hexagonal-architecture/
-
-Testing is the part that brings the value of Hexagonal Architecture. We can test our application without the need for a real database!!!
+We are able to run our system without a connection to external services, which is highly beneficial, especially in testing.
+And Testing is the part that brings the main value of Hexagonal Architecture. We can test our application without the need for a real database.
 To achieve this, all we need to do is create an additional adapter that acts as a mock. This can be as simple as an in-memory implementation.
 ```java
 class InMemoryBookRepository implements BookRepository {
@@ -92,9 +171,11 @@ And that prepared piece of code is ready for unit testing. To test such code we 
     }
 }
 ```
-#### Why is it so important?
+
+<Alert type={'tip'}>
 As a rule of thumb mocking your own classes is ridiculous. Because instead of actual writing tests, you're wasting your time playing with mocks.
 I don't think the tool itself is inherently bad, but programmers tend to overuse it. So try to avoid mocking unless you have a good reason to.
+</Alert>
 
 ### When is it not worth using Hexagonal Architecture?
 When your module mainly performs IO operations without involving complex business logic. For example, consider the following code:
@@ -117,13 +198,41 @@ The only test that makes sense here is one with the actual implementation.
 My suggestion is to write an integration test using [TestContainers](https://testcontainers.com/) or, at the very least, some in-memory database like [H2](https://www.h2database.com/) in-memory mode.
 
 ### Spring Data
-If you use Spring Data you likely don't want to implement all possible methods from Spring Data's interfaces. Therefore instead of implementing CrudRepository, JpaRepository and so on, just implement Repository. This is a superior solution that even solves The Spring Data [findAll Anti-Pattern](https://vladmihalcea.com/spring-data-findall-anti-pattern/). 😎
+If you use Spring Data you likely don't want to implement all possible methods from Spring Data's interfaces. Therefore instead of implementing `CrudRepository`, `JpaRepository` and so on, just implement Repository. This is a superior solution that even solves The Spring Data [findAll Anti-Pattern](https://vladmihalcea.com/spring-data-findall-anti-pattern/). 😎
 ```java
 interface BookRepository implements Repository<Book, UUID> {
 
     Book save(Book book);
 
     Optional<Book> findById(UUID bookId);
+}
+```
+
+Another possibility is to create a pure repository and implement a delegate that assigns tasks to the JpaRepository.
+
+```java
+interface BookRepository {
+
+    Book save(Book book);
+
+    Optional<Book> findById(UUID bookId);
+}
+
+@Repository
+class JpaBasedBookRepository implements BookRepository {
+
+    private final JpaBookRepository jpaRepository;
+
+    Book save(Book book) {
+        jpaRepository.save(book);
+    }
+
+    Optional<Book> findById(UUID bookId) {
+        return jpaRepository.findById(bookId);
+    }
+}
+
+interface JpaBookRepository implements JpaRepository<Book, UUID> {
 }
 ```
 
