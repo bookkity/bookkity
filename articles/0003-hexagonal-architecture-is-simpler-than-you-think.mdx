@@ -12,6 +12,7 @@ tags: ["java"]
 The term might sound complex, but it essentially boils down to creating interfaces.
 But can an architectural pattern really be this simple?
 Let's figure it out!
+
 Most of us encountered code like this:
 
 ```java
@@ -22,7 +23,7 @@ interface BookService {
     Book getBook(String title);
 }
 
-# And its only implementation.
+// And its only implementation.
 class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
