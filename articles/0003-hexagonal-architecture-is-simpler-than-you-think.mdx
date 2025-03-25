@@ -39,12 +39,13 @@ class BookServiceImpl implements BookService {
 ```
 
 You’ve probably heard that creating interfaces is considered good practice, but that's not entirely true. I have nothing against interfaces, but we shouldn’t create them blindly.
-For me, the suffix `Impl` itself indicates there’s no strong reason to have this interface. But okay, let’s not bother about names.
+For me, the suffix `Impl` itself indicates there’s no strong reason to have this interface.
 Have you ever seen a second or even more implementations of this kind of interface? Are you really going to create `UserServiceImpl2`?
 
 How about testing? Maybe this approach could be a pleasant surprise here.
 I once heard:
 > Creating interfaces for services is the only native way to enable mocking them in tests; without this, you have to rely on third-party frameworks like Mockito.
+
 And while this isn’t completely false, we would not create a mock just to test our service itself, because that would be unnecessary - we want to test the actual implementation.
 Ok, but what if another module relies on this service?
 
