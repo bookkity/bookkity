@@ -64,8 +64,8 @@ export default function Author({ author, series, articles }) {
               {author.name}
             </span>
         </p>
-        <div className={'flex px-1'}>
-          <div className={'flex flex-col pt-12 max-w-64'}>
+        <div className={'flex flex-col md:flex-row items-center md:justify-start px-1'}>
+          <div className={'flex flex-col justify-center items-center md:items-start pt-6 md:pt-12 w-full md:max-w-64'}>
             <img src={`/author/${author.avatar}`} alt={author.name} className={`rounded-full w-64`}/>
             <h1 className={`pt-10 pb-3 font-semibold text-3xl`}>
               {author.name}
@@ -73,7 +73,7 @@ export default function Author({ author, series, articles }) {
             <p className={'text-sm'}>{author.description}</p>
           </div>
           <div className={`flex flex-col w-full`}>
-            <div className={`flex flex-col w-full pl-12 pt-12`}>
+            <div className={`flex flex-col w-full md:pl-12 pt-6 md:pt-12`}>
               <div>
                 <h1 className={`text-xl font-bold`}>
                   Series
@@ -108,7 +108,7 @@ export default function Author({ author, series, articles }) {
                 )}
               </div>
             </div>
-            <div className={`flex flex-col w-full pl-12 pt-0`}>
+            <div className={`flex flex-col w-full md:pl-12 pt-0`}>
               <div>
                 <h1 className={`text-xl font-bold`}>
                   Articles
@@ -121,7 +121,7 @@ export default function Author({ author, series, articles }) {
                       <div className={`flex items-center w-full bg-white max-h-16 rounded-lg`}>
                         <p
                           className={`text-sm pl-4 pr-4 border-r-gray-100 border-r-2`}>{article.date}</p>
-                        <h2 className={`text-xl font px-4 py-1`}>{article.title}</h2>
+                        <h2 className={`text-md font px-4 py-1`}>{article.title}</h2>
                         {/*<p className={`text-xs text-gray-400`}>*/}
                         {/*  {article.date} by <span className={`text-gray-700`}>{article.author}</span>*/}
                         {/*</p>*/}
