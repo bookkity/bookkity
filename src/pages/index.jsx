@@ -86,7 +86,7 @@ export default function Home({ allArticles, allSeries }) {
   /** @type {Array<Preview>} */
   const chapterPreviews = allSeries.flatMap(series => {
     return series.chapters
-      .filter(chapter => chapter.published)
+      .filter(chapter => chapter.published && chapter.listed)
       .map(chapter => {
         return {
           type: 'chapter',

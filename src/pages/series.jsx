@@ -51,7 +51,7 @@ export default function Series({series}) {
                     </div>
                     <div className={`h-full flex px-2 py-2 rounded-md mt-2 w-full`}>
                       <div className={`flex justify-between`}>
-                        <p className={`text-gray-500 w-2/5 text-sm`}>
+                        <p className={`text-gray-500 w-2/5 text-sm line-clamp-6`}>
                           <a href={firstChapterUrl}>
                             {details.description}
                           </a>

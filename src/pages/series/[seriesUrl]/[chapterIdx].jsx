@@ -49,7 +49,7 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
           <div
             id={`chapter-border`}
             className={`
-              flex flex-col md:max-w-80 
+              flex flex-col md:max-w-80
               md:border-1 md:border-r md:b-1 md:b-r 
               text-sm md:pr-4
               pt-4 md:pt-8
@@ -78,7 +78,7 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
               )
             })}
           </div>
-          <div className={`flex flex-col md:pl-8 pt-4 md:pt-8 w-full h-full`}>
+          <div className={`flex flex-col md:pl-8 pt-4 md:pt-8 md:w-4/5 h-full`}>
             {selectedChapter.published !== true && (
               <div className={`mr-2 mb-6 text-center text-purple-900 font-semibold text-xs py-1 px-4 bg-gray-300 rounded-3xl`}>
                 This chapter is not published yet
@@ -95,7 +95,7 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
               ))}
               <span> on {selectedChapter.date}</span>
             </span>
-            <div className={`pt-4`}>
+            <div className={`mdx pt-4`}>
               <MDXRemote components={MDX} {...selectedChapter.content} />
             </div>
             <div className={`flex w-full pt-4 justify-between`}>
