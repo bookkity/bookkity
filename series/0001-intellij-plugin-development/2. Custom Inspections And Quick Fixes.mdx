@@ -1,0 +1,293 @@
+---
+order: 2
+shortTitle: "Inspections and Quick Fixes"
+title: "Custom Inspections and Quick Fixes: Powerful tools in the IntelliJ Plugin"
+date: "2024-07-21"
+image: "0001/custom-inspections-and-quick-fixes-banner.png"
+published: true
+---
+
+<div align="center">
+    <img alt="Image description" src="/series/0001/custom-inspections-and-quick-fixes-topbanner.png" width="80%" style={{borderRadius: "18px"}}/>
+</div>
+
+[Inspections](https://www.jetbrains.com/help/idea/code-inspection.html) and [Quick Fixes](https://www.jetbrains.com/resharper/features/quick_fixes.html) are essential tools in the IntelliJ IDEA based IDEs.
+They help you to maintain the code quality and improve the development process, by highlighting the issues and **providing ready-to-use solutions**.
+
+IntelliJ Development seems to be a hard topic, but I will show you that it's not that difficult to implement these features.
+
+<br/>
+<br/>
+
+## Pretty use cases
+
+When I decided to write this article, I was thinking about the most common use cases,
+but what is better than a real-life example?
+A few months ago I was working on an annotation-based framework
+where a lot of developers had problems with the correct usage of the annotations.
+The framework was quite complex, and the documentation was not enough to cover all the cases.
+I decided to create an IntelliJ Plugin that
+would help developers by providing quick fixes for the most common issues.
+
+There are a few examples of the issues that I wanted to solve:
+
+1. **Missing annotation**: The developer forgot to add the annotation to the parameter.
+<img alt="Image description" src="/series/0001/01/example-1.png" width="70%" style={{borderRadius: "18px"}}/>
+
+2. **Mixed annotations**: The developer added two annotations that are not compatible with each other.
+<img alt="Image description" src="/series/0001/01/example-2.png" width="70%" style={{borderRadius: "18px"}}/>
+
+3. **Primitive type for the nullable parameter**: The developer used a primitive type for the parameter that can be null.
+<img alt="Image description" src="/series/0001/01/example-3.png" width="70%" style={{borderRadius: "18px"}}/>
+
+4. **Invalid value for the annotation**: The developer used an invalid value for the annotation.
+<img alt="Image description" src="/series/0001/01/example-4.png" width="70%" style={{borderRadius: "18px"}}/>
+
+<br/>
+<br/>
+
+## What is the plan?
+
+Now, let's start coding. I'll show you how to create inspections and quick fixes in a simpler case.
+
+Imagine that you love the [Optional](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html) class from Java 8, and you want to use it in your project.
+You know that it's a good practice to use `Optional` instead of `null`, but you are tired of writing the same code that wraps the value in `Optional`.
+
+## Let's start with the inspection
+
+The first step is to create an inspection that will highlight the places where you can use `Optional` instead of `null`.
+We can resolve only method annotated with `@Nullable` to simplify the example.
+
+Define the inspection class that extends the `LocalInspectionTool` class:
+
+```java
+public class UseOptionalInspection extends LocalInspectionTool {
+
+    @Override
+    public String getDisplayName() {
+        return "Method uses @Nullable annotation";
+    }
+
+    @Override
+    public String getGroupDisplayName() {
+        return "MyPlugin";
+    }
+
+    @Override
+    public boolean isEnabledByDefault() {
+        return true;
+    }
+
+    @Override
+    public PsiElementVisitor buildVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        return new MethodVisitor(holder);
+    }
+
+}
+```
+
+Now, we need to define the `MethodVisitor` that will visit the methods and check if they are annotated with `@Nullable`:
+
+```java
+class MethodVisitor extends JavaElementVisitor {
+    private final ProblemsHolder holder;
+
+    public MethodVisitor(ProblemsHolder holder) {
+        this.holder = holder;
+    }
+
+    @Override
+    public void visitMethod(PsiMethod method) {
+        PsiAnnotation annotation = method.getAnnotation(Nullable.class.getName());
+        PsiTypeElement typeElement = method.getReturnTypeElement();
+
+        if (annotation == null || typeElement == null) {
+            return;
+        }
+
+        holder.registerProblem(typeElement, "Method uses @Nullable annotation", ProblemHighlightType.WARNING, new UseOptionalQuickFix(method));
+    }
+}
+```
+
+Psi elements are the core of the IntelliJ Platform API. They represent the elements of the code, like classes, methods, fields, etc.
+In this case, we are using `PsiMethod` and `PsiAnnotation` to check if the method is annotated with `@Nullable`.
+
+Also, we are registering a problem for the `PsiTypeElement` to highlight the return type of the method. See how cool it is!
+
+<img alt="Image description" src="/series/0001/01/inspection.png" width="60%" style={{borderRadius: "18px"}}/>
+
+<br/>
+<br/>
+
+## But what about the quick fix?
+
+The quick fix is a solution that the developer can apply to fix the issue.
+You can provide multiple quick fixes for the same problem
+or set another level of the problem e.g. `ProblemHighlightType.GENERIC_ERROR`
+
+```java
+holder.registerProblem(typeElement, "Method uses @Nullable annotation", ProblemHighlightType.WARNING, new UseOptionalQuickFix(method));
+```
+
+We register the quick fix in the `registerProblem` method, Let's define the `UseOptionalQuickFix` class:
+
+```java
+public class UseOptionalQuickFix implements LocalQuickFix {
+
+    private final PsiMethod method;
+
+    public UseOptionalQuickFix(PsiMethod method) {
+        this.method = method;
+    }
+
+    @Override
+    public String getFamilyName() {
+        return "Use Optional instead of nullable";
+    }
+
+    @Override
+    public UseOptionalQuickFix getFileModifierForPreview(PsiFile target) {
+        return new UseOptionalQuickFix(method);
+    }
+
+    @Override
+    public void applyFix(Project project, ProblemDescriptor descriptor) {
+        // 1. Import Optional class
+        // Without this action, users would have to import the class manually.
+        this.importClass(method.getContainingFile(), "java.util.Optional");
+
+        // 2. Remove @Nullable annotation
+        // We don't need it anymore.
+        PsiAnnotation annotation = method.getAnnotation("org.jetbrains.annotations.Nullable");
+        if (annotation != null) {
+            annotation.delete();
+        }
+
+        PsiElementFactory factory = JavaPsiFacade.getElementFactory(method.getProject());
+
+        // 3. Wrap return type with Optional<T>
+        // We replace the return type with `Optional<T>`.
+        PsiTypeElement typeElement = method.getReturnTypeElement();
+        if (typeElement != null) {
+            typeElement.replace(factory.createTypeElementFromText("Optional<" + typeElement.getText() + ">", method));
+        }
+
+        // 4. Wrap return statements
+        // We wrap the return statements with `Optional.ofNullable` or `Optional.empty` if the return value is `null`.
+        PsiCodeBlock codeBlock = method.getBody();
+        if (codeBlock == null) {
+            return;
+        }
+
+        for (PsiReturnStatement returnStatement : this.findReturnStatements(codeBlock)) {
+            PsiExpression returnValue = returnStatement.getReturnValue();
+            if (returnValue == null) {
+                continue;
+            }
+
+            // wrap with Optional.empty
+            String text = returnValue.getText();
+            if (text.equals("null")) {
+                PsiExpression optional = factory.createExpressionFromText("Optional.empty()", method);
+                returnValue.replace(optional);
+                continue;
+            }
+
+            // wrap with Optional.ofNullable
+            PsiExpression optional = factory.createExpressionFromText("Optional.ofNullable(" + text + ")", method);
+            returnValue.replace(optional);
+        }
+    }
+
+    // Find all return statements in the code block
+    private List<PsiReturnStatement> findReturnStatements(PsiElement source) {
+        List<PsiReturnStatement> statements = new ArrayList<>();
+
+        for (PsiElement child : source.getChildren()) {
+            if (child instanceof PsiReturnStatement returnStatement) {
+                statements.add(returnStatement);
+                continue;
+            }
+
+            if (child instanceof PsiStatement || child instanceof PsiCodeBlock) {
+                statements.addAll(this.findReturnStatements(child));
+            }
+        }
+
+        return statements;
+    }
+
+    private void importClass(PsiFile file, String classImport) {
+        if (!(file instanceof PsiJavaFile javaFile)) {
+            throw new RuntimeException("Cannot add import to non-java file");
+        }
+
+        Project project = file.getProject();
+        PsiClass psiClass =  JavaPsiFacade.getInstance(project).findClass(classImport, GlobalSearchScope.allScope(project));
+
+        if (annotationClass == null) {
+            throw new RuntimeException("Cannot find annotation class " + classImport);
+        }
+
+        // Check if the class is already imported
+        if (javaFile.findImportReferenceTo(psiClass) == null) {
+            javaFile.importClass(psiClass);
+        }
+    }
+
+}
+```
+
+The `LocalQuickFix` interface defines the `applyFix` method, that will be called when the developer clicks on the quick fix.
+In this method, we are importing the `Optional` class, removing the `@Nullable` annotation, and wrapping the return type and return statements with `Optional`.
+Also, we are using the `PsiElementFactory` to create new elements like `PsiTypeElement` or `PsiExpression` from the text.
+
+## Register the inspection
+
+The last step is to register the inspection in the `plugin.xml` file.
+You need to create a class that implements the `InspectionToolProvider` interface and return the inspection classes:
+
+```java
+public class InspectionProvider implements InspectionToolProvider {
+    @Override
+    public Class<? extends LiteInspection> @NotNull [] getInspectionClasses() {
+        return new Class[]{ UseOptionalInspection.class };
+    }
+}
+```
+
+And add the extension in the `plugin.xml` file:
+
+```xml
+<idea-plugin>
+
+    <!-- plugin settings -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <inspectionToolProvider implementation="dev.rollczi.myplugin.inspection.InspectionProvider"/>
+    </extensions>
+</idea-plugin>
+```
+
+That's it! Now you can build and install the plugin in your IDE.
+
+<br/>
+<br/>
+
+## Results and summary
+
+In this article, I showed you how to create custom inspections and quick fixes in the IntelliJ Plugin.<br/>
+I hope you enjoyed it and learned something new.
+
+Before
+<img alt="Image description" src="/series/0001/01/before.png" width="50%" style={{borderRadius: "18px"}}/>
+
+After
+<img alt="Image description" src="/series/0001/01/after.png" width="50%" style={{borderRadius: "18px"}}/>
+
+
+
+<References links={[
+    { title: "IntelliJ Platform SDK Documentation", url: "https://plugins.jetbrains.com/docs/intellij/welcome.html" },
+]} />
