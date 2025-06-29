@@ -2,23 +2,28 @@
 order: 2
 shortTitle: "Inspections and Quick Fixes"
 title: "Custom Inspections and Quick Fixes: Powerful tools in the IntelliJ Plugin"
-date: "2024-07-21"
+date: "2025-06-29"
 image: "0001/custom-inspections-and-quick-fixes-banner.png"
 published: true
 listed: true
 ---
 
 <div align="center">
-    <img alt="Image description" src="/series/0001/custom-inspections-and-quick-fixes-topbanner.png" width="80%" style={{borderRadius: "18px"}}/>
+    <img
+        alt="Image description"
+        src="/series/0001/custom-inspections-and-quick-fixes-topbanner.png"
+        width="80%"
+        style={{
+            borderRadius: "12px",
+            marginTop: "10px",
+            marginBottom: "20px",
+        }}
+    />
 </div>
 
 [Inspections](https://www.jetbrains.com/help/idea/code-inspection.html) and [Quick Fixes](https://www.jetbrains.com/resharper/features/quick_fixes.html) are essential tools in the IntelliJ IDEA based IDEs.
 They help you to maintain the code quality and improve the development process, by highlighting the issues and **providing ready-to-use solutions**.
-
 IntelliJ Development seems to be a hard topic, but I will show you that it's not that difficult to implement these features.
-
-<br/>
-<br/>
 
 ## Pretty use cases
 
@@ -33,26 +38,28 @@ would help developers by providing quick fixes for the most common issues.
 There are a few examples of the issues that I wanted to solve:
 
 1. **Missing annotation**: The developer forgot to add the annotation to the parameter.
-<img alt="Image description" src="/series/0001/01/example-1.png" width="70%" style={{borderRadius: "18px"}}/>
+<img alt="Image description" src="/series/0001/01/example-1.png" width="70%" style={{borderRadius: "12px"}}/>
 
 2. **Mixed annotations**: The developer added two annotations that are not compatible with each other.
-<img alt="Image description" src="/series/0001/01/example-2.png" width="70%" style={{borderRadius: "18px"}}/>
+<img alt="Image description" src="/series/0001/01/example-2.png" width="70%" style={{borderRadius: "12px"}}/>
 
 3. **Primitive type for the nullable parameter**: The developer used a primitive type for the parameter that can be null.
-<img alt="Image description" src="/series/0001/01/example-3.png" width="70%" style={{borderRadius: "18px"}}/>
+<img alt="Image description" src="/series/0001/01/example-3.png" width="70%" style={{borderRadius: "12px"}}/>
 
 4. **Invalid value for the annotation**: The developer used an invalid value for the annotation.
-<img alt="Image description" src="/series/0001/01/example-4.png" width="70%" style={{borderRadius: "18px"}}/>
+<img alt="Image description" src="/series/0001/01/example-4.png" width="70%" style={{borderRadius: "12px"}}/>
 
-<br/>
 <br/>
 
 ## What is the plan?
 
-Now, let's start coding. I'll show you how to create inspections and quick fixes in a simpler case.
+Now, let's start coding.
+I'll show you how to create inspections and quick fixes in a simpler case.
 
-Imagine that you love the [Optional](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html) class from Java 8, and you want to use it in your project.
-You know that it's a good practice to use `Optional` instead of `null`, but you are tired of writing the same code that wraps the value in `Optional`.
+Imagine that you love the [Optional](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html) class from Java 8,
+and you want to use it in your project.
+You know that it's a good practice to use `Optional` instead of `null`,
+but you are tired of writing the same code that wraps the value in `Optional`.
 
 ## Let's start with the inspection
 
@@ -63,7 +70,6 @@ Define the inspection class that extends the `LocalInspectionTool` class:
 
 ```java
 public class UseOptionalInspection extends LocalInspectionTool {
-
     @Override
     public String getDisplayName() {
         return "Method uses @Nullable annotation";
@@ -83,7 +89,6 @@ public class UseOptionalInspection extends LocalInspectionTool {
     public PsiElementVisitor buildVisitor(ProblemsHolder holder, boolean isOnTheFly) {
         return new MethodVisitor(holder);
     }
-
 }
 ```
 
@@ -106,19 +111,25 @@ class MethodVisitor extends JavaElementVisitor {
             return;
         }
 
-        holder.registerProblem(typeElement, "Method uses @Nullable annotation", ProblemHighlightType.WARNING, new UseOptionalQuickFix(method));
+        holder.registerProblem(
+            typeElement,
+            "Method uses @Nullable annotation",
+            ProblemHighlightType.WARNING,
+            new UseOptionalQuickFix(method)
+        );
     }
 }
 ```
 
-Psi elements are the core of the IntelliJ Platform API. They represent the elements of the code, like classes, methods, fields, etc.
+Psi elements are the core of the IntelliJ Platform API.
+They represent the elements of the code, like classes, methods, fields, etc.
 In this case, we are using `PsiMethod` and `PsiAnnotation` to check if the method is annotated with `@Nullable`.
 
-Also, we are registering a problem for the `PsiTypeElement` to highlight the return type of the method. See how cool it is!
+Also, we are registering a problem for the `PsiTypeElement` to highlight the return type of the method.
+See how cool it is!
 
 <img alt="Image description" src="/series/0001/01/inspection.png" width="60%" style={{borderRadius: "18px"}}/>
 
-<br/>
 <br/>
 
 ## But what about the quick fix?
@@ -128,14 +139,18 @@ You can provide multiple quick fixes for the same problem
 or set another level of the problem e.g. `ProblemHighlightType.GENERIC_ERROR`
 
 ```java
-holder.registerProblem(typeElement, "Method uses @Nullable annotation", ProblemHighlightType.WARNING, new UseOptionalQuickFix(method));
+holder.registerProblem(
+    typeElement,
+    "Method uses @Nullable annotation",
+    ProblemHighlightType.WARNING,
+    new UseOptionalQuickFix(method)
+);
 ```
 
 We register the quick fix in the `registerProblem` method, Let's define the `UseOptionalQuickFix` class:
 
 ```java
 public class UseOptionalQuickFix implements LocalQuickFix {
-
     private final PsiMethod method;
 
     public UseOptionalQuickFix(PsiMethod method) {
@@ -171,11 +186,17 @@ public class UseOptionalQuickFix implements LocalQuickFix {
         // We replace the return type with `Optional<T>`.
         PsiTypeElement typeElement = method.getReturnTypeElement();
         if (typeElement != null) {
-            typeElement.replace(factory.createTypeElementFromText("Optional<" + typeElement.getText() + ">", method));
+            typeElement.replace(
+                factory.createTypeElementFromText(
+                    "Optional<" + typeElement.getText() + ">",
+                    method
+                )
+            );
         }
 
         // 4. Wrap return statements
-        // We wrap the return statements with `Optional.ofNullable` or `Optional.empty` if the return value is `null`.
+        // We wrap the return statements with `Optional.ofNullable`,
+        // or `Optional.empty` if the return value is `null`.
         PsiCodeBlock codeBlock = method.getBody();
         if (codeBlock == null) {
             return;
@@ -225,7 +246,10 @@ public class UseOptionalQuickFix implements LocalQuickFix {
         }
 
         Project project = file.getProject();
-        PsiClass psiClass =  JavaPsiFacade.getInstance(project).findClass(classImport, GlobalSearchScope.allScope(project));
+        PsiClass psiClass =
+            JavaPsiFacade
+                .getInstance(project)
+                .findClass(classImport, GlobalSearchScope.allScope(project));
 
         if (annotationClass == null) {
             throw new RuntimeException("Cannot find annotation class " + classImport);
@@ -236,7 +260,6 @@ public class UseOptionalQuickFix implements LocalQuickFix {
             javaFile.importClass(psiClass);
         }
     }
-
 }
 ```
 
@@ -262,7 +285,6 @@ And add the extension in the `plugin.xml` file:
 
 ```xml
 <idea-plugin>
-
     <!-- plugin settings -->
 
     <extensions defaultExtensionNs="com.intellij">
@@ -272,9 +294,6 @@ And add the extension in the `plugin.xml` file:
 ```
 
 That's it! Now you can build and install the plugin in your IDE.
-
-<br/>
-<br/>
 
 ## Results and summary
 
@@ -286,9 +305,7 @@ Before
 
 After
 <img alt="Image description" src="/series/0001/01/after.png" width="50%" style={{borderRadius: "18px"}}/>
-
-
-
+<br />
 <References links={[
     { title: "IntelliJ Platform SDK Documentation", url: "https://plugins.jetbrains.com/docs/intellij/welcome.html" },
 ]} />
