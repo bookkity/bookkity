@@ -1,0 +1,518 @@
+---
+url: "toward-functional-paradigm-fundamental-concepts-in-java"
+date: "2025-06-20"
+author: "crejk"
+language: "en"
+title: "Toward Functional Paradigm: Fundamental Concepts in Java"
+image: "/0002/fp-aristarchusnull.jpg"
+tags: ["java"]
+---
+
+## Introduction
+
+Functional Programming offers valuable concepts that can enhance our code quality and maintainability. By using immutable data structures and pure functions, we can reduce side effects, making our code more predictable and easier to debug.
+We will dig into the basics, covering the following topics:
+* [Immutability](#immutability) - State management.
+* [Functions](#functions) - Functional programming fundament.
+* [Monads](#optional) - Wrappers for side effects.
+
+### Immutability
+The primary concept with which we may already be familiar is immutability. Immutability ensures that data remains consistent and predictable, making it easier to reason about the state of an application.
+
+#### Immutable objects
+Immutable objects, once created, cannot be modified. They remain the same throughout their entire life cycle.
+
+```java
+// old fashion way
+public class Reservation {
+    private final ReservationId id;
+    private final ReservationStatus status;
+    
+    public Reservation(ReservationId id, ReservationStatus status) {
+        this.id = id;
+        this.status = status;
+    }
+    
+    // getters
+    // equals & hashCode
+}
+```
+
+For years, Java has not had a decent built-in way of defining immutable objects, but we live to see records.
+
+```java
+// Java 14+
+public record Reservation(ReservationId id, ReservationStatus status) {
+}
+```
+<References links={[
+{ title: "Record Classes", url: "https://docs.oracle.com/en/java/javase/17/language/records.html" },
+]} />
+
+The following code doesn't allow us any modification,
+the only way to "update" the object is to create a new one with changed values.
+
+```java
+public record Reservation(ReservationId id, ReservationStatus status) {
+    Reservation cancel() {
+        return new Reservation(id, ReservationStatus.Cancelled);
+    }
+}
+```
+
+What are the main benefits of using immutable objects?
+- Immutable objects are thread-safe, they can be shared among multiple threads without restraint.
+- Allows you to reason about a piece of code independently of the rest of the program because our internal state can't be changed by another part of our system.
+- We can model things like they are, e.g. events - the fact already happened we can't change past.
+
+#### Immutable collections
+Immutable collections, like immutable objects, cannot be updated after creation.
+The only way to add or remove an element is to create a new collection instance.
+Immutable List in Java can be created using `List.of("a", "b", "c")`,
+any modification on this list will cause an exception.
+
+##### Immutable vs Mutable collections
+We'll start with the main problem of mutable collections: they **can be modified by anyone**.
+
+```java
+ShowStats getShowStats(List<Reservation> reservations) {
+    int activeReservations = calculateActiveReservations(reservations);
+    int totalReservations = reservations.size();
+    return new ShowStats(activeReservations, totalReservations);
+}
+```
+At first glance, it looks fine, but what if `calculateActiveReservations()` removes some elements from the provided list?
+
+```java
+public int calculateActiveReservations(List<Reservations> reservations) {
+    reservations.removeIf(reservation -> reservation.getStatus() != Status.Active);
+    return reservations.size();
+}
+```
+
+If we pass an `ArrayList` the method will modify the list and that will cause a bug
+
+```java
+ShowStats getShowStats(List<Reservation> reservations) { 
+    // reservations = [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
+    int activeReservations = calculateActiveReservations(reservations); // 
+    // reservations = [Reservation[status=Active], Reservation[status=Active]]
+    int totalReservations = reservations.size(); // 2
+    return new ShowStats(activeReservations, totalReservations);
+}
+```
+
+If we create a list using `List.of()` or `Stream#toList()` it will create `ImmutableCollections.List`,
+which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
+
+```java
+public int calculateActiveReservations(List<Reservations> reservations) { // List.of();
+    reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnsupportedOperationException
+    return reservations.size();
+}
+```
+
+But there are a few problems with standard "immutable" Java collections:
+- The behavior seems more like read-only than immutable. Immutable collections should return us a copy.
+- Informs about illegal operations at runtime.
+
+So let's see how else we can approach the subject.
+
+For example, In Kotlin `List` interface doesn't contain methods like `add`, `remove`, etc.
+And that sounds much more reasonable than throwing `UnsupportedOperationException`,
+because we are held back by the compiler during at the development stage.
+
+```kotlin
+val immutableList: List<String> = arrayListOf("a")
+immutableList.add("b") // doesn't work, there is no method like 'add'
+```
+
+To modify a list we need to define it explicitly as `MutableList`
+
+```kotlin
+val mutableList: MutableList<String> = arrayListOf("a")
+mutableList.add("b")
+```
+
+It's better, but not perfect. Adding elements should be allowed,
+but it should create a new list containing values from the source list and the newly added value.
+
+But won't it be slow?
+Theoretically, yes, but actually no.
+The collection size is usually small, so it doesn't really matter.
+Additionally, we don't have to copy all values to the new list.
+
+Instead, when we add a value, we create a new object that contains a reference to the previous object along with the new element.
+
+```java
+class ImmutableList<T> {
+    private ImmutableList<T> head;
+    private T tail;
+
+    ImmutableList<T> add(T element) {
+        return new ImmutableList<>(this, element);
+    }
+}
+```
+<References links={[
+{ title: "io.vavr.collection.List.java", url: "https://github.com/vavr-io/vavr/blob/master/src/main/java/io/vavr/collection/List.java" },
+]} />
+
+Unfortunately, such collections are not built in Java, so we need to use external libraries like Vavr.io
+
+### Functions
+Functional programming is all about programming with functions.
+Functions are:
+- Total. For every input, they return an output. 
+- Pure. The function return values are identical for identical arguments, and the function has no side effects.
+
+Let's review a few methods and determine if they are total and pure.
+
+```java
+class Account {
+    private BigDecimal balance;
+        
+    void deposit(BigDecimal amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException();
+        }
+        balance += amount;
+    }
+}
+```
+
+<Alert type={'tip'}>
+As a rule of thumb, using `void` is usually bad practice.
+Methods that return void:
+- cannot be used in method chaining.
+```java
+account.map(ac -> {
+    ac.deposit(BigDecimal.of(10));
+    return ac;
+});
+```
+- Force to use exceptions for error handling.
+- Are harder to test.
+- Make it more difficult to track changes that have been made.
+</Alert>
+
+It's not total nor pure.
+The method returns output only if the argument is greater than 0, and it modifies the internal state,
+so depending on the current state the method may behave differently.
+
+To make it total, we can introduce a new type that allows only to provide positive BigDecimals.
+So now our method signature forces us to use the appropriate parameter.
+
+```java
+void deposit(PositiveBigDecimal amount) {
+    balance += amount;
+}
+```
+
+Let's try to make it also pure.
+What if we make this object immutable?
+
+```java
+class Account {
+    private final BigDecimal balance;
+        
+    Account deposit(BigDecimal amount) {
+        return new Account(balance + amount);
+    }
+}
+```
+
+You may say it's still not pure because it still depends on the internal state.
+But what if we write it down like this:
+
+```java
+static Account deposit(Account account, BigDecimal amount) {
+    return new Account(account.balance() + amount);
+}
+```
+As you see, we can just treat our object as the first argument of our function.
+So the first approach is absolutely fine and can be acknowledged as pure.
+Let's take a look at another example:
+
+```java
+private Map<Long, User> users = new HashMap<>();
+
+User getUser(long id) {
+    return users.get(id);
+}
+```
+Is the function pure?
+It's not, It can return User or null for the same argument.
+
+How can we fix it? We can present it explicitly using a type system.
+In this case `Optional` seems reasonable.
+
+```java
+Optional<User> getUser(long id) {
+    return Optional.ofNullable(map.get(id));
+} 
+```
+
+The side effect still exists, but we encoded that fact using type system.
+It's not hidden like in the previous example.
+
+#### Optional
+
+For those not familiar with FP the most straightforward way to use `Optional` will be
+```java
+Optional<User> userOpt = getUser(1);
+if (userOpt.isPresent()) {
+    User user = userOpt.get();    
+}
+```
+
+But it's not really how we do it functionally. 
+In most cases, we should avoid invoking `get()`.
+We want to use `map` and `flatMap` operations.
+
+<CodeVariants tabs={false}>
+    <CodeVariant name="Bad  ❌">
+        ```java
+        public String displayUsername(long userId) {
+            Optional<User> userOpt = getUser(userId);
+            if (userOpt.isPresent()) {
+                return userOpt.get().getName();
+            }
+            return "Anonymous";
+        }
+        ```
+    </CodeVariant>
+    <CodeVariant name="Good  ✅">
+        ```java
+        public String displayUsername(long userId) {
+            return getUser(userId)
+                .map(user -> user.getName())
+                .orElse("Anonymous");
+        }
+
+
+        ```
+    </CodeVariant>
+</CodeVariants>
+
+The first piece of code is not perfect, but we can live with it.
+Let's imagine `User#getUsername` returns `Optional<String>`
+
+<CodeVariants tabs={false}>
+    <CodeVariant name="Bad  ❌">
+        ```java
+        public String displayUsername(long userId) {
+            Optional<User> userOpt = getUser(userId);
+            if (userOpt.isPresent()) {
+                usernameOpt = userOpt.get().getUsername();
+                if (usernameOpt.isPresent) {
+                    return usernameOpt.get();
+                }
+            }
+            return "Anonymous";
+        }
+        ```
+    </CodeVariant>
+    <CodeVariant name="Good  ✅">
+        ```java {3}
+        public String displayUsername(long userId) {
+            return getUser(userId)
+                .flatMap(user -> user.getName()) 
+                .orElse("Anonymous");    
+        }
+
+
+
+
+
+        ```
+    </CodeVariant>
+</CodeVariants>
+
+#### Validation
+
+The hidden behavior also applies to validation.
+
+```java
+public User createUser(String name) {
+    if (name.length < 3) {
+        throw new IllegalArgumentException("Name too short");
+    }
+    return new User(name);
+}
+```
+
+What's the problem here?
+- The method signature hides from us the fact there is validation inside the method body.
+- The compiler doesn't force us to handle errors.
+- Exceptions are not an excellent choice for business errors, they are more for **exception**al cases.
+
+How to do it in a better way?
+
+```java
+public Either<DomainError, User> createUser(String name) {
+    if (name.length < 3) {
+        return Either.left(DomainError.NAME_TOO_SHORT);
+    }
+    return Either.right(new User(name));
+}
+```
+
+Either allows explicitly showing our method has two paths.
+The success - right, and the failure - left.
+<References links={[
+{ title: "Either", url: "https://eed3si9n.com/learning-scalaz/Either.html" },
+]} />
+
+Thanks to that:
+- There's no need to examine the method code to identify alternative scenarios.
+- compiler forces us to handle errors.
+
+Another interesting class is `Validation`. Like `Either`, `Validation` contains two paths, valid and invalid.
+The main difference is that instead of chaining the result from the first event to the next, `Validation` validates all events.
+<References links={[
+{ title: "Validation", url: "https://eed3si9n.com/learning-scalaz/Validation.html" },
+]} />
+To demonstrate the usage, let's write a code for loading CSV files.
+
+```java
+List<Flight> load(List<String> lines) {
+    return lines.stream().map(it -> it.parse(it)).toList();
+}
+    
+private Flight parse(String line) {
+    var args = line.split(",");
+    String departure = args[0];
+    if (!isValidIcaoCode(departure)) {
+        throw new IllegalArgumentException("Departure is not valid ICAO airport code.");
+    }
+    String destination = args[1];
+    if (!isValidIcaoCode(destination)) {
+        throw new IllegalArgumentException("Destination is not valid ICAO airport code.");
+    }
+}
+    
+private boolean isValidIcaoCode(String icaoCode) {
+    return icao.length() == 4;
+}
+```
+
+Let's imagine we want to upload a CSV file with hundreds of rows and some of them contain errors.
+Do you see a problem with the above solution?
+If there are errors in our CSV file we won't be informed about all errors at once, but only **first** encountered error.
+In this case, a list of errors would be more handful.
+For that purpose, we can use `Validation` from Vavr.
+
+```java
+public List<Validation<Seq<String>, Flight> load(List<String> lines) {
+    return lines.map(this::parse);
+}
+
+private Validation<Seq<String>, Flight> parse(String line) {
+    var args = line.split(",");
+    String departure = args[0];
+    String destination = args[1];
+    return Validation.combine(
+            validateIcaoCode(departure),
+            validateIcaoCode(destination)
+        ).ap(Flight::new);
+}
+
+private Validation<String, String> validateIcaoCode(String icao) {
+    if (icao.length() == 4) {
+        return Validation.valid(icao);
+    }
+    return Validation.invalid("%s is not valid ICAO code".formatted(icao));
+}
+```
+
+Our code didn't change much. Instead of throwing an exception, we just return an object, so the flow is not terminated instantly.
+The loading part is more problematic because we have to handle `List<Validation<Seq<String>, Flight>>`.
+The question is how to aggregate the data to easily display the number of loaded flights or the list of validation errors.
+For the sake of humanity, there is `Validation#sequence` which:
+
+> Reduces many Validation instances into a single Validation by transforming an `Iterable<Validation<? extends T>>` into a `Validation<Seq<T>>`.
+
+```java
+Validation<Seq<String>, Seq<Flight>> result = Validation.sequence(load(input));
+String message = result.fold(
+    strings -> strings.mkString("Failed to load flights: \n", "\n", ""),
+    flights -> "Successfully loaded " + flights.size() + " flights."
+);
+```
+
+Thanks to transforming to single `Validation` we can easily tell if the whole operation succeeds or not.
+We utilize `<U> U fold(Function<? super E, ? extends U> ifInvalid, Function<? super T, ? extends U> ifValid)` to map errors and flights to the same type.
+
+### Functional iceberg
+We've only touched the basics. There is much more in the world of functional programming, but Java doesn't have decent support for that.
+And often Java programmers are not very familiar with this paradigm. That's why functional programming can become a double-edged weapon.
+
+```java
+return Mono.fromCallable(
+        () -> pullEVSEDataToKafkaSynchronizationTransformer.transformEntitiesToEvents(entityList, operatorId)
+    )
+    .zipWith(statuses)
+    .map(
+        tuple -> {
+            tuple.getT1().forEach(
+                event -> event.getOcpiLocation().getEvses().forEach(
+                    evse -> Optional.ofNullable(tuple.getT2().get(evse.getEvseId()))
+                        .map(EvseStatusRecord::getEvseStatus)
+                        .ifPresentOrElse(
+                            status -> evse.setStatus(OcpiEvseStatusPatchedEventBuilder.mapStatus(status)),
+                            () -> evse.setStatus(OcpiEvse.Status.UNKNOWN)
+                        )
+                )
+            );
+            return tuple;
+        }
+    )
+    .flatMapMany(tuple -> sendEventToKafkaAndUpdateDb(tuple.getT1()))
+    .then(
+        Flux.fromIterable(entityList)
+            .map(
+                entity -> {
+                    entity.setSyncedKafka(Boolean.TRUE);
+                    return entity;
+                }
+            )
+            .limitRate(500)
+            .map(SqlQueryBuilder::buildSavePullEvseDataQuery)
+            .buffer(500)
+            .concatMap(sqlList -> evseDataReactiveClientRepository.saveAll(sqlList))
+            .reduce(NumberUtils.INTEGER_ZERO, (integer, integer2) -> integer + integer2)
+    );
+```
+<References links={[
+{ title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
+]} />
+That's not all.
+The real "fun" begins when we mixing stuff like `Mono` and `Either`
+```java
+public Mono<Either<AppError, UserDTO>> registerUser(RegisterUserDTO dto) {
+    return userFactory
+        .create(dto.username(), dto.password(), UserRole.COMMON)
+        .flatMap(it -> it
+            .map(user -> reactiveUserRepository
+                .add(user)
+                .map(u -> Either.<AppError, UserDTO>right(u.toDTO()))
+            )
+            .mapLeft(error -> Mono.just(Either.<AppError, UserDTO>left(error))).getOrElse(error -> error)
+        );
+    }
+```
+<References links={[
+{ title: "mixing Mono with Either", url: "https://4programmers.net/Forum/Java/362708-problem_z_mono_w_either?p=1860236#id1860236" },
+]} />
+So in Java, I would stick to the basics; otherwise, your colleagues might hate you.
+
+## Summary
+We have learned several key concepts of functional programming. These basics are well-supported by the language and should not disturb our team members.
+- Immutability should be our default choice. Use record classes, and the same goes for collections, although you may already be doing this, perhaps unknowingly?
+`List.of` returns `ImmutableCollections.List`, `Stream#toList()` returns `Collections.unmodifiableList`.
+- For domain errors, prefer `Either` and `Validation`. The latter allows holding a list of errors. Reserve **exception**s for **exception**al situations.
+- Avoid `void`.
+
+Functional Programming offers us much more, but as Java developers, we can't really apply more advanced concepts to our projects.
+So, we have to decide if we want to complain about the missing features or live in blissful ignorance.
