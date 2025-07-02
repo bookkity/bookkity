@@ -3,14 +3,16 @@ url: "api-sets"
 date: "2025-07-02"
 author: "thatbakamono"
 language: "en"
-title: "API Sets"
+title: "Windows' API sets — analysis"
 image: "/0000/progress-bar.jpg"
 tags: ["Windows", "Windows Internals", "Windows Loader", "WinLDR", "API Sets"]
 ---
 
 # Introduction
 
-Microsoft introduced the concept of API sets with the release of Windows 7 and expanded their implementation in Windows 8. This initiative aimed to modularize the operating system, making it more flexible and portable. The effort was driven by Microsoft's interest in supporting a broader range of platforms beyond traditional PCs.
+Microsoft introduced the concept of API sets with the release of Windows 7 and expanded their implementation in Windows 8.
+This initiative aimed to modularize the operating system, making it more flexible and portable.
+The effort was driven by Microsoft's interest in supporting a broader range of platforms beyond traditional PCs using the same — or at least mostly the same — operating system, as some implementation details would inherently have to differ.
 
 Here's what the official documentation says about them:
 
@@ -18,71 +20,104 @@ Here's what the official documentation says about them:
 >
 > The purpose of an API set is to provide an architectural separation from the host DLL in which a given Win32 API is implemented, and the functional contract to which the API belongs. The decoupling that API sets provide between implementation and contracts offers many engineering advantages for developers. In particular, using API sets in your code can improve compatibility with Windows devices.
 
-Which sounds pretty cool so far but there's an issue. Microsoft needed to introduce a way to support this new concept without breaking existing software.
+Which sounds pretty cool and useful so far but there’s an issue with a rather scary name — backwards compatibility.
+Microsoft needed to introduce a way to support this new concept without breaking decades of existing software.
 
-They needed to:
-- Allow linking against umbrella libraries (e.g. OneCore.lib), which internally reference api-ms-sth DLLs.
-- Support linking against original libraries like kernel32.dll.
+In other words, they needed to:
+- Allow linking against umbrella libraries (e.g. `OneCore.lib`), which internally reference `api-ms-*` DLLs via a mechanism we'll discover later.
+- Support linking against original libraries like `kernel32.dll`, so that software written before the API set era continues to work seamlessly.
 
-At the same time, they wanted the flexibility to implement functions wherever needed.
+At the same time, they wanted the flexibility to implement functions wherever needed. Hence the mechanism we'll discover below was developed.
 
 # Analysis
 
-Let's start by taking a look at the good ol' `kernel32.dll`. We can see lots of functions with the `Stub` suffix, what's going on here?
+Let's start by taking a look at the good ol' `kernel32.dll` in IDA — that's probably gonna tell us something.
 
-![alt](/article/0002/kernel32-stubs.png)
+We can see **lots** of functions with the `Stub` suffix and very few without — that's definitely suspicious. What's going on here?
 
-Let's pick one at random and find out. I'll choose `GetLastError` without any particular reason behind it.
+![alt](/article/0003/kernel32-stubs.png)
 
-We can see that it's exported as `GetLastError`, without the `Stub` suffix and that it does nothing besides calling `__imp_GetLastError`. The name didn't lie, it's really just a stub.
+Let's pick one at random and find out.
+I'll go with `GetLastError`, for no particular reason other than that I like it. It's a simple and commonly used function.
 
-![alt](/article/0002/kernel32-get-last-error-stub.png)
+We can see that it's exported as `GetLastError` without the `Stub` suffix — definitely for compatibility — and that it does nothing besides calling `__imp_GetLastError`.
+The name didn't lie; it really is just a stub.
 
-What's `__imp_GetLastError` though? We haven't seen that function yet. Let's take a peek.
+![alt](/article/0003/kernel32-get-last-error-stub.png)
 
-![alt](/article/0002/kernel32-api-ms-win-core-errorhandling-imports.png)
+What's `__imp_GetLastError` though?
+We haven't seen that function yet, so let's quickly take a peek.
 
-It seems to be part of imports from `api-ms-win-core-errorhandling-l1-1-0.dll`. There's no actual implementation of `GetLastError` in `kernel32.dll`. Seems like it's one of those functions they wanted to move somewhere else.
+![alt](/article/0003/kernel32-api-ms-win-core-errorhandling-imports.png)
 
-Well, what are we waiting for? Let's take a look at `api-ms-win-core-errorhandling-l1-1-0`, but first we need to find it.
+It seems to be part of the imports from `api-ms-win-core-errorhandling-l1-1-0.dll`.
+There's no actual implementation of `GetLastError` in the `kernel32.dll` though.
+Seems like it's one of those functions they wanted to move somewhere else.
 
-Where is it? This particular one is located in `C:\Windows\System32\downlevel`, which is where most of those `api-ms-` libraries are found on PCs, though it's not a strict rule. Some may be located elsewhere.
+Well, what are we waiting for?
+Let's take a look at the `api-ms-win-core-errorhandling-l1-1-0`, but first we need to find it.
 
-![alt](/article/0002/c-windows-system32-downlevel.png)
+Well... Where is it?
+As it turns out, this particular one is located in `C:\Windows\System32\downlevel`,
+which is actually where most of those `api-ms-*` libraries are found on PCs,
+though it's not a strict rule.
+Some may be located elsewhere.
+Especially those less common or feature-locked ones.
 
-Also, I'll mention as a side note that DLL loading order still applies here. When an application requests a DLL, Windows follows a specific search order to locate it. This includes checking the application's directory first, then system directories, and finally any paths listed in the environment variables. You can see this being used below.
+![alt](/article/0003/c-windows-system32-downlevel.png)
 
-![alt](/article/0002/league-api-sets.png)
+Also, I'll mention as a side note that DLL loading order still applies here.
+When an application requests a DLL, Windows follows a specific search order to locate it.
+This includes checking the application's directory first, then system directories, and finally any paths listed in the environment variables.
+You can see this being used below.
 
-The first thing we'll see after opening `api-ms-win-core-errorhandling-l1-1-0` is that there are no symbols whatsoever. That's concerning.
+![alt](/article/0003/league-api-sets.png)
 
-![alt](/article/0002/api-ms-win-core-errorhandling-l1-1-0-symbols.png)
+Anyway, back to the main topic — the first thing we'll see after opening the `api-ms-win-core-errorhandling-l1-1-0` is that there are no symbols whatsoever.
+That's a little bit concerning, if I'm being honest.
 
-But there are exports! Let's take a look at them.
+![alt](/article/0003/api-ms-win-core-errorhandling-l1-1-0-symbols.png)
 
-![alt](/article/0002/api-ms-win-core-errorhandling-l1-1-0-exports.png)
+Oh, but there are exports!
+Let’s have a quick look at them.
 
-Uh oh. There's something called a `forwarder` and they all seem to be pointing back at `kernel32`! That's infinite recursion, isn't it? What the heck is going on here?
+![alt](/article/0003/api-ms-win-core-errorhandling-l1-1-0-exports.png)
 
-It turns out those libraries are special. They are not supposed to be treated like most other libraries. You'll never resolve functions by doing so. Instead, there's a mapping of those empty API set libraries to actual libraries with real implementations.
+Uh oh.
+There's something called a `forwarder` and all of them seem to be pointing back at the `kernel32`!
+That's infinite recursion, isn't it?
+What the heck is going on here?
 
-This mapping is created at boot according to the `Windows/System32/apisetschema.dll` and also some additional schemas defined in `Computer/HKEY_LOCAL_MACHINE/SYSTEM/CurrentControlSet/Control/Session Manager/ApiSetSchemaExtensions`.
+It turns out those libraries are a little bit special.
+They are not supposed to be treated like regular libraries.
+You'll never ever resolve functions by doing so.
+Instead, there's a mapping of those empty API set libraries to the actual libraries with real implementations.
 
-![alt](/article/0002/schema-extensions-in-registry.png)
+This mapping is created at boot time according to the `Windows/System32/apisetschema.dll` and also some additional schemas defined in the registry at `Computer/HKEY_LOCAL_MACHINE/SYSTEM/CurrentControlSet/Control/Session Manager/ApiSetSchemaExtensions`.
+
+![alt](/article/0003/schema-extensions-in-registry.png)
 
 Each of them has a section called `.apiset`, which defines how those API set libraries are supposed to be translated to the actual libraries.
 
-![alt](/article/0002/apisetschema-strings.png)
+![alt](/article/0003/apisetschema-strings.png)
 
-After creation, the mapping resides in the PEB (process environment block). Let's take a look what the documentation says about it.
+After creation, the mapping resides in the PEB (process environment block).
+Let's take a look what the documentation says about it, if there's any.
 
-![alt](/article/0002/peb-documentation.png)
+![alt](/article/0003/peb-documentation.png)
 
-That's... a lot of reserved fields and nothing that resembles the mappings we are looking for. The documentation will unfortunately not help us here. We'll have to dig deeper. Let's take a look at what WinDbg says.
+That's... a lot of reserved fields and nothing that resembles the mappings we are looking for.
+The documentation will unfortunately not help us here.
+We'll have to dig deeper. Let's take a look at what WinDbg says.
 
-![alt](/article/0002/windbg-peb.png)
+![alt](/article/0003/windbg-peb.png)
 
-There's an `ApiSetMap` at `0x68` (which is `reserved9[0]`). That sounds like what we are looking for. Unfortunately, there are no symbols for it. They were present around Windows 7 but got removed later. As of right now, the structure looks more or less like this:
+There's an `ApiSetMap` at `0x68` (which corresponds to `reserved9[0]`).
+That sounds exactly like what we're looking for.
+Unfortunately, there are no symbols for it anymore.
+They used to be present around Windows 7 but were removed later.
+This actually happened quite a few times across different parts of the OS — for example Microsoft Defender had publicly available symbols until around 2018.
+As of right now, the structure looks more or less like this:
 
 ```cpp
 #define WIN32_LEAN_AND_MEAN
@@ -121,9 +156,11 @@ struct ApiSetValueEntry {
 };
 ```
 
-`ApiSetHeader` is what's present at `PEB->ApiSetMap`. There's also a `ApiSetHeader->Count` of `ApiSetHashEntry` at `PEB->ApiSetMap + ApiSetHeader->HashEntriesOffset` and an unspecified amount of `ApiSetNamespaceEntry` at `PEB->ApiSetMap + ApiSetHeader->NamespaceEntriesOffset`.
+`ApiSetHeader` is what's found at `PEB->ApiSetMap`.
+We can see it has two offsets — one to pointing to hash entries and the other to namespace entries.
+The hash entries are what we’ll be interested in first, since they lead to the namespace entries, as we can see by looking at the header.
 
-To resolve a library, we first need to compute it's hash, which is done as follows:
+Since there are no names anywhere to be seen, to resolve a library we'll first need to compute its hash, which is done as follows:
 
 ```cpp
 #include <ctype.h>
@@ -143,11 +180,17 @@ static DWORD CalculateHash(const PWSTR string, const DWORD length, const DWORD h
 }
 ```
 
-where `string` is it's name without the extension (so `api-ms-win-security-base-ansi-l1-1-0`, not `api-ms-win-security-base-ansi-l1-1-0.dll`), and `hashMultiplier` is `ApiSetHeader->HashMultiplier`.
+where `string` is the library name **without** the extension and the last version digit (so for example `api-ms-win-security-base-ansi-l1-1`,
+not `api-ms-win-security-base-ansi-l1-1-0` or `api-ms-win-security-base-ansi-l1-1-0.dll`),
+and `hashMultiplier` is simply the value of `ApiSetHeader->HashMultiplier`.
 
-After we've computed the hash, we can perform a look-up. There are three arrays we'll have to use — hash entries, namespace entries and value entries. All of them are located relative to `peb->ApiSetMap`. We get the offset of the first one from `ApiSetHeader->HashEntriesOffset` and the offset from the second one from `ApiSetHashEntry->IndexInEntriesNamespace`.
+After we've computed the hash, we essentially have everything we need to perform the lookup.
 
-At this point, we're able to loop through all records, and display their names:
+<Alert type={'tip'}>
+    `ApiSetHashEntry` entries are sorted by hash in ascending order, which allows implementations to perform binary search on them.
+</Alert>
+
+But first, let's print all the records to see what's there. To do that, we'll also have to make use of the namespace entries, which hash entries point to.
 
 ```cpp
 int main()
@@ -176,10 +219,6 @@ int main()
 }
 ```
 
-<Alert type={'tip'}>
-    `ApiSetHashEntry` entries are sorted by hash in ascending order, which allows implementations to perform binary search on them.
-</Alert>
-
 Which results in:
 
 ```
@@ -196,13 +235,17 @@ ext-ms-win-rtcore-ntuser-keyboard-l1-1-0
 ext-ms-win-core-win32k-common-inputrim-l1-1-0
 ext-ms-win-ntos-werkernel-l1-1-1
 api-ms-win-security-logon-l1-1-1
+...
 ```
 
-and a **bunch** more.
+Great, it seems we’re on the right track so far.
 
-Great, what's next? It seems like we are on the right track.
+Now that we are here, the last thing we have to do is make use of the final array — the value entries.
+We get its offset from `ApiSetNamespaceEntry->ValueEntriesArrayOffset`,
+so unlike the previous two arrays, it's not global, there's actually one per namespace.
+The numbers of elements in this array is found in `ApiSetNamespaceEntry->HostsNumber`.
 
-Now we have to make use of the last array. We get its offset from `ApiSetNamespaceEntry->ValueEntriesArrayOffset`, this time there isn't a single array for the entire map — each namespace entry has its own. The numbers of elements is located in `ApiSetNamespaceEntry->HostsNumber`. The majority of libraries only has one "host", but there are some with multiple ones:
+The majority of libraries have only a single "host", but there are some with multiple ones:
 
 ```
 api-ms-win-core-io-l1-1-1 -> kernel32.dll
@@ -272,8 +315,7 @@ ext-ms-win-ntuser-private-l1-5-0 -> user32.dll
 ext-ms-win-ntuser-private-l1-6-1 -> user32.dll
 api-ms-win-crt-runtime-l1-1-0 -> ucrtbase.dll
 api-ms-win-core-shutdown-ansi-l1-1-0 -> advapi32.dll
+...
 ```
-
-and a **lot** more.
 
 This means we’re finally able to resolve API set-style libraries to their actual implementations — and that wraps up this blog post. Hope to see you again soon. For now, I’m taking off!
