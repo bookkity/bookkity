@@ -157,8 +157,8 @@ struct ApiSetValueEntry {
 ```
 
 `ApiSetHeader` is what's found at `PEB->ApiSetMap`.
-We can see it has two offsets — one to pointing to hash entries and the other to namespace entries.
-The hash entries are what we’ll be interested in first, since they lead to the namespace entries, as we can see by looking at the header.
+We can see it has two offsets — one pointing to hash entries and the other to namespace entries.
+The hash entries are what we’ll be interested in first, since they lead to the namespace entries, as we can see by looking at the structure.
 
 Since there are no names anywhere to be seen, to resolve a library we'll first need to compute its hash, which is done as follows:
 
@@ -181,16 +181,41 @@ static DWORD CalculateHash(const PWSTR string, const DWORD length, const DWORD h
 ```
 
 where `string` is the library name **without** the extension and the last version digit (so for example `api-ms-win-security-base-ansi-l1-1`,
-not `api-ms-win-security-base-ansi-l1-1-0` or `api-ms-win-security-base-ansi-l1-1-0.dll`),
+not `api-ms-win-security-base-ansi-l1-1-0` nor `api-ms-win-security-base-ansi-l1-1-0.dll`),
 and `hashMultiplier` is simply the value of `ApiSetHeader->HashMultiplier`.
 
 After we've computed the hash, we essentially have everything we need to perform the lookup.
+The lookup consists of finding the correct `ApiSetHashEntry` by iterating over the entries and comparing hashes.
+This entry type doesn’t contain anything directly useful on its own, but it includes an index into the namespace entries — and that’s where things get a little bit more interesting.
+Each namespace entry includes a `Name`, which is the stub library name **without** the extension.
+While this isn’t helpful for the lookup itself, it can be useful for debugging.
+We'll use this information very soon.
+The most important fields are `ValueEntriesArrayOffset` and `HostsNumber`.
+The first tells us where the array of `ApiSetValueEntry` begins (relative to `ApiSetHeader`), and the second tells us how many entries are in that array.
+They’re referred to as _hosts_ because they represent the different possible implementations of the library.
+
+As a side note — The majority of libraries have only a single "host", but there are some with multiple ones:
+
+```
+api-ms-win-core-io-l1-1-1 -> kernel32.dll
+api-ms-win-core-io-l1-1-1 -> kernelbase.dll
+api-ms-win-core-processthreads-l1-1-7 -> kernel32.dll
+api-ms-win-core-processthreads-l1-1-7 -> kernelbase.dll
+api-ms-win-core-appinit-l1-1-0 -> kernel32.dll
+api-ms-win-core-appinit-l1-1-0 -> kernelbase.dll
+api-ms-win-core-util-l1-1-1 -> kernel32.dll
+api-ms-win-core-util-l1-1-1 -> kernelbase.dll
+api-ms-win-core-processsecurity-l1-1-0 -> kernel32.dll
+api-ms-win-core-processsecurity-l1-1-0 -> kernelbase.dll
+ext-ms-win-kernel32-errorhandling-l1-1-0 -> kernel32.dll
+ext-ms-win-kernel32-errorhandling-l1-1-0 -> faultrep.dll
+```
 
 <Alert type={'tip'}>
     `ApiSetHashEntry` entries are sorted by hash in ascending order, which allows implementations to perform binary search on them.
 </Alert>
 
-But first, let's print all the records to see what's there. To do that, we'll also have to make use of the namespace entries, which hash entries point to.
+That’s enough delving into the details — let’s use this information to print all the records and see what’s actually there.
 
 ```cpp
 int main()
@@ -238,31 +263,17 @@ api-ms-win-security-logon-l1-1-1
 ...
 ```
 
-Great, it seems we’re on the right track so far.
+Great, it seems we're really close to actually resolving those libraries. Let's take a look at what information the `ApiSetValueEntry` provides. There are some `Flags`, whose purpose isn’t entirely clear to us, and two strings — once again represented as offset and length pairs.
 
-Now that we are here, the last thing we have to do is make use of the final array — the value entries.
-We get its offset from `ApiSetNamespaceEntry->ValueEntriesArrayOffset`,
-so unlike the previous two arrays, it's not global, there's actually one per namespace.
-The numbers of elements in this array is found in `ApiSetNamespaceEntry->HostsNumber`.
+If we inspect the `Name` string in a debugger, we'll just see a bunch of empty strings — entirely useless.
 
-The majority of libraries have only a single "host", but there are some with multiple ones:
+![alt](/article/0003/debugger-name.png)
 
-```
-api-ms-win-core-io-l1-1-1 -> kernel32.dll
-api-ms-win-core-io-l1-1-1 -> kernelbase.dll
-api-ms-win-core-processthreads-l1-1-7 -> kernel32.dll
-api-ms-win-core-processthreads-l1-1-7 -> kernelbase.dll
-api-ms-win-core-appinit-l1-1-0 -> kernel32.dll
-api-ms-win-core-appinit-l1-1-0 -> kernelbase.dll
-api-ms-win-core-util-l1-1-1 -> kernel32.dll
-api-ms-win-core-util-l1-1-1 -> kernelbase.dll
-api-ms-win-core-processsecurity-l1-1-0 -> kernel32.dll
-api-ms-win-core-processsecurity-l1-1-0 -> kernelbase.dll
-ext-ms-win-kernel32-errorhandling-l1-1-0 -> kernel32.dll
-ext-ms-win-kernel32-errorhandling-l1-1-0 -> faultrep.dll
-```
+But what about the `Value` string? Oh my days — that looks like exactly what we’re after!
 
-When we combine all of this into:
+![alt](/article/0003/debugger-value.png)
+
+Let's combine all of this:
 
 ```cpp
 int main()
@@ -302,7 +313,7 @@ int main()
 }
 ```
 
-We get:
+And we get:
 
 ```
 api-ms-win-core-xstate-l1-1-3 -> ntdll.dll
