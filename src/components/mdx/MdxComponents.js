@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import KhangulKeyboard from "@/components/mdx/KhangulKeyboard";
 import {CodeVariant, CodeVariants} from "@/components/mdx/CodeVariants";
+import Spoiler from "@/components/mdx/Spoiler";
 
 function getAnchor(text) {
   return text
@@ -168,4 +169,5 @@ export default {
   Snippet,
   Highlight,
   References,
+  Spoiler
 }

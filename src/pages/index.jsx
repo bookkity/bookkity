@@ -109,6 +109,7 @@ export default function Home({ allArticles, allSeries }) {
 
   const filteredPreviews = useMemo(() => {
     return previews
+      .filter(it => !it.url.startsWith("/article/_"))
       .filter(it => showSeries ? true : it.type === 'article')
       .filter(it => languages.value.includes(it.language))
       .filter(it => selectedTag ? it.tags.includes(selectedTag) : true)

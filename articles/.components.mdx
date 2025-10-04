@@ -1,0 +1,104 @@
+---
+url: "_components"
+date: "2024-06-01"
+author: "dzikoysk"
+language: "en"
+title: "Test :: Components"
+image: "/0000/progress-bar.jpg"
+tags: []
+---
+
+#### Alerts
+
+<Alert type={'note'}>Note</Alert>
+<Alert type={'tip'}>Tip</Alert>
+<Alert type={'important'}>Info</Alert>
+<Alert type={'warning'}>Warning</Alert>
+<Alert type={'caution'}>Caution</Alert>
+
+#### References
+
+<References
+    links={[
+        {
+            title: "Reposilite - Repository manager for Maven based artifacts",
+            url: "https://reposilite.com"
+        }
+    ]}
+/>
+
+#### Quotes
+
+> Text 1
+> ...
+> Text 2
+
+> Text 1
+>
+> Text 2
+
+#### Code variants
+
+##### With tabs
+
+<CodeVariants tabs={true}>
+    <CodeVariant name="Bad">
+        ```java
+        public String displayUsername(long userId) {
+            Optional<User> userOpt = getUser(userId);
+            if (userOpt.isPresent()) {
+                return userOpt.get().getName();
+            }
+            return "Anonymous";
+        }
+        ```
+    </CodeVariant>
+    <CodeVariant name="Good">
+        ```java
+        public String displayUsername(long userId) {
+            return getUser(userId)
+                .map(user -> user.getName())
+                .orElse("Anonymous");
+        }
+        ```
+    </CodeVariant>
+</CodeVariants>
+
+##### Without tabs
+
+<CodeVariants tabs={false}>
+    <CodeVariant name="Bad">
+        ```java
+        public String displayUsername(long userId) {
+            Optional<User> userOpt = getUser(userId);
+            if (userOpt.isPresent()) {
+                return userOpt.get().getName();
+            }
+            return "Anonymous";
+        }
+        ```
+    </CodeVariant>
+    <CodeVariant name="Good">
+        ```java
+        public String displayUsername(long userId) {
+            return getUser(userId)
+                .map(user -> user.getName())
+                .orElse("Anonymous");
+        }
+
+
+        ```
+    </CodeVariant>
+</CodeVariants>
+
+#### Spoiler
+
+<Spoiler title="Spoiler title">
+    This is the spoiler content
+
+    ```kotlin
+    fun main() {
+        println("Hello, World!")
+    }
+    ```
+</Spoiler>
