@@ -9,7 +9,7 @@ const articlesPath = path.join(process.cwd(), "articles")
  * @typedef {Object} Article
  * @property {String} url
  * @property {String} date
- * @property {String} author
+ * @property {Array<String>} authors
  * @property {String} language
  * @property {String} title
  * @property {String} image

@@ -74,7 +74,7 @@ export default function Home({ allArticles, allSeries }) {
       type: 'article',
       title: article.title,
       tags: article.tags,
-      authors: Array.of(article.author),
+      authors: article.authors,
       language: article.language,
       image: `/article/${article.image}`,
       url: `/article/${article.url}`,
@@ -225,14 +225,14 @@ export default function Home({ allArticles, allSeries }) {
                       />
                     </a>
                   </div>
-                  <div className={`flex flex-1 items-center py-2`}>
-                    <div className={`px-3 py-3`}>
+                  <div className={`flex flex-1 items-center py-0`}>
+                    <div className="flex -space-x-5 pl-3 pr-2 py-0">
                       {article.authors.map((author, idx) => (
-                        <a key={`author-avatar-${author}`} href={`/${author}`}>
-                        <img
+                        <a key={`author-avatar-${author}`} href={`/${author}`} className="inline-block">
+                          <img
                             src={`/author/${author}.jpg`}
                             alt={'Bookkity'}
-                            className={`rounded-full h-12 w-12 min-w-12`}
+                            className="rounded-full h-12 w-12 min-w-12 border-2 border-white bg-white"
                           />
                         </a>
                       ))}
@@ -247,7 +247,7 @@ export default function Home({ allArticles, allSeries }) {
                         {article.date.toLocaleDateString()} by
                         {article.authors.map((author, idx) => (
                           <a key={`author-url-${author}`} href={`/${author}`}>
-                            &nbsp;<span className={`text-gray-700`}>{author}</span>
+                            {idx > 0 ? ',' : ''}&nbsp;<span className={`text-gray-700`}>{author}</span>
                           </a>
                         ))}
                       </p>

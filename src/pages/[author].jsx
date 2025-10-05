@@ -26,7 +26,8 @@ export async function getStaticProps({ params: { author } }) {
             })),
       articles:
           articles
-              .filter(article => article.author === author)
+              .filter(article => article.authors.includes(author))
+              .filter(article => !article.url.startsWith("_"))
               .sort((a, b) => new Date(b.date) - new Date(a.date))
     }
   }
