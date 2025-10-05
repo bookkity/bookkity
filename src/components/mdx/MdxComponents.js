@@ -138,6 +138,17 @@ const Alert = ({type, children}) => {
   )
 }
 
+const ScrollableWrapper = ({ height, children }) => {
+  return (
+    <div
+      className={`overflow-y-scroll px-3 py-2 bg-gray-50 rounded-md`}
+      style={{ maxHeight: height || '200px' }}
+    >
+      {children}
+    </div>
+  )
+}
+
 export default {
   a: (props) => <a className={'text-purple-500'} {...props} />,
   p: (props) => <div className={'py-2'} {...props} />,
@@ -169,5 +180,6 @@ export default {
   Snippet,
   Highlight,
   References,
-  Spoiler
+  Spoiler,
+  ScrollableWrapper
 }
