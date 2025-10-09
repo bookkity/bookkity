@@ -29,6 +29,7 @@
     font-size: 0.85rem;
     color: rgb(111, 66, 193);
     font-family: "JetBrains Mono", monospace;
+    word-break: break-all ;
 }
 
 .mdx pre {

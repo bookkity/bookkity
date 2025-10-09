@@ -37,11 +37,9 @@ const H = ({ children, as, size }) => {
   )
 }
 
-
-
 // `text`
 const Highlight = (props) => (
-  <pre className={`px-2 text-xs bg-white rounded-lg whitespace-pre break-normal spacing`}>
+  <pre className={`px-2 text-xs bg-white rounded-lg whitespace-pre break-all spacing`}>
     {props.children}
   </pre>
 )
