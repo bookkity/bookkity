@@ -183,7 +183,7 @@ export default function Home({ allArticles, allSeries }) {
           <div className={`flex flex-wrap pt-4 md:pt-0 justify-center md:justify-start`}>
             {tags.map((tag) => (
               <div key={tag.name} className={`p-2 px-6 font-semibold ${tag.tag === selectedTag ? 'text-purple-800' : ''}`}>
-                <a href={`#${tag.tag}`} onClick={() => setSelectedTag(tag.tag)}>{tag.name}</a>
+                <a href={`#${tag.tag}`} onClick={() => setSelectedTag(selectedTag === tag.tag ? '' : tag.tag)}>{tag.name}</a>
               </div>
             ))}
           </div>
