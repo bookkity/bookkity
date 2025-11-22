@@ -23,7 +23,7 @@ const tags = [
 export async function getStaticProps() {
   const allArticles = await getArticles()
   const allSeries = await getSeries()
-  generateRssFeed(allArticles)
+  generateRssFeed(allArticles, allSeries)
 
   return {
     props: {
