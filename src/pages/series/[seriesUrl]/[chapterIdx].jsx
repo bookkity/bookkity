@@ -39,10 +39,49 @@ export async function getStaticProps({params: {seriesUrl, chapterIdx}}) {
 }
 
 export default function ChapterIdx({series, chapter: selectedChapter}) {
+  const title = `${selectedChapter.title} - ${series.details.title} | Bookkity`
+  const description = series.details.description || `Read "${selectedChapter.title}" from the "${series.details.title}" series on Bookkity - A community blog about programming, software development, and technology.`
+  const url = `https://bookkity.com/series/${series.details.url}/${selectedChapter.order}`
+  const imageUrl = series.details.image ? `https://bookkity.com/series${series.details.image}` : 'https://bookkity.com/images/boo.png'
+  const authorNames = series.details.authors?.join(', ') || 'Bookkity Team'
+
   return (
     <>
       <Head>
-        <title>Bookkity - Series</title>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content={selectedChapter.title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={url} />
+        <meta property="og:image" content={imageUrl} />
+        <meta property="og:image:alt" content={`Cover image for ${selectedChapter.title}`} />
+        <meta property="og:site_name" content="Bookkity" />
+        <meta property="og:locale" content={series.details.language === 'en' ? 'en_US' : 'en_US'} />
+
+        {/* Article specific OG tags */}
+        {selectedChapter.date && <meta property="article:published_time" content={new Date(selectedChapter.date).toISOString()} />}
+        {series.details.authors?.map(author => (
+          <meta key={`og-author-${author}`} property="article:author" content={author} />
+        ))}
+        {series.details.tags?.map(tag => (
+          <meta key={`og-tag-${tag}`} property="article:tag" content={tag} />
+        ))}
+        <meta property="article:section" content={series.details.title} />
+
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={selectedChapter.title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={imageUrl} />
+        <meta name="twitter:image:alt" content={`Cover image for ${selectedChapter.title}`} />
+
+        {/* Additional SEO Meta Tags */}
+        <meta name="author" content={authorNames} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={url} />
       </Head>
       <Layout>
         <div className={`flex min-h-full flex-col md:flex-row`}>
