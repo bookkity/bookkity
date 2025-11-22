@@ -1,0 +1,62 @@
+[
+  {
+    "id": "reposilite",
+    "title": "Reposilite",
+    "description": "Lightweight and easy-to-use repository manager for Maven artifacts. A modern alternative to Nexus Repository and Artifactory with focus on simplicity.",
+    "category": "product",
+    "url": "https://reposilite.com",
+    "image": "/project/reposilite.png",
+    "tags": ["kotlin", "maven", "repository", "jvm"],
+    "authors": ["dzikoysk"],
+    "featured": true,
+    "githubUrl": "https://github.com/dzikoysk/reposilite"
+  },
+  {
+    "id": "panda-lang",
+    "title": "Panda",
+    "description": "Clear and stylish programming language for JVM with modern syntax and powerful features for both beginners and experts.",
+    "category": "product",
+    "url": "https://panda-lang.org",
+    "image": "/project/panda.png",
+    "tags": ["java", "jvm", "programming-language"],
+    "authors": ["dzikoysk"],
+    "featured": true,
+    "githubUrl": "https://github.com/panda-lang/panda"
+  },
+  {
+    "id": "expressible",
+    "title": "Expressible",
+    "description": "Expression engine for Java with support for custom functions, operators and variables. Easy to integrate and extend.",
+    "category": "library",
+    "url": "https://github.com/panda-lang/expressible",
+    "image": "/project/expressible.png",
+    "tags": ["java", "expression", "parser"],
+    "authors": ["dzikoysk"],
+    "featured": false,
+    "githubUrl": "https://github.com/panda-lang/expressible"
+  },
+  {
+    "id": "cdn",
+    "title": "CDN",
+    "description": "Dependency injection library for Java with annotation-based configuration and automatic dependency resolution.",
+    "category": "library",
+    "url": "https://github.com/panda-lang/cdn",
+    "image": "/project/cdn.png",
+    "tags": ["java", "dependency-injection"],
+    "authors": ["dzikoysk"],
+    "featured": false,
+    "githubUrl": "https://github.com/panda-lang/cdn"
+  },
+  {
+    "id": "community-showcase",
+    "title": "Community Showcase",
+    "description": "A dedicated page showcasing amazing projects created by our community members. This project will feature detailed project pages and contributor spotlights.",
+    "category": "product",
+    "url": "community-showcase",
+    "image": "/project/community-showcase.png",
+    "tags": ["community", "showcase"],
+    "authors": ["dzikoysk", "rollczi"],
+    "featured": false
+  }
+]
+
