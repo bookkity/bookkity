@@ -1,11 +1,7 @@
 import Layout from "@/components/Layout"
 import Head from "next/head"
-import { getProjects } from "@/helpers/projects"
-import { useState, useMemo } from "react"
-import { Input } from "@/components/ui/input"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faSearch, faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons"
-import { Toggle } from "@/components/ui/toggle"
+import {getProjects} from "@/helpers/projects"
+import {useMemo, useState} from "react"
 
 export async function getStaticProps() {
   const projects = await getProjects()
@@ -20,52 +16,44 @@ function ProjectCard({ project }) {
   const linkUrl = isExternalUrl ? project.url : `/project/${project.id}`
 
   const cardContent = (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
+    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group flex flex-col h-72">
       <div className="relative">
         <img
           src={project.image || '/images/boo.png'}
           alt={project.title}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
           onError={(e) => {
             e.target.src = '/images/boo.png'
           }}
         />
-        {isExternalUrl && (
-          <div className="absolute top-2 right-2 bg-blue-500 text-white p-2 rounded-full">
-            <FontAwesomeIcon icon={faExternalLinkAlt} size="sm" />
-          </div>
-        )}
         {project.featured && (
           <div className="absolute top-2 left-2 bg-purple-600 text-white px-2 py-1 rounded text-xs font-semibold">
             Featured
           </div>
         )}
-      </div>
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
-          {project.title}
-        </h3>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-          {project.description}
-        </p>
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1">
           {project.tags.map((tag, index) => (
             <span
               key={index}
-              className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
+              className="bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs backdrop-blur-sm"
             >
               {tag}
             </span>
           ))}
         </div>
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-500">
+      </div>
+      <div className="px-5 py-3 flex-1 flex flex-col">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
+            {project.title}
+          </h3>
+          <p className="text-sm text-gray-500 ml-2">
             by {project.authors.join(', ')}
-          </div>
-          <div className="text-sm text-blue-600 font-medium">
-            {isExternalUrl ? 'View Project →' : 'Learn More →'}
-          </div>
+          </p>
         </div>
+        <p className="text-gray-600 text-sm flex-1">
+          {project.description}
+        </p>
       </div>
     </div>
   )
@@ -86,17 +74,28 @@ export default function Projects({ projects }) {
 
   const filteredProjects = useMemo(() => {
     return projects.filter(project => {
-      const matchesSearch = search === '' || 
+      return search === '' ||
         project.title.toLowerCase().includes(search.toLowerCase()) ||
         project.description.toLowerCase().includes(search.toLowerCase()) ||
         project.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
-
-      return matchesSearch
     })
   }, [projects, search])
 
-  const products = filteredProjects.filter(project => project.category === 'product')
-  const libraries = filteredProjects.filter(project => project.category === 'library')
+  // Use all projects instead of filtered when search is hidden
+  const displayProjects = projects
+
+  const products = displayProjects
+    .filter(project => project.category === 'product')
+    .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
+
+  const libraries = displayProjects
+    .filter(project => project.category === 'library')
+    .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
+
+  const research = displayProjects
+    .filter(project => project.category === 'research')
+    .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
+
   return (
     <>
       <Head>
@@ -104,15 +103,16 @@ export default function Projects({ projects }) {
         <meta name="description" content="Discover amazing projects created by our community members" />
       </Head>
       <Layout>
-        <div className="pt-6 px-4">
+        <div className="pt-4 px-4">
           <div className="w-full px-4 py-6 bg-white rounded-lg mb-6">
-            <h1 className="text-3xl font-bold text-center text-gray-900 mb-4">
+            {/* <h1 className="text-3xl font-bold text-center text-gray-900 mb-4">
               Community Projects
-            </h1>
-            <p className="text-center text-gray-600">
+            </h1> */}
+            <p className="text-center text-sm text-gray-950">
               Discover amazing projects created by our community members. From open-source tools to innovative solutions.
             </p>
           </div>
+          {/*
           <div className="mb-6 space-y-4">
             <div className="relative">
               <Input
@@ -127,8 +127,8 @@ export default function Projects({ projects }) {
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
               />
             </div>
-
           </div>
+          */}
 
           {/* Products Section */}
           {products.length > 0 && (
@@ -160,7 +160,22 @@ export default function Projects({ projects }) {
             </div>
           )}
 
-          {filteredProjects.length === 0 && (
+          {/* Research & Fun Section */}
+          {research.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <span className="bg-green-600 w-1 h-8 rounded mr-3"></span>
+                Research & Fun
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {research.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {displayProjects.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">
                 No projects found matching your criteria.

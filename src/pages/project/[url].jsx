@@ -48,9 +48,9 @@ export default function ProjectPage({ project }) {
           <div className="mb-6">
             <a
               href="/projects"
-              className="inline-flex items-center text-purple-600 hover:text-purple-700 transition-colors"
+              className="inline-flex items-center text-purple-600 hover:text-purple-700 transition-colors text-sm"
             >
-              <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+              <FontAwesomeIcon icon={faArrowLeft} className="mr-1 w-3 h-3" />
               Back to Projects
             </a>
           </div>
@@ -135,30 +135,7 @@ export default function ProjectPage({ project }) {
           {/* Project Content */}
           <div className="bg-white rounded-lg p-8">
             <div className="prose max-w-none">
-              <h2>About this Project</h2>
-              <p>
-                This is a placeholder content area for the internal project page.
-                In a real implementation, you would likely load this content from
-                markdown files or a CMS, similar to how articles and series work.
-              </p>
-
-              <h3>Features</h3>
-              <ul>
-                <li>Feature 1 description</li>
-                <li>Feature 2 description</li>
-                <li>Feature 3 description</li>
-              </ul>
-
-              <h3>Getting Started</h3>
-              <p>
-                Instructions on how to get started with this project would go here.
-                You could include code examples, installation steps, or usage examples.
-              </p>
-
-              <h3>Contributing</h3>
-              <p>
-                Information about how community members can contribute to this project.
-              </p>
+              
             </div>
           </div>
         </div>
