@@ -108,8 +108,8 @@ export default function Projects({ projects }) {
             {/* <h1 className="text-3xl font-bold text-center text-gray-900 mb-4">
               Community Projects
             </h1> */}
-            <p className="text-center text-sm text-gray-950">
-              Discover amazing projects created by our community members. From open-source tools to innovative solutions.
+            <p className="text-center text-md text-gray-950">
+              Discover projects created by our community members - from open-source tools to fun experiments.
             </p>
           </div>
           {/*

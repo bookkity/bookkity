@@ -1,0 +1,37 @@
+[
+  {
+    "id": "xmas-boo",
+    "title": "Xmas Boo 🎄",
+    "description": "Ręcznie robiona maskotka naszej społeczności — edycja świąteczna! ",
+    "price": 69.99,
+    "deliveryPrice": 18.99,
+    "currency": "PLN",
+    "images": [
+      {
+        "url": "/merch/xmas-boo/boo-gang.jpg"
+      },
+      {
+        "url": "/merch/xmas-boo/boo-selfie.jpg",
+        "thumbnail": true
+      },
+      {
+        "url": "/merch/xmas-boo/boo-zubr.jpg"
+      }
+    ],
+    "category": "Collectibles",
+    "featured": false,
+    "limitedEdition": true,
+    "region": "PL",
+    "available": true,
+    "author": {
+      "name": "Arty Marty",
+      "instagram": "https://www.instagram.com/artymartyhandmade/"
+    },
+    "details": {
+      "material": "100% włóczka Himalaya Dolphin Baby",
+      "dimensions": "Około 12cm wysokości",
+      "care": "Zalecane pranie ręczne",
+      "handmade": true
+    }
+  }
+]

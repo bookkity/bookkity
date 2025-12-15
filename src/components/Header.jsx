@@ -13,6 +13,7 @@ const menuItems = [
   {name: 'Articles', link: '/'},
   {name: 'Series', link: '/series'},
   {name: 'Projects', link: '/projects'},
+  {name: 'Merch', link: '/merch'},
   {name: 'About Us', link: '/about'},
 ]
 
