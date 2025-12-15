@@ -28,7 +28,7 @@ export default function Header() {
         <div className={'flex flex-col md:flex-row items-center justify-center md:justify-start px-4 py-4'}>
           <div className={``}>
             <img
-              src={`/images/boo.png`}
+              src={`/images/boo-xmas.jpg`}
               alt={'Bookkity'}
               className={`rounded-xl h-10 min-w-10`}
             />
