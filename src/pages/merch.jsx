@@ -14,7 +14,6 @@ export async function getStaticProps() {
 }
 
 function MerchCard({ item }) {
-  // Handle both string URLs and object format
   const images = item.images?.map(img => typeof img === 'string' ? img : img.url) || [item.image] || ['/images/boo.png']
   const thumbnailIndex = item.images?.findIndex(img => typeof img === 'object' && img.thumbnail)
   const [currentImageIndex, setCurrentImageIndex] = useState(thumbnailIndex !== -1 ? thumbnailIndex : 0)
@@ -120,14 +119,14 @@ export default function Merch({ merchItems }) {
     <>
       <Head>
         <title>Merch | X</title>
-        <meta name="description" content="Merch Bookkity - ręcznie robione gadżety dla polskiej społeczności" />
+        <meta name="description" content="Merch Bookkity - Ręcznie robione produkty stworzone z myślą o naszej społeczności ✨" />
       </Head>
       <Layout>
         <PolishOnlyPopup />
         <div className="pt-4 px-4">
           <div className="w-full px-4 py-6 bg-white rounded-lg mb-6">
             <p className="text-center text-md text-gray-950">
-                Oferujemy ręcznie robione produkty stworzone z myślą o naszej społeczności ✨
+                Ręcznie robione produkty stworzone z myślą o naszej społeczności ✨
             </p>
           </div>
 
