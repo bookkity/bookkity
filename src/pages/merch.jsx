@@ -118,7 +118,7 @@ export default function Merch({ merchItems }) {
   return (
     <>
       <Head>
-        <title>Merch | X</title>
+        <title>Merch | Bookkity</title>
         <meta name="description" content="Merch Bookkity - Ręcznie robione produkty stworzone z myślą o naszej społeczności ✨" />
       </Head>
       <Layout>
