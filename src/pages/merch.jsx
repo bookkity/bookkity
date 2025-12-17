@@ -105,7 +105,7 @@ function MerchCard({ item }) {
               </h3>
             </div>
             {!item.available && (
-              <span className="flex-shrink-0 w-2 h-2 rounded-full bg-red-400 mt-1.5" title="Sold out" />
+              <span className="flex-shrink-0 w-2 h-2 rounded-full bg-gray-300 mt-1.5" title="Sold out" />
             )}
           </div>
         </div>
