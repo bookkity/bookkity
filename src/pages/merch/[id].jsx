@@ -152,20 +152,26 @@ export default function MerchProduct({ item }) {
                 {item.title}
               </h1>
 
-              {/* Price */}
-              <div className="space-y-2">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-purple-600">
-                    {item.price} {item.currency}
-                  </span>
+              {/* Price / Out of Stock */}
+              {item.available ? (
+                <div className="space-y-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-purple-600">
+                      {item.price} {item.currency}
+                    </span>
+                  </div>
+                  {item.deliveryPrice && (
+                    <p className="text-sm text-gray-600 flex items-center gap-1.5">
+                      <img src="/images/inpost.png" alt="InPost" className="w-5 h-5" />
+                      { /* {item.deliveryPrice} {item.currency} */ } Dostawa InPost wliczona w cenę
+                    </p>
+                  )}
                 </div>
-                {item.deliveryPrice && (
-                  <p className="text-sm text-gray-600 flex items-center gap-1.5">
-                    <img src="/images/inpost.png" alt="InPost" className="w-5 h-5" />
-                    { /* {item.deliveryPrice} {item.currency} */ } Dostawa InPost wliczona w cenę
-                  </p>
-                )}
-              </div>
+              ) : (
+                <div className="inline-block bg-gray-200 rounded px-3 py-1.5">
+                  <p className="text-sm font-semibold text-gray-700">Wyprzedane</p>
+                </div>
+              )}
 
               {/* Description */}
               <div className="prose prose-gray">
