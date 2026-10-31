@@ -23,6 +23,7 @@ export async function getStaticProps({ params }) {
 
 export default function MerchProduct({ item }) {
   const [selectedImage, setSelectedImage] = useState(0)
+  const medieval = item.theme === 'halloween'
   // Handle both string URLs and object format
   const images = item.images?.map(img => typeof img === 'string' ? img : img.url) || [item.image] || ['/images/boo.png']
   const imageAuthors = item.images?.map(img => typeof img === 'object' ? img : null) || []
@@ -45,26 +46,26 @@ export default function MerchProduct({ item }) {
         <meta property="og:description" content={item.description} />
         <meta property="og:image" content={images[0]} />
       </Head>
-      <Layout>
+      <Layout dark={medieval}>
         <PolishOnlyPopup />
-        <div className="py-8">
+        <div className={`py-8 ${medieval ? 'theme-medieval' : ''}`}>
           {/* Breadcrumb */}
           <nav className="mb-6">
-            <ol className="flex items-center space-x-2 text-sm text-gray-500">
+            <ol className="flex items-center space-x-2 text-sm text-gray-500 dark:text-parchment-500">
               <li>
-                <a href="/merch" className="hover:text-purple-600 transition-colors">
+                <a href="/merch" className="hover:text-purple-600 dark:hover:text-ember-400 transition-colors">
                   Merch
                 </a>
               </li>
               <li>/</li>
-              <li className="text-gray-900 font-medium">{item.title}</li>
+              <li className="text-gray-900 dark:text-parchment font-medium">{item.title}</li>
             </ol>
           </nav>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Image Section */}
-            <div className="space-y-4">
-              <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-md relative group">
+            <div className="space-y-4 dark:w-full dark:max-w-md dark:mx-auto">
+              <div className="aspect-square dark:aspect-[3/4] rounded-lg dark:rounded-none dark:rounded-t-full overflow-hidden relative group bg-white dark:bg-ink-800 shadow-md dark:shadow-none dark:ring-1 dark:ring-parchment/30 dark:ring-offset-[6px] dark:ring-offset-ink">
                 <img
                   src={images[selectedImage]}
                   alt={item.title}
@@ -78,19 +79,19 @@ export default function MerchProduct({ item }) {
                   <>
                     <button
                       onClick={goToPrevious}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white dark:bg-ink/80 dark:hover:bg-ink rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       aria-label="Previous image"
                     >
-                      <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-gray-800 dark:text-parchment" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
                     <button
                       onClick={goToNext}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white dark:bg-ink/80 dark:hover:bg-ink rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       aria-label="Next image"
                     >
-                      <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-gray-800 dark:text-parchment" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
@@ -101,7 +102,7 @@ export default function MerchProduct({ item }) {
                           key={idx}
                           onClick={() => setSelectedImage(idx)}
                           className={`w-2 h-2 rounded-full transition-colors ${
-                            idx === selectedImage ? 'bg-purple-600' : 'bg-gray-300 hover:bg-gray-400'
+                            idx === selectedImage ? 'bg-purple-600 dark:bg-ember' : 'bg-gray-300 hover:bg-gray-400 dark:bg-parchment/40 dark:hover:bg-parchment/70'
                           }`}
                           aria-label={`View image ${idx + 1}`}
                         />
@@ -112,13 +113,13 @@ export default function MerchProduct({ item }) {
               </div>
               {/* Thumbnail strip */}
               {hasMultipleImages && (
-                <div className="flex gap-2 overflow-x-auto pb-2">
+                <div className="flex gap-2 dark:gap-3 overflow-x-auto pb-2 dark:pt-2 dark:justify-center">
                   {images.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setSelectedImage(idx)}
-                      className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-colors ${
-                        selectedImage === idx ? 'border-purple-600' : 'border-transparent hover:border-gray-300'
+                      className={`flex-shrink-0 w-20 h-20 dark:h-24 rounded-md dark:rounded-none dark:rounded-t-full overflow-hidden border-2 dark:border transition-colors ${
+                        selectedImage === idx ? 'border-purple-600 dark:border-ember' : 'border-transparent hover:border-gray-300 dark:border-parchment/20 dark:hover:border-parchment/50'
                       }`}
                     >
                       <img src={img} alt={`${item.title} ${idx + 1}`} className="w-full h-full object-cover" />
@@ -132,11 +133,18 @@ export default function MerchProduct({ item }) {
             <div className="space-y-6">
               {/* Badges */}
               <div className="flex flex-wrap gap-2">
-                <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
-                  {item.category === 'Collectibles' ? 'Kolekcjonerskie' : item.category}
-                </span>
+                {!item.preorder && (
+                  <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                    {item.category === 'Collectibles' ? 'Kolekcjonerskie' : item.category}
+                  </span>
+                )}
+                {item.preorder && (
+                  <span className="inline-block px-3 py-1 rounded-full dark:rounded-none text-sm font-medium bg-orange-100 text-orange-700 dark:px-0 dark:py-0 dark:bg-transparent dark:text-ember-400 dark:font-condensed dark:font-bold dark:uppercase dark:tracking-wider dark:text-sm">
+                    PREORDER{item.shippingEstimate && `: Wysyłka ${item.shippingEstimate}`}
+                  </span>
+                )}
                 {item.limitedEdition && (
-                  <span className="inline-block bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
                     ⭐ Limitowana Edycja
                   </span>
                 )}
@@ -148,22 +156,28 @@ export default function MerchProduct({ item }) {
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
+              <h1 className="text-3xl lg:text-4xl dark:text-6xl dark:lg:text-7xl font-bold dark:font-normal dark:font-blackletter text-gray-900 dark:text-ember-400">
                 {item.title}
               </h1>
 
               {/* Price / Out of Stock */}
               {item.available ? (
                 <div className="space-y-2">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-purple-600">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-3xl font-bold dark:font-medium text-purple-600 dark:text-parchment">
                       {item.price} {item.currency}
                     </span>
+                    {item.deliveryPrice && !item.deliveryIncluded && (
+                      <span className="inline-flex items-center gap-1.5 text-sm sm:text-[15px] text-gray-600 dark:text-parchment-400">
+                        + {item.deliveryPrice} {item.currency} dostawa {item.deliveryProvider || 'InPost'}
+                        <img src="/images/inpost.png" alt="" className="w-4 h-4" />
+                      </span>
+                    )}
                   </div>
-                  {item.deliveryPrice && (
-                    <p className="text-sm text-gray-600 flex items-center gap-1.5">
+                  {item.deliveryPrice && item.deliveryIncluded && (
+                    <p className="text-sm flex items-center gap-1.5 text-gray-600 dark:text-parchment-500">
                       <img src="/images/inpost.png" alt="InPost" className="w-5 h-5" />
-                      { /* {item.deliveryPrice} {item.currency} */ } Dostawa InPost wliczona w cenę
+                      Dostawa {item.deliveryProvider || 'InPost'} wliczona w cenę
                     </p>
                   )}
                 </div>
@@ -173,28 +187,38 @@ export default function MerchProduct({ item }) {
                 </div>
               )}
 
+              {/* Traits */}
+              {item.traits?.map((trait) => (
+                <p key={trait.name} className="text-sm sm:text-[15px] leading-relaxed text-gray-600 dark:text-parchment-400">
+                  <span className="trait-badge mr-2 bg-orange-600 dark:bg-ember text-white">
+                    {trait.name}
+                  </span>
+                  {trait.description}
+                </p>
+              ))}
+
               {/* Description */}
-              <div className="prose prose-gray">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Opis</h3>
-                <p className="text-gray-600 leading-relaxed">
+              <div className="prose prose-gray dark:border-t dark:pt-6 dark:border-parchment/15">
+                <h3 className="text-lg dark:text-2xl font-semibold dark:font-normal dark:font-blackletter mb-2 text-gray-900 dark:text-parchment">Opis</h3>
+                <p className="leading-relaxed dark:text-lg text-gray-600 dark:text-parchment-400">
                   {item.description}
                 </p>
               </div>
 
               {/* Product Details */}
               {item.details && (
-                <div className="border-t border-gray-200 pt-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Szczegóły produktu</h3>
+                <div className="border-t pt-6 border-gray-200 dark:border-parchment/15">
+                  <h3 className="text-lg dark:text-2xl font-semibold dark:font-normal dark:font-blackletter mb-4 text-gray-900 dark:text-parchment">Szczegóły produktu</h3>
                   <dl className="space-y-3">
                     {item.author?.instagram && (
                       <div className="flex">
-                        <dt className="w-32 flex-shrink-0 text-gray-500">Artysta</dt>
-                        <dd className="text-gray-900">
+                        <dt className="w-32 flex-shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Artysta</dt>
+                        <dd className="text-gray-900 dark:text-parchment">
                           <a
                             href={item.author.instagram}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-purple-600 hover:text-purple-700 font-medium transition-colors"
+                            className="inline-flex items-center gap-1.5 font-medium transition-colors text-purple-600 hover:text-purple-700 dark:text-ember-400 dark:hover:text-ember-300"
                           >
                             {item.author.instagram.includes('instagram') && (
                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -208,28 +232,28 @@ export default function MerchProduct({ item }) {
                     )}
                     {item.details.material && (
                       <div className="flex">
-                        <dt className="w-32 flex-shrink-0 text-gray-500">Materiał</dt>
-                        <dd className="text-gray-900">{item.details.material}</dd>
+                        <dt className="w-32 flex-shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Materiał</dt>
+                        <dd className="text-gray-900 dark:text-parchment">{item.details.material}</dd>
                       </div>
                     )}
                     {item.details.dimensions && (
                       <div className="flex">
-                        <dt className="w-32 flex-shrink-0 text-gray-500">Wymiary</dt>
-                        <dd className="text-gray-900">{item.details.dimensions}</dd>
+                        <dt className="w-32 flex-shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Wymiary</dt>
+                        <dd className="text-gray-900 dark:text-parchment">{item.details.dimensions}</dd>
                       </div>
                     )}
                     {item.details.care && (
                       <div className="flex">
-                        <dt className="w-32 flex-shrink-0 text-gray-500">Pielęgnacja</dt>
-                        <dd className="text-gray-900">{item.details.care}</dd>
+                        <dt className="w-32 flex-shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Pielęgnacja</dt>
+                        <dd className="text-gray-900 dark:text-parchment">{item.details.care}</dd>
                       </div>
                     )}
                     {item.details.handmade && (
                       <div className="flex">
-                        <dt className="w-32 flex-shrink-0 text-gray-500">Handmade</dt>
-                        <dd className="text-gray-900">
+                        <dt className="w-32 flex-shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Handmade</dt>
+                        <dd className="text-gray-900 dark:text-parchment">
                           <span className="inline-flex items-center gap-1">
-                            <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-4 h-4 text-green-500 dark:text-ember-400" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
                             Tak
@@ -242,31 +266,40 @@ export default function MerchProduct({ item }) {
               )}
 
               {/* Contact/Order Info */}
-              <div className="border-t border-gray-200 pt-6">
-                <div className="bg-purple-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-purple-900 mb-2">
-                    Jak zamówić?
+              <div className="border-t pt-6 border-gray-200 dark:border-parchment/15">
+                <div className={`rounded-lg dark:rounded-none p-4 dark:p-6 bg-purple-50 dark:bg-parchment ${
+                  item.preorder ? 'flex flex-wrap items-center gap-x-4 gap-y-3' : ''
+                }`}>
+                  <h3 className={`text-lg dark:text-2xl font-semibold dark:font-normal dark:font-blackletter text-purple-900 dark:text-ink ${
+                    item.preorder ? '' : 'mb-2'
+                  }`}>
+                    {item.preorder ? 'Jak zarezerwować?' : 'Jak zamówić?'}
                   </h3>
-                  <p className="text-purple-700 text-sm mb-3">
-                    Skontaktuj się z nami na Discordzie, aby złożyć zamówienie.
-                    Liczba sztuk jest ograniczona, zgłoszenia bedą rozpatrywane w kolejności ich otrzymania.
-                  </p>
+                  {item.preorder && (
+                    <span className="text-2xl text-purple-900 dark:text-ink" aria-hidden="true">→</span>
+                  )}
+                  {!item.preorder && (
+                    <p className="text-sm dark:text-base mb-3 dark:mb-4 text-purple-700 dark:text-ink-700">
+                      Skontaktuj się z nami na Discordzie, aby złożyć zamówienie.
+                      Liczba sztuk jest ograniczona, zgłoszenia bedą rozpatrywane w kolejności ich otrzymania.
+                    </p>
+                  )}
                   <a
                     href="https://discord.gg/bookkity"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                    className="inline-flex items-center gap-2 text-white dark:text-parchment px-4 py-2 rounded-lg dark:rounded-none font-medium transition-colors bg-purple-600 hover:bg-purple-700 dark:bg-ink dark:hover:bg-ember"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
                     </svg>
-                    Napisz na Discordzie
+                    {item.preorder ? 'Discord' : 'Napisz na Discordzie'}
                   </a>
                 </div>
               </div>
 
               {/* Shipping Notice */}
-              <div className="text-sm text-gray-500">
+              <div className="text-sm sm:text-[15px] text-gray-500 dark:text-parchment-500">
                 <p>📦 Wysyłka tylko na terenie Polski</p>
               </div>
             </div>

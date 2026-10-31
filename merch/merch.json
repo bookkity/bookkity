@@ -1,10 +1,66 @@
 [
   {
+    "id": "boo-halloween",
+    "title": "Halloween Boo",
+    "titleEmoji": "🎃",
+    "description": "Ręcznie robiona maskotka naszej społeczności, tym razem w halloweenowej edycji!",
+    "price": 66.6,
+    "deliveryPrice": 10,
+    "deliveryIncluded": false,
+    "deliveryProvider": "Allegro/InPost",
+    "shippingEstimate": "w połowie listopada",
+    "currency": "PLN",
+    "traits": [
+      {
+        "name": "Lootbox",
+        "description": "Dla odważnych: poproś o losowy kolor!"
+      }
+    ],
+    "images": [
+      {
+        "url": "/merch/boo-halloween/boo-alone-in-room-analog.jpg",
+        "thumbnail": true
+      },
+      {
+        "url": "/merch/boo-halloween/boo-duo-side-analog.jpg"
+      },
+      {
+        "url": "/merch/boo-halloween/boo-duo-depth-analog.jpg"
+      },
+      {
+        "url": "/merch/boo-halloween/boo-duo-closeup-analog.jpg"
+      }
+    ],
+    "banner": {
+      "url": "/merch/boo-halloween/boo-duo-depth-analog.jpg",
+      "position": "50% 30%",
+      "background": "#1B1917"
+    },
+    "category": "Collectibles",
+    "featured": false,
+    "limitedEdition": false,
+    "region": "PL",
+    "available": true,
+    "preorder": true,
+    "theme": "halloween",
+    "author": {
+      "name": "Arty Marty",
+      "instagram": "https://www.instagram.com/artymartyhandmade/"
+    },
+    "details": {
+      "material": "100% włóczka Himalaya Dolphin Baby",
+      "dimensions": "Około 12cm wysokości",
+      "care": "Zalecane pranie ręczne",
+      "handmade": true
+    }
+  },
+  {
     "id": "xmas-boo",
     "title": "Xmas Boo 🎄",
-    "description": "Ręcznie robiona maskotka naszej społeczności — edycja świąteczna! ",
+    "description": "Ręcznie robiona maskotka naszej społeczności, edycja świąteczna!",
     "price": 59.99,
     "deliveryPrice": 18.99,
+    "deliveryIncluded": true,
     "currency": "PLN",
     "images": [
       {
