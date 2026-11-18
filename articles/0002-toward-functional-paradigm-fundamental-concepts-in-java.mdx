@@ -115,8 +115,10 @@ public int calculateActiveReservations(List<Reservation> reservations) { // List
 }
 ```
 
-Of course we can't force the caller to pass such a list.
-If the method is a part of our public API, we can copy the list at the boundary and work on our own instance.
+The catch is that we can't demand such a list in the signature.
+`List.of()` and `new ArrayList<>()` both give us a `java.util.List`, so the type says nothing about mutability -
+the JDK simply has no type for an immutable list.
+Until we reach for one, the best we can do is to copy the list at the boundary and work on our own instance.
 
 ```java
 ShowStats getShowStats(List<Reservation> reservations) {
@@ -126,6 +128,10 @@ ShowStats getShowStats(List<Reservation> reservations) {
     return new ShowStats(activeReservations, totalReservations);
 }
 ```
+
+A dedicated type solves it at the root - with Vavr's `io.vavr.collection.List` in the signature
+the caller can't hand us anything mutable, and the defensive copy becomes pointless.
+That's one more reason to look outside the JDK.
 
 But there are a few problems with standard "immutable" Java collections:
 - The behavior seems more like read-only than immutable. An immutable collection should let us add an element and return a new collection, instead of refusing the operation.
