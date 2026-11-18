@@ -162,9 +162,16 @@ Unfortunately, such collections are not built in Java, so we need to use externa
 
 ### Functions
 Functional programming is all about programming with functions.
-Functions are:
-- Total. For every input, they return an output. 
-- Pure. The function return values are identical for identical arguments, and the function has no side effects.
+We want our functions to be:
+- Total. For every value of the input type, they return a valid output. No exceptions, no `null`.
+- Pure. The result depends only on the arguments, and the function has no side effects. Same arguments, same result.
+
+These are two separate properties.
+`Integer.parseInt("abc")` is pure, but not total - it throws for some inputs.
+A method that always returns a value but writes to a database is total, but not pure.
+
+Immutability is a third thing. It's a property of data, not of functions.
+It doesn't make a function pure by itself, but it helps a lot - a function can't depend on state that changes.
 
 Let's review a few methods and determine if they are total and pure.
 
@@ -173,10 +180,10 @@ class Account {
     private BigDecimal balance;
         
     void deposit(BigDecimal amount) {
-        if (amount <= 0) {
+        if (amount.signum() <= 0) {
             throw new IllegalArgumentException();
         }
-        balance += amount;
+        balance = balance.add(amount);
     }
 }
 ```
@@ -187,7 +194,7 @@ Methods that return void:
 - cannot be used in method chaining.
 ```java
 account.map(ac -> {
-    ac.deposit(BigDecimal.of(10));
+    ac.deposit(BigDecimal.valueOf(10));
     return ac;
 });
 ```
@@ -196,28 +203,29 @@ account.map(ac -> {
 - Make it more difficult to track changes that have been made.
 </Alert>
 
-It's not total nor pure.
-The method returns output only if the argument is greater than 0, and it modifies the internal state,
-so depending on the current state the method may behave differently.
+It's neither total nor pure.
+It's not total, because it throws for amounts less than or equal to 0.
+It's not pure, because it modifies `balance` - that's a side effect.
 
 To make it total, we can introduce a new type that allows only to provide positive BigDecimals.
 So now our method signature forces us to use the appropriate parameter.
 
 ```java
 void deposit(PositiveBigDecimal amount) {
-    balance += amount;
+    balance = balance.add(amount.value());
 }
 ```
+
+Now it's total - there is no input it can't handle.
+But it's still not pure, it still modifies `balance`.
 
 Let's try to make it also pure.
 What if we make this object immutable?
 
 ```java
-class Account {
-    private final BigDecimal balance;
-        
-    Account deposit(BigDecimal amount) {
-        return new Account(balance + amount);
+record Account(BigDecimal balance) {
+    Account deposit(PositiveBigDecimal amount) {
+        return new Account(balance.add(amount.value()));
     }
 }
 ```
@@ -226,35 +234,57 @@ You may say it's still not pure because it still depends on the internal state.
 But what if we write it down like this:
 
 ```java
-static Account deposit(Account account, BigDecimal amount) {
-    return new Account(account.balance() + amount);
+static Account deposit(Account account, PositiveBigDecimal amount) {
+    return new Account(account.balance().add(amount.value()));
 }
 ```
 As you see, we can just treat our object as the first argument of our function.
-So the first approach is absolutely fine and can be acknowledged as pure.
+The internal state can't change, so the same account and amount always give the same result.
+So the first approach is absolutely fine and can be acknowledged as pure. And it's still total.
+
 Let's take a look at another example:
 
 ```java
-private Map<Long, User> users = new HashMap<>();
+private final Map<Long, User> users = new HashMap<>();
 
 User getUser(long id) {
     return users.get(id);
 }
 ```
 Is the function pure?
-It's not, It can return User or null for the same argument.
+It's not, but not because it can return `null`.
+It reads `users`, which is not an argument and can be modified by any other method.
+Call `getUser(1)`, someone calls `users.remove(1L)`, call `getUser(1)` again - same argument, different result.
 
-How can we fix it? We can present it explicitly using a type system.
+Is it total?
+Not really. The signature says it returns a `User`, but for an unknown id we get `null`.
+
+We can fix the second problem using the type system.
 In this case `Optional` seems reasonable.
 
 ```java
 Optional<User> getUser(long id) {
-    return Optional.ofNullable(map.get(id));
+    return Optional.ofNullable(users.get(id));
 } 
 ```
 
-The side effect still exists, but we encoded that fact using type system.
-It's not hidden like in the previous example.
+The missing user is now visible in the signature, not hidden behind `null`, so the function is total.
+But the function is still not pure - it still reads the mutable `users` map.
+`Optional` solves the problem of representing a missing value, not purity.
+
+To make it pure, we have to pass the data as an argument:
+
+```java
+static Optional<User> getUser(Map<Long, User> users, long id) {
+    return Optional.ofNullable(users.get(id));
+}
+```
+
+Now the result depends only on the arguments.
+As long as the map we pass is immutable (e.g. created with `Map.copyOf()`), the same arguments always give the same result.
+
+In a real application `users` would be a database, and reading from a database is never pure.
+That's fine - we can't avoid it, but we can keep such code at the edges and the rest of the logic pure.
 
 #### Optional
 
