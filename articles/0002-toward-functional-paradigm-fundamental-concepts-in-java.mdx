@@ -10,11 +10,11 @@ tags: ["java"]
 
 ## Introduction
 
-Functional Programming offers valuable concepts that can enhance our code quality and maintainability. By using immutable data structures and pure functions, we can reduce side effects, making our code more predictable and easier to debug.
+Functional Programming offers valuable concepts that can enhance our code quality and maintainability. By using immutable data structures and pure functions, we can push side effects out of most of our code, making it more predictable and easier to debug.
 We will dig into the basics, covering the following topics:
 * [Immutability](#immutability) - State management.
 * [Functions](#functions) - Functional programming fundament.
-  * [Optional](#optional) - Making a missing value explicit.
+  * [Working with Optional](#working-with-optional) - `map` and `flatMap` instead of `isPresent`.
   * [Validation](#validation) - Making errors explicit.
 * [Functional iceberg](#functional-iceberg) - Where to stop in Java.
 
@@ -29,12 +29,12 @@ Immutable objects, once created, cannot be modified. They remain the same throug
 public class Reservation {
     private final ReservationId id;
     private final ReservationStatus status;
-    
+
     public Reservation(ReservationId id, ReservationStatus status) {
         this.id = id;
         this.status = status;
     }
-    
+
     // getters
     // equals & hashCode
 }
@@ -95,7 +95,7 @@ public int calculateActiveReservations(List<Reservation> reservations) {
 If we pass an `ArrayList` the method will modify the list and that will cause a bug
 
 ```java
-ShowStats getShowStats(List<Reservation> reservations) { 
+ShowStats getShowStats(List<Reservation> reservations) {
     // reservations = [Reservation[status=ACTIVE], Reservation[status=ACTIVE], Reservation[status=CANCELLED]]
     int activeReservations = calculateActiveReservations(reservations); // 2
     // reservations = [Reservation[status=ACTIVE], Reservation[status=ACTIVE]]
@@ -131,7 +131,7 @@ ShowStats getShowStats(List<Reservation> reservations) {
 
 But there are a few problems with standard "immutable" Java collections:
 - The behavior seems more like read-only than immutable. An immutable collection should let us add an element and return a new collection, instead of refusing the operation.
-- Informs about illegal operations at runtime.
+- They report illegal operations at runtime, not at compile time.
 
 So let's see how else we can approach the subject.
 
@@ -212,7 +212,7 @@ Let's review a few methods and determine if they are total and pure.
 ```java
 class Account {
     private BigDecimal balance;
-        
+
     void deposit(BigDecimal amount) {
         if (amount.signum() <= 0) {
             throw new IllegalArgumentException();
@@ -314,7 +314,7 @@ It reads `users`, which is not an argument and can be modified by any other meth
 Call `getUser(1)`, someone calls `users.remove(1L)`, call `getUser(1)` again - same argument, different result.
 
 Is it total?
-Not really. The signature says it returns a `User`, but for an unknown id we get `null`.
+No. The signature says it returns a `User`, but for an unknown id we get `null`.
 
 We can fix the second problem using the type system.
 In this case `Optional` seems reasonable.
@@ -322,7 +322,7 @@ In this case `Optional` seems reasonable.
 ```java
 Optional<User> getUser(long id) {
     return Optional.ofNullable(users.get(id));
-} 
+}
 ```
 
 The missing user is now visible in the signature, not hidden behind `null`, so the function is total.
@@ -343,17 +343,17 @@ As long as the map we pass is immutable (e.g. created with `Map.copyOf()`), the 
 In a real application `users` would be a database, and reading from a database is never pure.
 That's fine - we can't avoid it, but we can keep such code at the edges and the rest of the logic pure.
 
-#### Optional
+#### Working with Optional
 
 For those not familiar with FP the most straightforward way to use `Optional` will be
 ```java
 Optional<User> userOpt = getUser(1);
 if (userOpt.isPresent()) {
-    User user = userOpt.get();    
+    User user = userOpt.get();
 }
 ```
 
-But it's not really how we do it functionally. 
+But it's not really how we do it functionally.
 In most cases, we should avoid invoking `get()`.
 We want to use `map` and `flatMap` operations.
 
@@ -363,7 +363,7 @@ We want to use `map` and `flatMap` operations.
         public String displayUsername(long userId) {
             Optional<User> userOpt = getUser(userId);
             if (userOpt.isPresent()) {
-                return userOpt.get().getName();
+                return userOpt.get().getUsername();
             }
             return "Anonymous";
         }
@@ -373,7 +373,7 @@ We want to use `map` and `flatMap` operations.
         ```java
         public String displayUsername(long userId) {
             return getUser(userId)
-                .map(User::getName)
+                .map(User::getUsername)
                 .orElse("Anonymous");
         }
 
@@ -383,7 +383,7 @@ We want to use `map` and `flatMap` operations.
 </CodeVariants>
 
 The first piece of code is not perfect, but we can live with it.
-Let's imagine `User#getUsername` returns `Optional<String>`
+Now imagine `User#getUsername` returns `Optional<String>` instead of a plain `String`.
 
 <CodeVariants tabs={false}>
     <CodeVariant name="Bad  ❌">
@@ -404,8 +404,8 @@ Let's imagine `User#getUsername` returns `Optional<String>`
         ```java {3}
         public String displayUsername(long userId) {
             return getUser(userId)
-                .flatMap(User::getUsername) 
-                .orElse("Anonymous");    
+                .flatMap(User::getUsername)
+                .orElse("Anonymous");
         }
 
 
@@ -470,12 +470,11 @@ ResponseEntity<?> register(String name) {
 
 Note that `createUser` is still not total - it throws `NullPointerException` for `null`.
 `Either` describes the errors we decided to model, it doesn't protect us from the ones we ignore.
-Here the same trick as with `PositiveBigDecimal` applies: a `UserName` type validated in its constructor
-moves the problem to a single place instead of every method taking a `String`.
+The answer is a `UserName` type, so that the check happens once instead of in every method taking a `String`.
 
-This also closes the loop on `PositiveBigDecimal` from the previous section.
+And that brings us back to `PositiveBigDecimal` from the previous section.
 Its constructor throws, so creating the type was never total - we only moved the partiality out of `deposit`.
-With `Either` we can push it one step further and make the creation total too.
+`Either` lets us make the creation total as well.
 
 ```java
 record PositiveBigDecimal(BigDecimal value) {
@@ -498,6 +497,9 @@ The constructor stays as a guard against our own bugs, but the application code 
 which handles every `BigDecimal` we can throw at it. The validation happens once, at the edge,
 and from that point on the type carries the proof.
 
+This shape has a name - a smart constructor: a guarded constructor plus a factory that returns the error
+instead of throwing it. `UserName` works exactly the same way.
+
 Another interesting class is `Validation`. Like `Either`, `Validation` contains two paths, valid and invalid.
 The main difference is that instead of stopping at the first failure, `Validation` runs all the checks and accumulates their errors.
 <References links={[
@@ -515,7 +517,7 @@ record Flight(String departure, String destination) {
 List<Flight> load(List<String> lines) {
     return lines.stream().map(this::parse).toList();
 }
-    
+
 private Flight parse(String line) {
     var args = line.split(",");
     String departure = args[0];
@@ -528,7 +530,7 @@ private Flight parse(String line) {
     }
     return new Flight(departure, destination);
 }
-    
+
 private boolean isValidIcaoCode(String icaoCode) {
     return icaoCode.length() == 4;
 }
@@ -536,7 +538,7 @@ private boolean isValidIcaoCode(String icaoCode) {
 
 Let's imagine we want to upload a CSV file with hundreds of rows and some of them contain errors.
 Do you see a problem with the above solution?
-If there are errors in our CSV file we won't be informed about all errors at once, but only **first** encountered error.
+If there are errors in our CSV file we won't be informed about all errors at once, but only about the **first** one.
 In this case, a list of errors would be handier.
 For that purpose, we can use `Validation` from Vavr.
 
@@ -544,7 +546,7 @@ Note that from now on `List` and `Seq` come from `io.vavr.collection`,
 because we need a `map` operation on the collection itself.
 
 ```java
-public Seq<Validation<Seq<String>, Flight>> load(Seq<String> lines) {
+Seq<Validation<Seq<String>, Flight>> load(Seq<String> lines) {
     return lines.map(this::parse);
 }
 
@@ -578,7 +580,7 @@ The method is declared as `Validation<Seq<E>, Seq<T>> sequence(Iterable<? extend
 so the errors are accumulated as well - which is exactly what we need here.
 
 ```java
-Validation<Seq<String>, Seq<Flight>> result = Validation.sequence(load(input));
+Validation<Seq<String>, Seq<Flight>> result = Validation.sequence(load(lines));
 String message = result.fold(
     strings -> strings.mkString("Failed to load flights: \n", "\n", ""),
     flights -> "Successfully loaded " + flights.size() + " flights."
@@ -655,6 +657,10 @@ So in Java, I would stick to the basics; otherwise, your colleagues might hate y
 We have learned several key concepts of functional programming. These basics are well-supported by the language and should not disturb our team members.
 - Immutability should be our default choice. Use record classes, and the same goes for collections, although you may already be doing this, perhaps unknowingly?
 `List.of` returns `ImmutableCollections.List`, `Stream#toList()` returns `Collections.unmodifiableList`.
+Just remember those are read-only, not immutable, and the JDK has no type to demand one - at an API boundary we still need `List.copyOf`, or a library like Vavr.
+- Total and pure are two separate properties. A method can return a value for every input and still touch the world, and the other way around.
+- Wrap values in types that validate once, at the edge: `PositiveBigDecimal` instead of `BigDecimal`, `UserName` instead of `String`.
+Every method downstream can then trust its arguments.
 - For domain errors, prefer `Either` and `Validation`. The latter allows holding a list of errors. Reserve **exception**s for **exception**al situations.
 - Avoid `void`.
 
