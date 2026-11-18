@@ -57,7 +57,7 @@ the only way to "update" the object is to create a new one with changed values.
 ```java
 public record Reservation(ReservationId id, ReservationStatus status) {
     Reservation cancel() {
-        return new Reservation(id, ReservationStatus.Cancelled);
+        return new Reservation(id, ReservationStatus.CANCELLED);
     }
 }
 ```
@@ -65,7 +65,7 @@ public record Reservation(ReservationId id, ReservationStatus status) {
 What are the main benefits of using immutable objects?
 - Immutable objects are thread-safe, they can be shared among multiple threads without restraint.
 - Allows you to reason about a piece of code independently of the rest of the program because our internal state can't be changed by another part of our system.
-- We can model things like they are, e.g. events - the fact already happened we can't change past.
+- We can model things like they are, e.g. events - a fact that already happened, and we can't change the past.
 
 #### Immutable collections
 Immutable collections, like immutable objects, cannot be updated after creation.
@@ -87,7 +87,7 @@ At first glance, it looks fine, but what if `calculateActiveReservations()` remo
 
 ```java
 public int calculateActiveReservations(List<Reservation> reservations) {
-    reservations.removeIf(reservation -> reservation.status() != ReservationStatus.Active);
+    reservations.removeIf(reservation -> reservation.status() != ReservationStatus.ACTIVE);
     return reservations.size();
 }
 ```
@@ -96,10 +96,10 @@ If we pass an `ArrayList` the method will modify the list and that will cause a 
 
 ```java
 ShowStats getShowStats(List<Reservation> reservations) { 
-    // reservations = [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
+    // reservations = [Reservation[status=ACTIVE], Reservation[status=ACTIVE], Reservation[status=CANCELLED]]
     int activeReservations = calculateActiveReservations(reservations); // 2
-    // reservations = [Reservation[status=Active], Reservation[status=Active]]
-    int totalReservations = reservations.size(); // 2
+    // reservations = [Reservation[status=ACTIVE], Reservation[status=ACTIVE]]
+    int totalReservations = reservations.size(); // 2, and it should be 3
     return new ShowStats(activeReservations, totalReservations);
 }
 ```
@@ -110,7 +110,7 @@ Neither of them allows modification, both inform us about that through an `Unsup
 
 ```java
 public int calculateActiveReservations(List<Reservation> reservations) { // List.of();
-    reservations.removeIf(reservation -> reservation.status() != ReservationStatus.Active); // UnsupportedOperationException
+    reservations.removeIf(reservation -> reservation.status() != ReservationStatus.ACTIVE); // UnsupportedOperationException
     return reservations.size();
 }
 ```
@@ -128,10 +128,6 @@ ShowStats getShowStats(List<Reservation> reservations) {
     return new ShowStats(activeReservations, totalReservations);
 }
 ```
-
-A dedicated type solves it at the root - with Vavr's `io.vavr.collection.List` in the signature
-the caller can't hand us anything mutable, and the defensive copy becomes pointless.
-That's one more reason to look outside the JDK.
 
 But there are a few problems with standard "immutable" Java collections:
 - The behavior seems more like read-only than immutable. An immutable collection should let us add an element and return a new collection, instead of refusing the operation.
@@ -186,6 +182,8 @@ class ImmutableList<T> {
 ]} />
 
 Unfortunately, such collections are not built in Java, so we need to use external libraries like Vavr.io
+And that gives us back what the JDK couldn't express: with `io.vavr.collection.List` in the signature
+the caller can't hand us a mutable list, so the defensive copy from the beginning of this section becomes unnecessary.
 
 ### Functions
 Functional programming is all about programming with functions.
@@ -456,7 +454,7 @@ Here the same trick as with `PositiveBigDecimal` applies: a `UserName` type vali
 moves the problem to a single place instead of every method taking a `String`.
 
 Another interesting class is `Validation`. Like `Either`, `Validation` contains two paths, valid and invalid.
-The main difference is that instead of chaining the result from the first event to the next, `Validation` validates all events.
+The main difference is that instead of stopping at the first failure, `Validation` runs all the checks and accumulates their errors.
 <References links={[
 { title: "Validation", url: "https://eed3si9n.com/learning-scalaz/Validation.html" },
 ]} />
@@ -494,7 +492,7 @@ private boolean isValidIcaoCode(String icaoCode) {
 Let's imagine we want to upload a CSV file with hundreds of rows and some of them contain errors.
 Do you see a problem with the above solution?
 If there are errors in our CSV file we won't be informed about all errors at once, but only **first** encountered error.
-In this case, a list of errors would be more handful.
+In this case, a list of errors would be handier.
 For that purpose, we can use `Validation` from Vavr.
 
 Note that from now on `List` and `Seq` come from `io.vavr.collection`,
@@ -530,6 +528,10 @@ For the sake of our sanity, there is `Validation#sequence` which:
 
 > Reduces many Validation instances into a single Validation by transforming an `Iterable<Validation<? extends T>>` into a `Validation<Seq<T>>`.
 
+That is the javadoc, and it is out of date with its own signature.
+The method is declared as `Validation<Seq<E>, Seq<T>> sequence(Iterable<? extends Validation<? extends Seq<? extends E>, ? extends T>> values)`,
+so the errors are accumulated as well - which is exactly what we need here.
+
 ```java
 Validation<Seq<String>, Seq<Flight>> result = Validation.sequence(load(input));
 String message = result.fold(
@@ -543,7 +545,7 @@ We utilize `<U> U fold(Function<? super E, ? extends U> ifInvalid, Function<? su
 
 ### Functional iceberg
 We've only touched the basics. There is much more in the world of functional programming, but Java doesn't have decent support for that.
-And often Java programmers are not very familiar with this paradigm. That's why functional programming can become a double-edged weapon.
+And often Java programmers are not very familiar with this paradigm. That's why functional programming can become a double-edged sword.
 
 ```java
 return Mono.fromCallable(
@@ -585,7 +587,7 @@ return Mono.fromCallable(
 { title: "an example of how NOT to write reactive code.", url: "https://x.com/jnabrdalik/status/1379816596932296707" },
 ]} />
 That's not all.
-The real "fun" begins when we mixing stuff like `Mono` and `Either`
+The real "fun" begins when we mix stuff like `Mono` and `Either`
 ```java
 public Mono<Either<AppError, UserDTO>> registerUser(RegisterUserDTO dto) {
     return userFactory
