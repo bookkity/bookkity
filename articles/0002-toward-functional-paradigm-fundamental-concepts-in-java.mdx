@@ -14,7 +14,9 @@ Functional Programming offers valuable concepts that can enhance our code qualit
 We will dig into the basics, covering the following topics:
 * [Immutability](#immutability) - State management.
 * [Functions](#functions) - Functional programming fundament.
-* [Monads](#optional) - Wrappers for side effects.
+* [Optional](#optional) - Making a missing value explicit.
+* [Validation](#validation) - Making errors explicit.
+* [Functional iceberg](#functional-iceberg) - Where to stop in Java.
 
 ### Immutability
 The primary concept with which we may already be familiar is immutability. Immutability ensures that data remains consistent and predictable, making it easier to reason about the state of an application.
@@ -84,8 +86,8 @@ ShowStats getShowStats(List<Reservation> reservations) {
 At first glance, it looks fine, but what if `calculateActiveReservations()` removes some elements from the provided list?
 
 ```java
-public int calculateActiveReservations(List<Reservations> reservations) {
-    reservations.removeIf(reservation -> reservation.getStatus() != Status.Active);
+public int calculateActiveReservations(List<Reservation> reservations) {
+    reservations.removeIf(reservation -> reservation.status() != ReservationStatus.Active);
     return reservations.size();
 }
 ```
@@ -95,32 +97,45 @@ If we pass an `ArrayList` the method will modify the list and that will cause a 
 ```java
 ShowStats getShowStats(List<Reservation> reservations) { 
     // reservations = [Reservation[status=Active], Reservation[status=Active], Reservation[status=Cancelled]]
-    int activeReservations = calculateActiveReservations(reservations); // 
+    int activeReservations = calculateActiveReservations(reservations); // 2
     // reservations = [Reservation[status=Active], Reservation[status=Active]]
     int totalReservations = reservations.size(); // 2
     return new ShowStats(activeReservations, totalReservations);
 }
 ```
 
-If we create a list using `List.of()` or `Stream#toList()` it will create `ImmutableCollections.List`,
-which doesn't allow any modification and informs us about that through a `UnusportedOperationException`.
+If we create a list using `List.of()` it will create `ImmutableCollections.List`,
+and `Stream#toList()` wraps the result with `Collections.unmodifiableList`.
+Neither of them allows modification, both inform us about that through an `UnsupportedOperationException`.
 
 ```java
-public int calculateActiveReservations(List<Reservations> reservations) { // List.of();
-    reservations.removeIf(reservation -> reservation.getStatus() != Status.Active); // UnsupportedOperationException
+public int calculateActiveReservations(List<Reservation> reservations) { // List.of();
+    reservations.removeIf(reservation -> reservation.status() != ReservationStatus.Active); // UnsupportedOperationException
     return reservations.size();
 }
 ```
 
+Of course we can't force the caller to pass such a list.
+If the method is a part of our public API, we can copy the list at the boundary and work on our own instance.
+
+```java
+ShowStats getShowStats(List<Reservation> reservations) {
+    var safeReservations = List.copyOf(reservations);
+    int activeReservations = calculateActiveReservations(safeReservations);
+    int totalReservations = safeReservations.size();
+    return new ShowStats(activeReservations, totalReservations);
+}
+```
+
 But there are a few problems with standard "immutable" Java collections:
-- The behavior seems more like read-only than immutable. Immutable collections should return us a copy.
+- The behavior seems more like read-only than immutable. An immutable collection should let us add an element and return a new collection, instead of refusing the operation.
 - Informs about illegal operations at runtime.
 
 So let's see how else we can approach the subject.
 
-For example, In Kotlin `List` interface doesn't contain methods like `add`, `remove`, etc.
+For example, in Kotlin `List` interface doesn't contain methods like `add`, `remove`, etc.
 And that sounds much more reasonable than throwing `UnsupportedOperationException`,
-because we are held back by the compiler during at the development stage.
+because we are held back by the compiler at the development stage.
 
 ```kotlin
 val immutableList: List<String> = arrayListOf("a")
@@ -142,15 +157,21 @@ Theoretically, yes, but actually no.
 The collection size is usually small, so it doesn't really matter.
 Additionally, we don't have to copy all values to the new list.
 
-Instead, when we add a value, we create a new object that contains a reference to the previous object along with the new element.
+Instead, when we add a value, we create a new object that holds the new element and a reference to the previous list.
+The new element becomes the head, and the whole previous list becomes the tail.
 
 ```java
 class ImmutableList<T> {
-    private ImmutableList<T> head;
-    private T tail;
+    private final T head;
+    private final ImmutableList<T> tail;
 
-    ImmutableList<T> add(T element) {
-        return new ImmutableList<>(this, element);
+    ImmutableList(T head, ImmutableList<T> tail) {
+        this.head = head;
+        this.tail = tail;
+    }
+
+    ImmutableList<T> prepend(T element) {
+        return new ImmutableList<>(element, this);
     }
 }
 ```
@@ -193,10 +214,9 @@ As a rule of thumb, using `void` is usually bad practice.
 Methods that return void:
 - cannot be used in method chaining.
 ```java
-account.map(ac -> {
-    ac.deposit(BigDecimal.valueOf(10));
-    return ac;
-});
+// deposit() returns nothing, so there is nothing to continue on
+account.deposit(BigDecimal.valueOf(10))
+    .deposit(BigDecimal.valueOf(20)); // doesn't compile
 ```
 - Force to use exceptions for error handling.
 - Are harder to test.
@@ -208,6 +228,19 @@ It's not total, because it throws for amounts less than or equal to 0.
 It's not pure, because it modifies `balance` - that's a side effect.
 
 To make it total, we can introduce a new type that allows only to provide positive BigDecimals.
+
+```java
+record PositiveBigDecimal(BigDecimal value) {
+    PositiveBigDecimal {
+        if (value.signum() <= 0) {
+            throw new IllegalArgumentException();
+        }
+    }
+}
+```
+
+The validation didn't disappear, it moved to the boundary of the type.
+We pay for it once, when the value enters our system, and every method taking `PositiveBigDecimal` can trust it.
 So now our method signature forces us to use the appropriate parameter.
 
 ```java
@@ -316,7 +349,7 @@ We want to use `map` and `flatMap` operations.
         ```java
         public String displayUsername(long userId) {
             return getUser(userId)
-                .map(user -> user.getName())
+                .map(User::getName)
                 .orElse("Anonymous");
         }
 
@@ -334,8 +367,8 @@ Let's imagine `User#getUsername` returns `Optional<String>`
         public String displayUsername(long userId) {
             Optional<User> userOpt = getUser(userId);
             if (userOpt.isPresent()) {
-                usernameOpt = userOpt.get().getUsername();
-                if (usernameOpt.isPresent) {
+                Optional<String> usernameOpt = userOpt.get().getUsername();
+                if (usernameOpt.isPresent()) {
                     return usernameOpt.get();
                 }
             }
@@ -347,7 +380,7 @@ Let's imagine `User#getUsername` returns `Optional<String>`
         ```java {3}
         public String displayUsername(long userId) {
             return getUser(userId)
-                .flatMap(user -> user.getName()) 
+                .flatMap(User::getUsername) 
                 .orElse("Anonymous");    
         }
 
@@ -365,7 +398,7 @@ The hidden behavior also applies to validation.
 
 ```java
 public User createUser(String name) {
-    if (name.length < 3) {
+    if (name.length() < 3) {
         throw new IllegalArgumentException("Name too short");
     }
     return new User(name);
@@ -381,7 +414,7 @@ How to do it in a better way?
 
 ```java
 public Either<DomainError, User> createUser(String name) {
-    if (name.length < 3) {
+    if (name.length() < 3) {
         return Either.left(DomainError.NAME_TOO_SHORT);
     }
     return Either.right(new User(name));
@@ -398,16 +431,40 @@ Thanks to that:
 - There's no need to examine the method code to identify alternative scenarios.
 - compiler forces us to handle errors.
 
+The second point is only true if we look at the calling side.
+`Either` is not a checked exception, nothing stops us from ignoring it,
+but we can't reach the `User` without saying what should happen with the error.
+
+```java
+ResponseEntity<?> register(String name) {
+    return createUser(name).fold(
+        error -> ResponseEntity.badRequest().body(error),
+        user -> ResponseEntity.ok(user.toDTO())
+    );
+}
+```
+
+Note that `createUser` is still not total - it throws `NullPointerException` for `null`.
+`Either` describes the errors we decided to model, it doesn't protect us from the ones we ignore.
+Here the same trick as with `PositiveBigDecimal` applies: a `UserName` type validated in its constructor
+moves the problem to a single place instead of every method taking a `String`.
+
 Another interesting class is `Validation`. Like `Either`, `Validation` contains two paths, valid and invalid.
 The main difference is that instead of chaining the result from the first event to the next, `Validation` validates all events.
 <References links={[
 { title: "Validation", url: "https://eed3si9n.com/learning-scalaz/Validation.html" },
 ]} />
 To demonstrate the usage, let's write a code for loading CSV files.
+A flight is just a pair of airport codes.
+
+```java
+record Flight(String departure, String destination) {
+}
+```
 
 ```java
 List<Flight> load(List<String> lines) {
-    return lines.stream().map(it -> it.parse(it)).toList();
+    return lines.stream().map(this::parse).toList();
 }
     
 private Flight parse(String line) {
@@ -420,10 +477,11 @@ private Flight parse(String line) {
     if (!isValidIcaoCode(destination)) {
         throw new IllegalArgumentException("Destination is not valid ICAO airport code.");
     }
+    return new Flight(departure, destination);
 }
     
 private boolean isValidIcaoCode(String icaoCode) {
-    return icao.length() == 4;
+    return icaoCode.length() == 4;
 }
 ```
 
@@ -433,8 +491,11 @@ If there are errors in our CSV file we won't be informed about all errors at onc
 In this case, a list of errors would be more handful.
 For that purpose, we can use `Validation` from Vavr.
 
+Note that from now on `List` and `Seq` come from `io.vavr.collection`,
+because we need a `map` operation on the collection itself.
+
 ```java
-public List<Validation<Seq<String>, Flight> load(List<String> lines) {
+public Seq<Validation<Seq<String>, Flight>> load(Seq<String> lines) {
     return lines.map(this::parse);
 }
 
@@ -457,9 +518,9 @@ private Validation<String, String> validateIcaoCode(String icao) {
 ```
 
 Our code didn't change much. Instead of throwing an exception, we just return an object, so the flow is not terminated instantly.
-The loading part is more problematic because we have to handle `List<Validation<Seq<String>, Flight>>`.
+The loading part is more problematic because we have to handle `Seq<Validation<Seq<String>, Flight>>`.
 The question is how to aggregate the data to easily display the number of loaded flights or the list of validation errors.
-For the sake of humanity, there is `Validation#sequence` which:
+For the sake of our sanity, there is `Validation#sequence` which:
 
 > Reduces many Validation instances into a single Validation by transforming an `Iterable<Validation<? extends T>>` into a `Validation<Seq<T>>`.
 
