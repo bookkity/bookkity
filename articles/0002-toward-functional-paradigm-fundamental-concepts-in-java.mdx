@@ -460,10 +460,10 @@ The second point is only true if we look at the calling side.
 but we can't reach the `User` without saying what should happen with the error.
 
 ```java
-String register(String name) {
+ResponseEntity<?> register(String name) {
     return createUser(name).fold(
-        error -> "Registration failed: " + error,
-        user -> "Created user " + user.name()
+        error -> ResponseEntity.badRequest().body(error),
+        user -> ResponseEntity.ok(user.toDTO())
     );
 }
 ```
