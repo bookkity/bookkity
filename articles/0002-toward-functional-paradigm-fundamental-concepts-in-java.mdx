@@ -140,8 +140,8 @@ And that sounds much more reasonable than throwing `UnsupportedOperationExceptio
 because we are held back by the compiler at the development stage.
 
 ```kotlin
-val immutableList: List<String> = arrayListOf("a")
-immutableList.add("b") // doesn't work, there is no method like 'add'
+val readOnlyList: List<String> = listOf("a")
+readOnlyList.add("b") // doesn't work, there is no method like 'add'
 ```
 
 To modify a list we need to define it explicitly as `MutableList`
@@ -151,13 +151,17 @@ val mutableList: MutableList<String> = arrayListOf("a")
 mutableList.add("b")
 ```
 
-It's better, but not perfect. Adding elements should be allowed,
+It's better, but not perfect.
+Kotlin's `List` is a read-only view, not an immutable collection.
+The object behind it may still be an `ArrayList`, and whoever holds that reference can modify it -
+`val list: List<String> = arrayListOf("a")` compiles just fine.
+The compiler protects us from our own mistakes, not from aliasing.
+
+On top of that, adding elements should be allowed,
 but it should create a new list containing values from the source list and the newly added value.
 
 But won't it be slow?
-Theoretically, yes, but actually no.
-The collection size is usually small, so it doesn't really matter.
-Additionally, we don't have to copy all values to the new list.
+Not for the operation we care about - we don't have to copy all values to the new list.
 
 Instead, when we add a value, we create a new object that holds the new element and a reference to the previous list.
 The new element becomes the head, and the whole previous list becomes the tail.
@@ -180,6 +184,11 @@ class ImmutableList<T> {
 <References links={[
 { title: "io.vavr.collection.List.java", url: "https://github.com/vavr-io/vavr/blob/master/src/main/java/io/vavr/collection/List.java" },
 ]} />
+
+Adding an element this way is O(1), and so is reading the first one.
+The cost shows up elsewhere: in a singly linked list like this one, random access and `size()` are O(n),
+so it's a poor fit for code that indexes into the collection in a loop.
+Pick the structure after you know how the data is read, not because it's immutable.
 
 Unfortunately, such collections are not built in Java, so we need to use external libraries like Vavr.io
 And that gives us back what the JDK couldn't express: with `io.vavr.collection.List` in the signature
@@ -253,8 +262,11 @@ void deposit(PositiveBigDecimal amount) {
 }
 ```
 
-Now it's total - there is no input it can't handle.
-But it's still not pure, it still modifies `balance`.
+Now there is no input it can't handle.
+Strictly speaking a `void` method can't be total at all - totality is about returning an output for every input,
+and here there is no output. We fixed the input side, the output side is still waiting.
+
+And it's still not pure, it still modifies `balance`.
 
 Let's try to make it also pure.
 What if we make this object immutable?
@@ -266,6 +278,14 @@ record Account(BigDecimal balance) {
     }
 }
 ```
+
+<Alert type={'tip'}>
+Careful with `BigDecimal` inside records.
+`BigDecimal.equals` compares the scale as well, so `new Account(new BigDecimal("1.0"))`
+is not equal to `new Account(new BigDecimal("1.00"))`, even though the amounts are the same.
+A record derives `equals` from its components, so it inherits that behavior.
+Compare amounts with `compareTo`, or normalize the scale when the value is created.
+</Alert>
 
 You may say it's still not pure because it still depends on the internal state.
 But what if we write it down like this:
@@ -452,6 +472,31 @@ Note that `createUser` is still not total - it throws `NullPointerException` for
 `Either` describes the errors we decided to model, it doesn't protect us from the ones we ignore.
 Here the same trick as with `PositiveBigDecimal` applies: a `UserName` type validated in its constructor
 moves the problem to a single place instead of every method taking a `String`.
+
+This also closes the loop on `PositiveBigDecimal` from the previous section.
+Its constructor throws, so creating the type was never total - we only moved the partiality out of `deposit`.
+With `Either` we can push it one step further and make the creation total too.
+
+```java
+record PositiveBigDecimal(BigDecimal value) {
+    PositiveBigDecimal {
+        if (value.signum() <= 0) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    static Either<DomainError, PositiveBigDecimal> of(BigDecimal value) {
+        if (value == null || value.signum() <= 0) {
+            return Either.left(DomainError.AMOUNT_NOT_POSITIVE);
+        }
+        return Either.right(new PositiveBigDecimal(value));
+    }
+}
+```
+
+The constructor stays as a guard against our own bugs, but the application code goes through `of`,
+which handles every `BigDecimal` we can throw at it. The validation happens once, at the edge,
+and from that point on the type carries the proof.
 
 Another interesting class is `Validation`. Like `Either`, `Validation` contains two paths, valid and invalid.
 The main difference is that instead of stopping at the first failure, `Validation` runs all the checks and accumulates their errors.
