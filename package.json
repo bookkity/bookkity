@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "check:seo": "tsc --allowJs --checkJs --noEmit --skipLibCheck --target es2020 --module nodenext --moduleResolution nodenext src/helpers/seo.js",
-    "test:search": "node --test tests/search.test.mjs"
+    "test:search": "node --test tests/search.test.mjs",
+    "benchmark:search": "node scripts/benchmark-search.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.3.1",
