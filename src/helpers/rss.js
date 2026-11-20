@@ -23,7 +23,9 @@ export default async function generateRssFeed(allArticles, allSeries) {
         .filter(article => !article.url.startsWith('_')) // hidden articles
         .map(article => ({
             title: article.title,
-            url: `${site_url}/article/${article.url}`,
+            url: `${site_url}/articles/${article.url}`,
+            // Feed identity survives the public URL migration.
+            guid: `${site_url}/article/${article.url}`,
             date: article.date,
             type: 'article'
         }));
@@ -46,6 +48,7 @@ export default async function generateRssFeed(allArticles, allSeries) {
         feed.item({
             title: item.title,
             url: item.url,
+            guid: item.guid,
             date: item.date,
         });
     });

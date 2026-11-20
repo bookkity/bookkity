@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check:seo": "tsc --allowJs --checkJs --noEmit --skipLibCheck --target es2020 --module nodenext --moduleResolution nodenext src/helpers/seo.js",
+    "test:search": "node --test tests/search.test.mjs",
+    "benchmark:search": "node scripts/benchmark-search.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.3.1",
@@ -19,6 +22,7 @@
     "axios": "^1.21.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "fuse.js": "7.5.0",
     "gray-matter": "^4.0.3",
     "katex": "^0.19.1",
     "khangul": "^1.1.2",
@@ -45,8 +49,14 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.6",
     "jsdoc": "^4.0.5",
+    "playwright": "1.64.1",
     "postcss": "^8.5.33",
-    "tailwindcss": "^4.3.5"
+    "remark-mdx": "3.1.1",
+    "remark-parse": "11.0.0",
+    "schema-dts": "^2.1.0",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^6.0.3",
+    "unified": "11.0.5"
   },
   "overrides": {
     "postcss": "$postcss",

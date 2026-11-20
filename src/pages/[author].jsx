@@ -1,6 +1,8 @@
+import NextLink from "next/link"
 import {getArticles} from "@/helpers/articles"
+import {contentImage} from "@/helpers/seo"
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import {getAuthor, getAuthors} from "@/helpers/authors"
 import {getSeries} from "@/helpers/series";
 
@@ -48,18 +50,15 @@ export async function getStaticPaths() {
 
 
 export default function Author({ author, series, articles }) {
-  const title = `Bookkity - ${author.name}`
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
-      </Head>
+      <Seo page={{kind: 'profile', title: author.name, description: author.description, path: `/${author.name}`, person: author, image: contentImage('author', author.avatar)}} />
       <Layout>
         <p className={`text-sm text-gray-500 pt-12 px-1`}>
-          <a href={`/about`} className={`hover:underline hover:decoration-gray-400`}>
+          <NextLink prefetch={false} href={`/about`} className={`hover:underline hover:decoration-gray-400`}>
             Authors
-          </a>
+          </NextLink>
           &nbsp;/&nbsp;
           <span className={`font-semibold`}>
               {author.name}
@@ -76,14 +75,14 @@ export default function Author({ author, series, articles }) {
           <div className={`flex flex-col w-full`}>
             <div className={`flex flex-col w-full md:pl-12 pt-6 md:pt-12`}>
               <div>
-                <h1 className={`text-xl font-bold`}>
+                <h2 className={`text-xl font-bold`}>
                   Series
-                </h1>
+                </h2>
               </div>
               <div className={`flex flex-col pt-3 pb-6`}>
                 {series && series.map((series, idx) => {
                   return (
-                    <a key={idx} href={`/series/${series.url}/1`} className={'mb-2'}>
+                    <div key={idx} className="mb-2">
                       <div className={`flex flex-col justify-center w-full bg-white rounded-lg px-2 py-3`}>
                         <h2 className={`text-xl font px-4 py-1`}>{series.title}</h2>
                         {series.chapters.map((chapter, idx) => (
@@ -92,14 +91,14 @@ export default function Author({ author, series, articles }) {
                               <span className={`mr-1 text-gray-400 text-xs`}>[UNPUBLISHED]</span>
                             )}
                             {idx + 1}.&nbsp;
-                            {chapter.title}
+                            <NextLink prefetch={false} href={`/series/${series.url}/${chapter.order}`}>{chapter.title}</NextLink>
                           </p>
                         ))}
                         {/*<p className={`text-xs text-gray-400`}>*/}
                         {/*  {article.date} by <span className={`text-gray-700`}>{article.author}</span>*/}
                         {/*</p>*/}
                       </div>
-                    </a>
+                    </div>
                   )
                 })}
                 {series.length === 0 && (
@@ -111,14 +110,14 @@ export default function Author({ author, series, articles }) {
             </div>
             <div className={`flex flex-col w-full md:pl-12 pt-0`}>
               <div>
-                <h1 className={`text-xl font-bold`}>
+                <h2 className={`text-xl font-bold`}>
                   Articles
-                </h1>
+                </h2>
               </div>
               <div className={`flex flex-col pt-3 pb-6`}>
                 {articles && articles.map((article, idx) => {
                   return (
-                    <a key={idx} href={`/article/${article.url}`} className={'mb-2'}>
+                    <NextLink prefetch={false} key={idx} href={`/articles/${article.url}`} className={'mb-2'}>
                       <div className={`flex items-center w-full bg-white max-h-16 rounded-lg`}>
                         <p
                           className={`text-sm pl-4 pr-4 border-r-gray-100 border-r-2`}>{article.date}</p>
@@ -130,7 +129,7 @@ export default function Author({ author, series, articles }) {
                           {/*<MDXRemote components={MDX} {...article.content} />*/}
                         </div>
                       </div>
-                    </a>
+                    </NextLink>
                   )
                 })}
                 {articles.length === 0 && (

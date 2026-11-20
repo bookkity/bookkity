@@ -1,5 +1,7 @@
+import NextLink from "next/link"
+import {getAuthors} from "@/helpers/authors"
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import { getProjects, getProject } from "@/helpers/projects"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons"
@@ -30,29 +32,27 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      project
+      project,
+      authorNames: (await getAuthors()).map(author => author.name)
     }
   }
 }
 
-export default function ProjectPage({ project }) {
+export default function ProjectPage({ project, authorNames }) {
   return (
     <>
-      <Head>
-        <title>{project.title} - Bookkity Projects</title>
-        <meta name="description" content={project.description} />
-      </Head>
+      <Seo page={{kind: 'page', title: project.title, description: project.description, path: `/project/${project.id}`, image: project.image}} />
       <Layout>
         <div className="pt-6 px-4">
           {/* Back Button */}
           <div className="mb-6">
-            <a
+            <NextLink prefetch={false}
               href="/projects"
               className="inline-flex items-center text-purple-600 hover:text-purple-700 transition-colors text-sm"
             >
               <FontAwesomeIcon icon={faArrowLeft} className="mr-1 w-3 h-3" />
               Back to Projects
-            </a>
+            </NextLink>
           </div>
 
           {/* Project Header */}
@@ -93,13 +93,12 @@ export default function ProjectPage({ project }) {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Authors</h3>
                   <div className="flex flex-wrap gap-2">
                     {project.authors.map((author, index) => (
-                      <a
-                        key={index}
+                      <span key={index}>{authorNames.includes(author) ? <NextLink prefetch={false}
                         href={`/${author}`}
                         className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition-colors"
                       >
                         {author}
-                      </a>
+                      </NextLink> : author}</span>
                     ))}
                   </div>
                 </div>
@@ -107,7 +106,7 @@ export default function ProjectPage({ project }) {
                 {/* Action Buttons */}
                 <div className="flex gap-4">
                   {project.githubUrl && (
-                    <a
+                    <NextLink prefetch={false}
                       href={project.githubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -115,17 +114,17 @@ export default function ProjectPage({ project }) {
                     >
                       <FontAwesomeIcon icon={faGithub} className="mr-2" />
                       View on GitHub
-                    </a>
+                    </NextLink>
                   )}
                   {project.demoUrl && (
-                    <a
+                    <NextLink prefetch={false}
                       href={project.demoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
                     >
                       Live Demo
-                    </a>
+                    </NextLink>
                   )}
                 </div>
               </div>

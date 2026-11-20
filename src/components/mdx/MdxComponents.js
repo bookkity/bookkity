@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import React from "react"
 import {
   ArrowUpRightFromSquareIcon,
@@ -28,12 +29,12 @@ const H = ({ children, as, size }) => {
     {
       className: `py-2 -ml-${size.includes('xl') ? '4' : '3'} font-bold text-${size}`,
     },
-    <a id={anchor} className={`paragraph`} href={`#${anchor}`}>
+    <NextLink prefetch={false} id={anchor} className={`paragraph`} href={`#${anchor}`}>
       <abbr className={`opacity-0.5 text-gray-400 font-normal opacity-0`}>§ </abbr>
       <span className={`hover:underline hover:decoration-gray-300`}>
         {children}
       </span>
-    </a>
+    </NextLink>
   )
 }
 
@@ -85,12 +86,12 @@ const References = ({links}) => {
       <div className={`flex items-center`}>
           {links.map((link, idx) => (
             <div key={idx} className={`px-2 text-sm text-purple-800`}>
-                <a href={link.url} className={`hover:underline hover:decoration-gray-300 flex items-center`} target={"_blank"}>
+                <NextLink prefetch={false} href={link.url} className={`hover:underline hover:decoration-gray-300 flex items-center`} target={"_blank"}>
                   <ArrowUpRightFromSquareIcon size={14} />
                   <span className={`pl-1.5`}>
                     {link.title}
                   </span>
-                </a>
+                </NextLink>
             </div>
           ))}
       </div>
@@ -148,7 +149,7 @@ const ScrollableWrapper = ({ height, children }) => {
 }
 
 export default {
-  a: (props) => <a className={'text-purple-500'} {...props} />,
+  a: (props) => <NextLink prefetch={false} className={'text-purple-500'} {...props} />,
   p: (props) => <div className={'py-2'} {...props} />,
   h1: (props) => <H as='h1' size={'2xl'} {...props} />,
   h2: (props) => <H as='h2' size={'xl'} {...props} />,

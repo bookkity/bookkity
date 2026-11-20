@@ -1,5 +1,6 @@
+import NextLink from "next/link"
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import {getAuthors} from "@/helpers/authors"
 
 export async function getStaticProps() {
@@ -15,10 +16,9 @@ export async function getStaticProps() {
 export default function About({ authors }) {
   return (
     <>
-      <Head>
-        <title>Bookkity - About Us</title>
-      </Head>
+      <Seo page={{kind: 'page', title: 'About Bookkity', description: 'Meet the authors behind Bookkity, a community blog about programming and technology.', path: '/about'}} />
       <Layout>
+        <h1 className="pt-8 text-3xl font-semibold">About Bookkity</h1>
         <div className={`pt-6 px-4`}>
           <div className={`w-full px-4 py-6 bg-white rounded-lg`}>
             <p className={`text-center`}>
@@ -35,7 +35,7 @@ export default function About({ authors }) {
                    className={`w-full md:w-1/2 lg:w-1/3 xl:w-1/4 p-4 cursor-pointer hover:scale-[1.02] hover:duration-200`}
               >
                 <div className={`bg-white rounded-lg flex flex-col relative`}>
-                  <a href={`/${author.name}`}>
+                  <NextLink prefetch={false} href={`/${author.name}`}>
                     <div className={`w-full bg-gray-200 h-20 rounded-t-lg`}></div>
                     <img
                       src={`/author/${author.avatar}`}
@@ -46,7 +46,7 @@ export default function About({ authors }) {
                       <h3 className={`text-lg font-semibold mt-4`}>{author.name}</h3>
                       <p className={`text-gray-600 text-sm mt-2`}>{author.description}</p>
                     </div>
-                  </a>
+                  </NextLink>
                 </div>
               </div>
             ))}

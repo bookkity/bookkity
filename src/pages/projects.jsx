@@ -1,5 +1,6 @@
+import NextLink from "next/link"
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import {getProjects} from "@/helpers/projects"
 import {useMemo, useState} from "react"
 
@@ -59,14 +60,14 @@ function ProjectCard({ project }) {
   )
 
   return (
-    <a
+    <NextLink prefetch={false}
       href={linkUrl}
       target={isExternalUrl ? "_blank" : "_self"}
       rel={isExternalUrl ? "noopener noreferrer" : ""}
       className="block cursor-pointer hover:scale-[1.02] transition-transform duration-200"
     >
       {cardContent}
-    </a>
+    </NextLink>
   )
 }
 export default function Projects({ projects }) {
@@ -98,11 +99,9 @@ export default function Projects({ projects }) {
 
   return (
     <>
-      <Head>
-        <title>Bookkity - Community Projects</title>
-        <meta name="description" content="Discover amazing projects created by our community members" />
-      </Head>
+      <Seo page={{kind: 'page', title: 'Projects', description: 'Discover projects built by the Bookkity community.', path: '/projects'}} />
       <Layout>
+        <h1 className="pt-8 text-3xl font-semibold">Community projects</h1>
         <div className="pt-4 px-4">
           <div className="w-full px-4 py-6 bg-white rounded-lg mb-6">
             {/* <h1 className="text-3xl font-bold text-center text-gray-900 mb-4">

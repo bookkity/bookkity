@@ -1,5 +1,6 @@
+import NextLink from "next/link"
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import { getMerchItems } from "@/helpers/merch"
 import { useState } from "react"
 import PolishOnlyPopup from "@/components/PolishOnlyPopup"
@@ -49,7 +50,7 @@ function Banner({ item, onHalloweenHover }) {
   const background = item.banner?.background || '#15120f'
 
   return (
-    <a
+    <NextLink prefetch={false}
       href={`/merch/${item.id}`}
       className="group flex flex-col md:block md:relative md:h-72 rounded-lg overflow-hidden shadow-md"
       style={{ backgroundColor: background }}
@@ -85,13 +86,13 @@ function Banner({ item, onHalloweenHover }) {
           {item.preorder ? 'Preorder' : 'Zobacz kolekcję'} <ArrowRight className="w-4 h-4" />
         </span>
       </div>
-    </a>
+    </NextLink>
   )
 }
 
 function ProductCard({ item, onHalloweenHover }) {
   return (
-    <a href={`/merch/${item.id}`} className="group" {...halloweenHover(item, onHalloweenHover)}>
+    <NextLink prefetch={false} href={`/merch/${item.id}`} className="group" {...halloweenHover(item, onHalloweenHover)}>
       <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-200 dark:bg-ink-800 transition-colors duration-500">
         <img src={thumbnailOf(item)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5">
@@ -105,7 +106,7 @@ function ProductCard({ item, onHalloweenHover }) {
       <p className="font-semibold text-gray-900 dark:text-parchment group-hover:text-purple-600 dark:group-hover:text-ember-400 transition-colors duration-500">
         {item.title}{item.titleEmoji && ` ${item.titleEmoji}`}
       </p>
-    </a>
+    </NextLink>
   )
 }
 
@@ -117,11 +118,9 @@ export default function Merch({ merchItems }) {
 
   return (
     <>
-      <Head>
-        <title>Merch | Bookkity</title>
-        <meta name="description" content="Merch Bookkity - Ręcznie robione produkty stworzone z myślą o naszej społeczności ✨" />
-      </Head>
+      <Seo page={{kind: 'page', title: 'Merch', description: 'Explore Bookkity merchandise.', path: '/merch'}} />
       <Layout dark={dark}>
+        <h1 className="pt-8 text-3xl font-semibold">Bookkity merch</h1>
         <PolishOnlyPopup />
         {/* Fill the screen between the header (73px) and layout footer (56px), so perks sit at the bottom */}
         <div className="pt-4 px-4 flex flex-col gap-6 md:min-h-[calc(100vh-129px)]">

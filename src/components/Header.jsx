@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faDiscord, faGithub} from "@fortawesome/free-brands-svg-icons"
 import {useState} from "react"
@@ -10,7 +11,7 @@ const discordIcons = {
 }
 
 const menuItems = [
-  {name: 'Articles', link: '/'},
+  {name: 'Articles', link: '/articles'},
   {name: 'Series', link: '/series'},
   {name: 'Projects', link: '/projects'},
   {name: 'Merch', link: '/merch'},
@@ -20,11 +21,12 @@ const menuItems = [
 export default function Header() {
   const router = useRouter()
   const currentPath = router.pathname
+  const browsingArticles = currentPath === '/search' || currentPath.startsWith('/articles') || currentPath.startsWith('/tag/')
   const [discordIcon, setDiscordIcon] = useState(discordIcons.default)
 
   return (
     <div className={`header flex flex-col md:flex-row items-center justify-center md:justify-between h-18 border-b border-b-gray-200 dark:border-b-ink-700 shadow-xs w-full transition-colors duration-500`}>
-      <a href={"/"} className={`md:w-1/4`}>
+      <NextLink prefetch={false} href={"/articles"} className={`md:w-1/4`}>
         <div className={'flex flex-col md:flex-row items-center justify-center md:justify-start px-4 py-4'}>
           <div className={``}>
             <img
@@ -35,16 +37,16 @@ export default function Header() {
           </div>
           <p className={'font-semibold text-md md:pl-3 pt-1 md:pt-0'}>Bookkity</p>
         </div>
-      </a>
+      </NextLink>
       <div className={`md:w-2/4 flex justify-center`}>
         {menuItems.map((item, index) => (
-          <a
+          <NextLink prefetch={false}
             key={index}
             href={item.link}
-            className={`px-3 sm:pt-2 pb-2 md:py-4 hover:text-black dark:hover:text-ember-400 ${currentPath === item.link ? 'font-semibold' : ''}`}
+            className={`px-3 sm:pt-2 pb-2 md:py-4 hover:text-black dark:hover:text-ember-400 ${(item.link === '/articles' ? browsingArticles : currentPath === item.link) ? 'font-semibold' : ''}`}
           >
             {item.name}
-          </a>
+          </NextLink>
         ))}
       </div>
       <div className={`md:w-1/4 flex flex-col md:flex-row justify-center md:justify-end items-center pt-4 md:pt-1`}>
@@ -53,31 +55,31 @@ export default function Header() {
             {discordIcon}
           </div>
           <div className={`px-3 flex font-semibold text-gray-700 dark:text-parchment-400 transition-colors duration-500`}>
-            <a
+            <NextLink prefetch={false}
               href={`https://discord.gg/CYvyq3u`}
               className={`px-2 hover:text-black dark:hover:text-parchment`}
               onMouseEnter={() => setDiscordIcon(discordIcons.pl)}
               onMouseLeave={() => setDiscordIcon(discordIcons.default)}
             >
               <span className={`px-1`}>POLSKI</span>
-            </a>
+            </NextLink>
             <div className={`text-gray-400 dark:text-ink-600`}>
               |
             </div>
-            <a
+            <NextLink prefetch={false}
               href={`https://discord.gg/qGRqmGjUFX`}
               className={`px-3 hover:text-black dark:hover:text-parchment`}
               onMouseEnter={() => setDiscordIcon(discordIcons.en)}
               onMouseLeave={() => setDiscordIcon(discordIcons.default)}
             >
               <span className={`px-1`}>ENGLISH</span>
-            </a>
+            </NextLink>
           </div>
         </div>
         <div className={`pt-3 pb-3 px-5`}>
-          <a href={`https://github.com/bookkity`}>
+          <NextLink prefetch={false} href={`https://github.com/bookkity`}>
             <FontAwesomeIcon icon={faGithub} size="xl"/>
-          </a>
+          </NextLink>
         </div>
       </div>
     </div>
