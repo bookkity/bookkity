@@ -170,7 +170,7 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
                         </h2>
                       </a>
                       <p className={`text-xs text-gray-400 pt-1`}>
-                        {new Date(article.date).toLocaleDateString()} by
+                        <time dateTime={article.date}>{new Date(article.date).toLocaleDateString('en-GB', {timeZone: 'UTC'})}</time> by
                         {article.authors.map((author, idx) => (
                           <a key={`author-url-${author}`} href={`/${author}`}>
                             {idx > 0 ? ',' : ''}&nbsp;<span className={`text-gray-700`}>{author}</span>
