@@ -7,6 +7,8 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      { source: '/articles/0-10', destination: '/articles', permanent: true },
+      { source: '/tag/:tag/0-10', destination: '/tag/:tag', permanent: true },
       { source: "/", destination: "/articles", permanent: true },
       { source: '/article', destination: '/articles', permanent: true },
       // Single segment only: /article/<folder>/<image> remains a public asset.

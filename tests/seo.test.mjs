@@ -4,8 +4,8 @@ import {collectTags, tagPath} from '../src/helpers/tags.js'
 import {contentImage, pageGraph, serializeJsonLd} from '../src/helpers/seo.js'
 import {sitemapPaths, renderSitemap} from '../src/helpers/sitemap.js'
 
-const articles = [{url:'hello', tags:['Java', 'Windows Internals']}, {url:'_draft', tags:['Draft']}]
-const series = [{details:{url:'guide', tags:['Kotlin']}, chapters:[{order:1,published:true,listed:false},{order:2,published:false,listed:true}]}]
+const articles = [{url:'hello', image:'cover.jpg', date:'2024-01-01', tags:['Java', 'Windows Internals']}, {url:'_draft', image:'cover.jpg', tags:['Draft']}]
+const series = [{details:{url:'guide', image:'cover.jpg', tags:['Kotlin']}, chapters:[{order:1,published:true,listed:false},{order:2,published:false,listed:true}]}]
 test('tags derive from public content, encode routes and reject collisions', () => {
   assert.deepEqual(collectTags(articles,series).map(t=>t.slug), ['java','kotlin','windows-internals'])
   assert.equal(tagPath('C++'), '/tag/c%2B%2B')

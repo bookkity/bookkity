@@ -1,5 +1,5 @@
+import {PAGE_SIZE} from "@/helpers/listing"
 import {SITE_DESCRIPTION} from "@/helpers/seo"
-import {tagPath} from "@/helpers/tags"
 import Layout from "@/components/Layout"
 import {Input} from "@/components/ui/input"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
@@ -9,24 +9,6 @@ import Seo from "@/components/Seo"
 import {Toggle} from "@/components/ui/toggle"
 import {RssIcon} from "lucide-react";
 
-/**
- * @typedef {Object} Preview
- * @property {'article' | 'chapter'} type
- * @property {string} title
- * @property {Array<string>} tags
- * @property {Array<string>} authors
- * @property {string} language
- * @property {string} image
- * @property {string} url
- * @property {Date} date
- * @property {Article | { chapter: ChapterDetails, series: SeriesDetails }} data
- */
-
-/**
- * @param article {Article}
- * @param search {string}
- * @returns {boolean}
- */
 const satisfiesSearch = (article, search) => {
   search = search.toLowerCase()
   if (article.title.toLowerCase().includes(search)) return true
@@ -34,55 +16,10 @@ const satisfiesSearch = (article, search) => {
   return false
 }
 
-/**
- * @param allArticles {Array<Article>}
- * @param allSeries {Array<Series>}
- */
-export default function PostListing({ allArticles, allSeries, authors, tags, selectedTag = '' }) {
+export default function PostListing({ previews, authors, tags, selectedTag = '', path, start, total, previous, next }) {
   const [search, setSearch] = useState('')
   const [languages, setLanguages] = useState({ value: ['pl', 'en'] })
   const [showSeries, setShowSeries] = useState(true)
-
-  /** @type {Array<Preview>} */
-  const articlePreviews = allArticles.map(article => {
-    return {
-      type: 'article',
-      title: article.title,
-      tags: article.tags,
-      authors: article.authors,
-      language: article.language,
-      image: `/article/${article.image.replace(/^\//, '')}`,
-      url: `/articles/${article.url}`,
-      date: new Date(article.date),
-      data: article
-    }
-  })
-
-  /** @type {Array<Preview>} */
-  const chapterPreviews = allSeries.flatMap(series => {
-    return series.chapters
-      .filter(chapter => chapter.published && (selectedTag || chapter.listed))
-      .map(chapter => {
-        return {
-          type: 'chapter',
-          title: `${series.details.title}: ${chapter.shortTitle}`,
-          tags: series.details.tags,
-          authors: series.details.authors,
-          language: series.details.language,
-          image: chapter.image ? `/series/${chapter.image}` : `/series/${series.details.image}`,
-          url: `/series/${series.details.url}/${chapter.order}`,
-          date: new Date(chapter.date),
-          data: {
-            chapter: chapter,
-            series: series.details
-          }
-        }
-      })
-  })
-
-  const previews = articlePreviews.concat(chapterPreviews)
-    .filter(it => !it.url.startsWith("/articles/_"))
-    .sort((a, b) => b.date - a.date)
 
   const filteredPreviews = useMemo(() => {
     return previews
@@ -102,10 +39,11 @@ export default function PostListing({ allArticles, allSeries, authors, tags, sel
 
   return (
     <>
-      <Seo page={{kind: 'collection', title: selectedTag ? `${selectedTag} articles and tutorials` : 'Bookkity', description: selectedTag ? `Explore ${selectedTag} articles and series chapters by the Bookkity community.` : SITE_DESCRIPTION, path: selectedTag ? tagPath(selectedTag) : '/articles', items: previews.map(p => ({title: p.title, path: p.url}))}} />
+      <Seo page={{kind: 'collection', title: `${selectedTag ? `${selectedTag} articles and tutorials` : 'Articles and tutorials'}${start ? ` - Page ${start / PAGE_SIZE + 1}` : ''}`, description: selectedTag ? `Explore ${selectedTag} articles and series chapters by the Bookkity community.` : SITE_DESCRIPTION, path, items: previews.map(p => ({title: p.title, path: p.url}))}} />
       <Layout>
         <h1 className="pt-8 text-3xl font-semibold">{selectedTag ? `${selectedTag} articles and tutorials` : "Articles and tutorials"}</h1>
         {selectedTag && <p className="pt-3 text-gray-600">Explore {selectedTag} articles and series chapters by the Bookkity community.</p>}
+        <p className="pt-3 text-sm text-gray-600">Showing {total ? start + 1 : 0}–{Math.min(start + previews.length, total)} of {total}. Filters apply to this page.</p>
         <div className={`md:px-4 pt-6 md:pt-16`}>
           <div className={`flex items-center bg-white rounded-lg text-gray-500`}>
             <div className={`pl-4`}>
@@ -115,7 +53,8 @@ export default function PostListing({ allArticles, allSeries, authors, tags, sel
             </div>
             <Input
               className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-hidden focus-visible:ring-0 placeholder:focus-visible:text-white`}
-              placeholder={`Browse articles & series`}
+              placeholder="Filter articles on this page"
+              aria-label="Filter articles on this page"
               onChange={(e) => setSearch(e.target.value)}
             />
             <div className={`pr-4 text-purple-400`}>
@@ -219,7 +158,7 @@ export default function PostListing({ allArticles, allSeries, authors, tags, sel
                         </h2>
                       </a>
                       <p className={`text-xs text-gray-400 pt-1`}>
-                        {article.date.toLocaleDateString()} by
+                        {new Date(article.date).toLocaleDateString()} by
                         {article.authors.map((author, idx) => (
                           <a key={`author-url-${author}`} href={`/${author}`}>
                             {idx > 0 ? ',' : ''}&nbsp;<span className={`text-gray-700`}>{author}</span>
@@ -233,6 +172,10 @@ export default function PostListing({ allArticles, allSeries, authors, tags, sel
             )
           })}
         </div>
+        <nav aria-label="Pagination" className="flex justify-between gap-6 px-4 py-8">
+          {previous && <a href={previous} rel="prev">← Previous</a>}
+          {next && <a href={next} rel="next">Next →</a>}
+        </nav>
       </Layout>
     </>
   )
