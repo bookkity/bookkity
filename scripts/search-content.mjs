@@ -40,7 +40,7 @@ export async function collectSearchRecords(root = process.cwd()) {
     const body = searchText(raw)
     records.push({url, type, title: data.title, description: data.description || body.slice(0, 180),
       authors: [...new Set(list(data.authors).flatMap(handle => [handle, authors.get(handle) || handle]))],
-      tags: list(data.tags), keywords: list(data.keywords), series, language: data.language || 'en', body})
+      tags: list(data.tags), keywords: [...list(data.keywords), ...list(data.shortTitle)], series, language: data.language || 'en', body})
   }
   for (const file of await files(path.join(root, 'articles'))) {
     const {data, content} = await read(path.join(root, 'articles', file))

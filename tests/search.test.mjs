@@ -35,7 +35,7 @@ test('new content and author metadata automatically change the generated index',
   await write('articles/one.mdx', '---\ntitle: C++ notes\nurl: cpp\nauthors: [ada]\ntags: [programming]\nkeywords: [platypus]\n---\nCrème brûlée. `UniqueCompilerIdentifier`')
   await write('articles/hidden.mdx', '---\ntitle: Hidden\nurl: _hidden\nauthors: [ada]\n---\nclassifiedsecret')
   await write('series/tutorial/.mdx', '---\ntitle: Compiler series\nurl: compiler\nauthors: [ada]\ntags: [toolchain]\n---')
-  await write('series/tutorial/one.mdx', '---\ntitle: C# notes\norder: 1\npublished: true\nlisted: false\n---\nExclusiveChapterText')
+  await write('series/tutorial/one.mdx', '---\ntitle: C# notes\nshortTitle: ConciseAlias\norder: 1\npublished: true\nlisted: false\n---\nExclusiveChapterText')
   await write('series/tutorial/draft.mdx', '---\ntitle: Draft\norder: 2\npublished: false\n---\nclassifiedsecret')
   const first = await buildSearchIndex(root)
   const readArtifact = async result => JSON.parse(await fs.readFile(path.join(root, 'public', result.url), 'utf8'))
@@ -44,6 +44,7 @@ test('new content and author metadata automatically change the generated index',
     assert.equal(search(query)[0]?.url, '/articles/cpp', query)
   }
   assert.equal(search('C#')[0]?.url, '/series/compiler/1')
+  assert.equal(search('ConciseAlias')[0]?.url, '/series/compiler/1')
   assert.equal(search('C++')[0]?.url, '/articles/cpp')
   assert.equal(search('toolchain ExclusiveChapterText')[0]?.url, '/series/compiler/1')
   assert.equal(search('classifiedsecret').length, 0)
