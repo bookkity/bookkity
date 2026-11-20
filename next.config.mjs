@@ -1,3 +1,5 @@
+import {PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD} from 'next/constants.js';
+
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 
 /** @type {import('next').NextConfig} */
@@ -17,13 +19,23 @@ const nextConfig = {
     ];
   },
   async headers() {
-    return isPreviewDeployment ? [
+    return [
       {
+        source: '/search-assets/:path*',
+        headers: [{key: 'Cache-Control', value: 'public, max-age=31536000, immutable'}],
+      },
+      ...(isPreviewDeployment ? [{
         source: '/:path*',
         headers: [{ key: 'X-Robots-Tag', value: 'noindex' }],
-      },
-    ] : [];
+      }] : []),
+    ];
   },
 };
 
-export default nextConfig;
+export default async phase => {
+  if ([PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD].includes(phase)) {
+    const {buildSearchIndex} = await import('./scripts/build-search-index.mjs');
+    await buildSearchIndex();
+  }
+  return nextConfig;
+};
