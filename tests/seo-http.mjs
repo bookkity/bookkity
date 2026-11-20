@@ -30,6 +30,11 @@ for (const url of urls) {
   for(const node of graph.filter(n=>n['@type']==='BlogPosting')) {
     for(const author of node.author) assert.ok(graph.some(n=>n['@type']==='Person'&&n['@id']===author['@id']))
   }
+  const list = graph.find(n => n['@type'] === 'ItemList')
+  if (list) {
+    const offsets = list.itemListElement.map(item => html.indexOf(`href="${new URL(item.url).pathname}"`))
+    assert.ok(offsets.every((offset, i) => offset >= 0 && (i === 0 || offset > offsets[i - 1])), `schema matches visible order ${path}`)
+  }
   if(path.startsWith('/tags/')) assert.ok(/href="\/(article|series)\//.test(html),`topic links ${path}`)
   visited.add(path)
 }

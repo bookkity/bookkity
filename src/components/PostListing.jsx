@@ -81,15 +81,15 @@ export default function PostListing({ allArticles, allSeries, authors, tags, sel
   })
 
   const previews = articlePreviews.concat(chapterPreviews)
+    .filter(it => !it.url.startsWith("/article/_"))
+    .sort((a, b) => b.date - a.date)
 
   const filteredPreviews = useMemo(() => {
     return previews
-      .filter(it => !it.url.startsWith("/article/_"))
       .filter(it => showSeries ? true : it.type === 'article')
       .filter(it => languages.value.includes(it.language))
       .filter(it => selectedTag ? it.tags.includes(selectedTag) : true)
       .filter(it => search ? satisfiesSearch(it, search) : true)
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
   }, [previews, languages, selectedTag, search, showSeries])
 
   const toggleLanguage = (lang) => {
@@ -102,7 +102,7 @@ export default function PostListing({ allArticles, allSeries, authors, tags, sel
 
   return (
     <>
-      <Seo page={{kind: 'collection', title: selectedTag ? `${selectedTag} articles and tutorials` : 'Bookkity', description: selectedTag ? `Explore ${selectedTag} articles and series chapters by the Bookkity community.` : SITE_DESCRIPTION, path: selectedTag ? tagPath(selectedTag) : '/', items: previews.filter(p => !p.url.startsWith('/article/_')).map(p => ({title: p.title, path: p.url}))}} />
+      <Seo page={{kind: 'collection', title: selectedTag ? `${selectedTag} articles and tutorials` : 'Bookkity', description: selectedTag ? `Explore ${selectedTag} articles and series chapters by the Bookkity community.` : SITE_DESCRIPTION, path: selectedTag ? tagPath(selectedTag) : '/', items: previews.map(p => ({title: p.title, path: p.url}))}} />
       <Layout>
         <h1 className="pt-8 text-3xl font-semibold">{selectedTag ? `${selectedTag} articles and tutorials` : "Articles and tutorials"}</h1>
         {selectedTag && <p className="pt-3 text-gray-600">Explore {selectedTag} articles and series chapters by the Bookkity community.</p>}

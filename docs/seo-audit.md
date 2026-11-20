@@ -96,3 +96,4 @@ A compatible shared cache serves it fresh for 12 hours, then refreshes on demand
 - `node tests/seo-http.mjs` against `next start`: passed for 32 indexable routes, including raw HTML canonicals/JSON-LD/headings, all sitemap entries matching build routes, draft exclusions/noindex, unknown tag 404, robots discovery, XML MIME and exact cache header.
 - Preview configuration was evaluated with `VERCEL_ENV=preview`: build flag and wildcard X-Robots-Tag assertions passed. No live preview or production edge-cache verification is claimed.
 - The branch retains its existing separate noindex prerequisite commit; it is not replaced or squashed into this work.
+- Independent final review identified collection schema ordering differing from visible cards. Both now derive from the same public, newest-first list, and the HTTP check verifies ItemList order against rendered links.
