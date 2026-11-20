@@ -128,10 +128,13 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
             </h1>
             <span className={'text-xs text-gray-500 pt-2'}>
               by {series.details.authors.map((author, idx) => (
-                <a key={idx} className={`text-purple-500`} href={`/${author}`}>
-                  {author}
-                </a>
-              ))}
+                <span key={author}>
+                  {idx > 0 && ', '}
+                  <a className={`text-purple-500`} href={`/${author}`}>
+                    {author}
+                  </a>
+                </span>
+            ))}
               <span> on {selectedChapter.date}</span>
             </span>
             <div className={`mdx pt-4`}>

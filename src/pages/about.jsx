@@ -40,7 +40,7 @@ export default function About({ authors }) {
                     <img
                       src={`/author/${author.avatar}`}
                       alt={author.name}
-                      className={`absolute mx-auto rounded-full w-28 top-4 left-1/2 -ml-14 border border-black`}
+                      className={`absolute mx-auto rounded-full w-28 top-4 left-1/2 -ml-14 border border-black bg-white`}
                     />
                     <div className={`flex flex-col items-center px-2 pt-10 pb-8`}>
                       <h3 className={`text-lg font-semibold mt-4`}>{author.name}</h3>
