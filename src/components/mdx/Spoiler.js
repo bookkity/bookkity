@@ -16,7 +16,7 @@ export default function Spoiler({ title, children }) {
         py-2 px-4
         font-semibold text-black rounded-lg
         hover:bg-gray-50 hover:border-gray-400
-        transition-colors duration-150 outline-none focus:outline-none bg-white
+        transition-colors duration-150 outline-hidden focus:outline-hidden bg-white
       '>
         <span className="flex-1 text-sm">{title}</span>
         <span className="text-xs text-gray-500 mr-1">{open ? 'Hide' : 'Show'}</span>

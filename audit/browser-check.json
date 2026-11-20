@@ -1,0 +1,132 @@
+{
+  "routes": [
+    {
+      "route": "/",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/about",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/article/_components",
+      "status": 200,
+      "tabs": 2
+    },
+    {
+      "route": "/article/api-sets",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/article/hello-world",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/article/kotlin-multiplatform-a-practical-use-case-of-js-target",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/article/toward-functional-paradigm-fundamental-concepts-in-java",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/crejk",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/dzikoysk",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/error56",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/insertt",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/merch",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/merch/boo-halloween",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/merch/xmas-boo",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/northpl93",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/project/funnyguilds",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/projects",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/rollczi",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/series",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/series/intellij-plugin-development/1",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/series/intellij-plugin-development/2",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/series/reposilite-3x-backstage/1",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/series/reposilite-3x-backstage/2",
+      "status": 200,
+      "tabs": 0
+    },
+    {
+      "route": "/thatbakamono",
+      "status": 200,
+      "tabs": 0
+    }
+  ],
+  "errors": [],
+  "checks": [
+    "MDX tab selection",
+    "Hangul composition and backspace",
+    "Popup dismissal and persistence",
+    "Merch layout at 390 and 1440 pixels"
+  ],
+  "externalRequests": "blocked"
+}
