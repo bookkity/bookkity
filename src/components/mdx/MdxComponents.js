@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import KhangulKeyboard from "@/components/mdx/KhangulKeyboard";
 import {CodeVariant, CodeVariants} from "@/components/mdx/CodeVariants";
+import Spoiler from "@/components/mdx/Spoiler";
 
 function getAnchor(text) {
   return text
@@ -27,7 +28,7 @@ const H = ({ children, as, size }) => {
     {
       className: `py-2 -ml-${size.includes('xl') ? '4' : '3'} font-bold text-${size}`,
     },
-    <a className={`paragraph`} href={`#${anchor}`}>
+    <a id={anchor} className={`paragraph`} href={`#${anchor}`}>
       <abbr className={`opacity-0.5 text-gray-400 font-normal opacity-0`}>§ </abbr>
       <span className={`hover:underline hover:decoration-gray-300`}>
         {children}
@@ -36,11 +37,9 @@ const H = ({ children, as, size }) => {
   )
 }
 
-
-
 // `text`
 const Highlight = (props) => (
-  <pre className={`px-2 text-xs bg-white rounded-lg whitespace-pre break-normal spacing`}>
+  <pre className={`px-2 text-xs bg-white rounded-lg whitespace-pre break-all spacing`}>
     {props.children}
   </pre>
 )
@@ -130,6 +129,19 @@ const Alert = ({type, children}) => {
       <div className={`pl-0.5 pr-4`}>
         {icon}
       </div>
+      <div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+const ScrollableWrapper = ({ height, children }) => {
+  return (
+    <div
+      className={`overflow-y-scroll px-3 py-2 bg-gray-50 rounded-md`}
+      style={{ maxHeight: height || '200px' }}
+    >
       {children}
     </div>
   )
@@ -155,7 +167,7 @@ export default {
   ul: (props) => <ul className={`py-1 pl-5 list-disc`} {...props} />,
   ol: (props) => <ol className={`py-2 pl-8 list-decimal `} {...props} />,
   li: (props) => <li className={`py-0.5 pl-2`} {...props} />,
-  img: (props) =>  <img className={`inline-block rounded-md -mb-1`} {...props} />,
+  img: (props) =>  <img className={`inline-block rounded-md -mb-1 mt-2`} {...props} />,
   blockquote: (props) => <blockquote className={`border-l-4 border-purple-200 py-0 pl-4 mt-2 mb-4 text-md bg-gray-50 rounded-r-md`} {...props} />,
   // Spoiler: (props) => <Spoiler {...props} />,
   CodeVariants: (props) => <CodeVariants {...props} />,
@@ -166,4 +178,6 @@ export default {
   Snippet,
   Highlight,
   References,
+  Spoiler,
+  ScrollableWrapper
 }

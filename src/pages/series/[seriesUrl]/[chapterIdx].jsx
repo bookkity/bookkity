@@ -39,17 +39,56 @@ export async function getStaticProps({params: {seriesUrl, chapterIdx}}) {
 }
 
 export default function ChapterIdx({series, chapter: selectedChapter}) {
+  const title = `${selectedChapter.title} - ${series.details.title} | Bookkity`
+  const description = series.details.description || `Read "${selectedChapter.title}" from the "${series.details.title}" series on Bookkity - A community blog about programming, software development, and technology.`
+  const url = `https://bookkity.com/series/${series.details.url}/${selectedChapter.order}`
+  const imageUrl = series.details.image ? `https://bookkity.com/series${series.details.image}` : 'https://bookkity.com/images/boo.png'
+  const authorNames = series.details.authors?.join(', ') || 'Bookkity Team'
+
   return (
     <>
       <Head>
-        <title>Bookkity - Series</title>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content={selectedChapter.title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={url} />
+        <meta property="og:image" content={imageUrl} />
+        <meta property="og:image:alt" content={`Cover image for ${selectedChapter.title}`} />
+        <meta property="og:site_name" content="Bookkity" />
+        <meta property="og:locale" content={series.details.language === 'en' ? 'en_US' : 'en_US'} />
+
+        {/* Article specific OG tags */}
+        {selectedChapter.date && <meta property="article:published_time" content={new Date(selectedChapter.date).toISOString()} />}
+        {series.details.authors?.map(author => (
+          <meta key={`og-author-${author}`} property="article:author" content={author} />
+        ))}
+        {series.details.tags?.map(tag => (
+          <meta key={`og-tag-${tag}`} property="article:tag" content={tag} />
+        ))}
+        <meta property="article:section" content={series.details.title} />
+
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={selectedChapter.title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={imageUrl} />
+        <meta name="twitter:image:alt" content={`Cover image for ${selectedChapter.title}`} />
+
+        {/* Additional SEO Meta Tags */}
+        <meta name="author" content={authorNames} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={url} />
       </Head>
       <Layout>
         <div className={`flex min-h-full flex-col md:flex-row`}>
           <div
             id={`chapter-border`}
             className={`
-              flex flex-col md:max-w-80 
+              flex flex-col md:max-w-80
               md:border-1 md:border-r md:b-1 md:b-r 
               text-sm md:pr-4
               pt-4 md:pt-8
@@ -78,7 +117,7 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
               )
             })}
           </div>
-          <div className={`flex flex-col md:pl-8 pt-4 md:pt-8 w-full h-full`}>
+          <div className={`flex flex-col md:pl-8 pt-4 md:pt-8 md:w-4/5 h-full`}>
             {selectedChapter.published !== true && (
               <div className={`mr-2 mb-6 text-center text-purple-900 font-semibold text-xs py-1 px-4 bg-gray-300 rounded-3xl`}>
                 This chapter is not published yet
@@ -89,9 +128,9 @@ export default function ChapterIdx({series, chapter: selectedChapter}) {
             </h1>
             <span className={'text-xs text-gray-500 pt-2'}>
               by {series.details.authors.map((author, idx) => (
-                <span>
+                <span key={author}>
                   {idx > 0 && ', '}
-                  <a key={idx} className={`text-purple-500`} href={`/${author}`}>
+                  <a className={`text-purple-500`} href={`/${author}`}>
                     {author}
                   </a>
                 </span>

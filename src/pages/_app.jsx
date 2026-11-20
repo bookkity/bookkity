@@ -1,3 +1,4 @@
+import "katex/dist/katex.min.css";
 import "@/styles/globals.css"
 import '@/components/mdx/MdxComponents.css'
 
@@ -9,7 +10,7 @@ export default function App({ Component, pageProps }) {
     <>
       <Head>
         <link rel="icon" href="/images/boo.png"/>
-        <meta name="viewport" content="width=device-width,initial-scale=1"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
       </Head>
       <IdentityContextProvider>
         <Component {...pageProps} />

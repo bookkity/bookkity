@@ -22,7 +22,28 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        blackletter: ['"Pirata One"', 'serif'],
+        smallcaps: ['"Spectral SC"', 'serif'],
+        condensed: ['"Barlow Condensed"', 'sans-serif'],
+      },
       colors: {
+        ink: {
+          DEFAULT: "#15120f",
+          800: "#1e1a16",
+          700: "#2b2520",
+          600: "#4a4038",
+        },
+        parchment: {
+          DEFAULT: "#ece2cc",
+          400: "#c8b994",
+          500: "#9d8f72",
+        },
+        ember: {
+          DEFAULT: "#c4552f",
+          300: "#e48a62",
+          400: "#d96a42",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

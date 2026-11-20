@@ -45,9 +45,9 @@ export default function Series({series}) {
                       <div className={`px-2 text-sm flex`}>
                         <div>by&nbsp;</div>
                         {details.authors.map((author, idx) => (
-                          <div>
+                          <div key={author}>
                             {idx > 0 && ', '}
-                            <a key={idx} href={`/${author}`} className={'text-purple-700'}>
+                            <a href={`/${author}`} className={'text-purple-700'}>
                               {author}
                             </a>
                           </div>
@@ -56,7 +56,7 @@ export default function Series({series}) {
                     </div>
                     <div className={`h-full flex px-2 py-2 rounded-md mt-2 w-full`}>
                       <div className={`flex justify-between w-full`}>
-                        <p className={`text-gray-500 w-2/5 min-w-2/5 text-sm`}>
+                        <p className={`text-gray-500 w-2/5 min-w-2/5 text-sm line-clamp-6`}>
                           <a href={firstChapterUrl}>
                             {details.description ?? ' '}
                           </a>

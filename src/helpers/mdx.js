@@ -7,6 +7,9 @@ import rehypeKatex from "rehype-katex";
 
 export function serializeMdx(mdx) {
   return serialize(mdx, {
+    // Content comes from this repository, and component props like links={[...]} need JS expressions.
+    // blockDangerousJS stays on (default) and still rejects eval, Function, process, require and similar.
+    blockJS: false,
     mdxOptions: {
       remarkPlugins: [
         remarkGfm, remarkMath

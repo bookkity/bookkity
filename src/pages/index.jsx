@@ -25,7 +25,7 @@ export async function getStaticProps() {
   const allArticles = await getArticles()
   const allSeries = await getSeries()
   const allAuthors = await getAuthors()
-  generateRssFeed(allArticles)
+  generateRssFeed(allArticles, allSeries)
 
   return {
     props: {
@@ -78,7 +78,7 @@ export default function Home({ allArticles, allSeries, allAuthors }) {
       type: 'article',
       title: article.title,
       tags: article.tags,
-      authors: Array.of(article.author),
+      authors: article.authors,
       language: article.language,
       image: `/article/${article.image}`,
       url: `/article/${article.url}`,
@@ -90,7 +90,7 @@ export default function Home({ allArticles, allSeries, allAuthors }) {
   /** @type {Array<Preview>} */
   const chapterPreviews = allSeries.flatMap(series => {
     return series.chapters
-      .filter(chapter => chapter.published)
+      .filter(chapter => chapter.published && chapter.listed)
       .map(chapter => {
         return {
           type: 'chapter',
@@ -113,6 +113,7 @@ export default function Home({ allArticles, allSeries, allAuthors }) {
 
   const filteredPreviews = useMemo(() => {
     return previews
+      .filter(it => !it.url.startsWith("/article/_"))
       .filter(it => showSeries ? true : it.type === 'article')
       .filter(it => languages.value.includes(it.language))
       .filter(it => selectedTag ? it.tags.includes(selectedTag) : true)
@@ -142,7 +143,7 @@ export default function Home({ allArticles, allSeries, allAuthors }) {
               </div>
             </div>
             <Input
-              className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-none focus-visible:ring-0 placeholder:focus-visible:text-white`}
+              className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-hidden focus-visible:ring-0 placeholder:focus-visible:text-white`}
               placeholder={`Browse articles & series`}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -186,7 +187,7 @@ export default function Home({ allArticles, allSeries, allAuthors }) {
           <div className={`flex flex-wrap pt-4 md:pt-0 justify-center md:justify-start`}>
             {tags.map((tag) => (
               <div key={tag.name} className={`p-2 px-6 font-semibold ${tag.tag === selectedTag ? 'text-purple-800' : ''}`}>
-                <a href={`#${tag.tag}`} onClick={() => setSelectedTag(tag.tag)}>{tag.name}</a>
+                <a href={`#${tag.tag}`} onClick={() => setSelectedTag(selectedTag === tag.tag ? '' : tag.tag)}>{tag.name}</a>
               </div>
             ))}
           </div>
@@ -242,7 +243,7 @@ export default function Home({ allArticles, allSeries, allAuthors }) {
                             <img
                               src={`/author/${allAuthors.find(it => it.name === author).avatar}`}
                               alt={'Bookkity'}
-                              className={`rounded-full `}
+                              className={`rounded-full h-12 w-12 min-w-12 border-2 border-white bg-white`}
                             />
                           </a>
                         </div>

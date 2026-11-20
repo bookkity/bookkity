@@ -1,0 +1,50 @@
+[
+  {
+    "id": "reposilite",
+    "title": "Reposilite",
+    "description": "Lightweight and easy-to-use repository manager for Maven artifacts.",
+    "category": "product",
+    "url": "https://reposilite.com",
+    "image": "/project/reposilite.png",
+    "tags": ["maven", "gradle", "jvm"],
+    "authors": ["dzikoysk"],
+    "featured": false,
+    "githubUrl": "https://github.com/dzikoysk/reposilite"
+  },
+  {
+    "id": "khangul",
+    "title": "Khangul",
+    "description": "Hangul processor for KMP & JS projects, based on reverse-engineered enhanced version of Branah keyboard algorithm.",
+    "category": "library",
+    "url": "https://github.com/dzikoysk/khangul",
+    "image": "/project/khangul.gif",
+    "tags": ["jvm", "js"],
+    "authors": ["dzikoysk"],
+    "featured": false,
+    "githubUrl": "https://github.com/dzikoysk/khangul"
+  },
+  {
+    "id": "funnyguilds",
+    "title": "FunnyGuilds",
+    "description": "The most popular and advanced open-source plugin for guilds in Polish community.",
+    "category": "product",
+    "url": "funnyguilds",
+    "image": "/project/funnyguilds.png",
+    "tags": ["bukkit"],
+    "authors": ["FunnyTeam"],
+    "featured": true
+  },
+  {
+    "id": "nativescreen",
+    "title": "NativeScreen",
+    "description": "A Bukkit plugin that displays desktop content and videos using Minecraft's maps.",
+    "category": "research",
+    "url": "https://github.com/northpl93/NativeScreen",
+    "image": "/project/nativescreen.png",
+    "tags": ["bukkit"],
+    "authors": ["northpl93"],
+    "featured": false,
+    "githubUrl": "https://github.com/northpl93/NativeScreen"
+  }
+]
+
