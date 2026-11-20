@@ -14,5 +14,5 @@ export async function getListingProps(tagSlug, range) {
   const page = listingPage(createPreviews(articles, series, selectedTag), tag?.path || '/articles', range)
   if (!page) return {notFound: true}
   if (!tag && range === undefined) await generateRssFeed(articles, series)
-  return {props: {...page, selectedTag, tags, authors: authors.map(({name, avatar}) => ({name, avatar}))}}
+  return {props: {listingPage: true, ...page, selectedTag, tags, authors: authors.map(({name, avatar}) => ({name, avatar}))}}
 }

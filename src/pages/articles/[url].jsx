@@ -1,5 +1,4 @@
 import Article from '@/components/Article'
-import PostListing from '@/components/PostListing'
 import {getArticles} from '@/helpers/articles'
 import {getAuthors} from '@/helpers/authors'
 import {getSeries} from '@/helpers/series'
@@ -22,6 +21,4 @@ export async function getStaticProps({params: {url}}) {
   return {props: {article, authorRecords}}
 }
 
-export default function ArticleOrListing(props) {
-  return props.article ? <Article {...props} /> : <PostListing {...props} />
-}
+export default Article

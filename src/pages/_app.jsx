@@ -4,8 +4,11 @@ import '@/components/mdx/MdxComponents.css'
 
 import IdentityContextProvider from "@/helpers/identity"
 import Head from "next/head"
+import PostListing from "@/components/PostListing"
 
 export default function App({ Component, pageProps }) {
+  // Listing data has one persistent owner, including the mixed article/range route.
+  const Page = pageProps.listingPage ? PostListing : Component
   return (
     <>
       <Head>
@@ -16,7 +19,7 @@ export default function App({ Component, pageProps }) {
         )}
       </Head>
       <IdentityContextProvider>
-        <Component {...pageProps} />
+        <Page {...pageProps} />
       </IdentityContextProvider>
     </>
   )

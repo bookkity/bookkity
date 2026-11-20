@@ -26,7 +26,9 @@ for (const url of urls) {
   assert.ok(json,`schema ${path}`)
   const graph = JSON.parse(json[1])['@graph']
   assert.equal(graph.filter(n=>n['@id']==='https://bookkity.com/#organization').length,1)
-  assert.ok((html.match(/<h1[ >]/g)||[]).length >= 1,`h1 ${path}`)
+  const listing = JSON.parse(html.match(/<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/s)[1]).props.pageProps.listingPage
+  if (listing) assert.equal((html.match(/<h1[ >]/g)||[]).length, 0, `no visible listing title ${path}`)
+  else assert.ok((html.match(/<h1[ >]/g)||[]).length >= 1, `h1 ${path}`)
   for(const node of graph.filter(n=>n['@type']==='BlogPosting')) {
     for(const author of node.author) assert.ok(graph.some(n=>n['@type']==='Person'&&n['@id']===author['@id']))
   }
@@ -36,7 +38,7 @@ for (const url of urls) {
     const data = JSON.parse(html.match(/<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/s)[1]).props.pageProps
     assert.equal(data.path, path)
     for (const direction of ['previous', 'next']) if (data[direction]) {
-      assert.ok(html.includes(`href="${data[direction]}" rel="${direction === 'previous' ? 'prev' : 'next'}"`), `navigation ${path}`)
+      assert.ok((html.match(/<a\b[^>]*>/g) || []).some(link => link.includes(`href="${data[direction]}"`) && link.includes(`rel="${direction === 'previous' ? 'prev' : 'next'}"`)), `navigation ${path}`)
       assert.ok(urls.includes(`https://bookkity.com${data[direction]}`), `sitemap pagination ${path}`)
     }
     const offsets = list.itemListElement.map(item => html.indexOf(`href="${new URL(item.url).pathname}"`))

@@ -4,39 +4,46 @@ import Layout from "@/components/Layout"
 import SearchForm from "@/components/SearchForm"
 import Link from "next/link"
 import {useRouter} from "next/router"
-import useSearch from "@/search/useSearch"
+import useListingResults from "@/search/useListingResults"
 import {BROWSE_TOPICS, legacyTagDestination} from "@/helpers/tags"
-import {useEffect, useMemo, useState} from "react"
+import {useEffect, useMemo, useState, useSyncExternalStore} from "react"
 import Seo from "@/components/Seo"
 import {Toggle} from "@/components/ui/toggle"
 import {RssIcon} from "lucide-react";
 
+const subscribeHydration = () => () => {}
+const clientSnapshot = () => true
+const serverSnapshot = () => false
+
 export default function PostListing({ previews, authors, tags, selectedTag = '', path, start, total, previous, next, searchMode = false }) {
   const router = useRouter()
-  const query = searchMode && router.isReady && typeof router.query.q === 'string' ? router.query.q.trim().slice(0, 200) : ''
-  const {status, results, retry} = useSearch(query)
-  const searching = searchMode && Boolean(query)
-  const visiblePreviews = searching ? results : previews
+  const hydrated = useSyncExternalStore(subscribeHydration, clientSnapshot, serverSnapshot)
+  const urlReady = hydrated && router.isReady
+  const query = searchMode && urlReady && typeof router.query.q === 'string' ? router.query.q.trim().slice(0, 200) : ''
+  const searching = searchMode && (!urlReady || Boolean(query))
+  const target = searching ? {kind: 'search', query: urlReady ? query : null}
+    : {kind: 'listing', key: path, records: previews}
+  const {view, status, retry} = useListingResults(target)
+  const visiblePreviews = view?.records
   useEffect(() => {
     if (path !== '/articles') return
     const migrateHash = () => {
       const destination = legacyTagDestination(window.location.hash, tags)
-      if (destination) window.location.replace(destination + window.location.search)
+      if (destination) router.replace(destination + window.location.search, undefined, {scroll: false})
     }
     migrateHash()
     window.addEventListener('hashchange', migrateHash)
     return () => window.removeEventListener('hashchange', migrateHash)
-  }, [path, tags])
+  }, [path, tags, router])
 
   const [languages, setLanguages] = useState({ value: ['pl', 'en'] })
   const [showSeries, setShowSeries] = useState(true)
 
   const filteredPreviews = useMemo(() => {
-    return visiblePreviews
+    return (visiblePreviews || [])
       .filter(it => showSeries ? true : it.type === 'article')
       .filter(it => languages.value.includes(it.language))
-      .filter(it => !searching && selectedTag ? it.tags.includes(selectedTag) : true)
-  }, [visiblePreviews, languages, selectedTag, showSeries, searching])
+  }, [visiblePreviews, languages, showSeries])
 
   const toggleLanguage = (lang) => {
     let updated = languages.value.includes(lang)
@@ -50,14 +57,6 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
     <>
       <Seo page={searchMode ? {kind: 'page', title: 'Search articles and tutorials', description: SITE_DESCRIPTION, path: '/search', noindex: true} : {kind: 'collection', noindex: Boolean(selectedTag && !total), title: `${selectedTag ? `${selectedTag} articles and tutorials` : 'Articles and tutorials'}${start ? ` - Page ${start / PAGE_SIZE + 1}` : ''}`, description: selectedTag ? `Explore ${selectedTag} articles and series chapters by the Bookkity community.` : SITE_DESCRIPTION, path, items: previews.map(p => ({title: p.title, path: p.url}))}} />
       <Layout>
-        <h1 className="pt-8 text-3xl font-semibold">{selectedTag ? `${selectedTag} articles and tutorials` : "Articles and tutorials"}</h1>
-        {selectedTag && <p className="pt-3 text-gray-600">Explore {selectedTag} articles and series chapters by the Bookkity community.</p>}
-        {searching && <div role="status" aria-live="polite" className="pt-3 text-sm text-gray-600">
-          {status === 'loading' && 'Searching…'}
-          {status === 'ready' && (filteredPreviews.length ? `${filteredPreviews.length === 20 ? 'Top 20' : filteredPreviews.length} results for “${query}”.` : `No results for “${query}”.`)}
-          {status === 'error' && <>Search couldn’t load. <button onClick={retry} className="underline">Try again</button> or reload this page.</>}
-        </div>}
-        {!searching && <p className="pt-3 text-sm text-gray-600">Showing {total ? start + 1 : 0}–{Math.min(start + previews.length, total)} of {total}. Filters apply to this page.</p>}
         <div className={`md:px-4 pt-6 md:pt-16`}>
           <div className={`flex items-center bg-white rounded-lg text-gray-500`}>
             <SearchForm query={query} />
@@ -106,7 +105,18 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
             ))}
           </div>
         </div>
-        <div aria-label={searching ? 'Search results' : 'Articles'} className={`pt-5 px-4 flex flex-col sm:flex-row flex-wrap -mx-2`}>
+        {searching && <div role="status" aria-live="polite" className="sr-only">
+          {status === 'loading' && 'Searching…'}
+          {status === 'ready' && (filteredPreviews.length ? `${filteredPreviews.length === 20 ? 'Top 20' : filteredPreviews.length} results for “${query}”.` : `No results for “${query}”.`)}
+        </div>}
+        <div aria-busy={status === 'loading'} aria-label={searching ? 'Search results' : 'Articles'} className={`pt-5 px-4 flex flex-col sm:flex-row flex-wrap -mx-2`}>
+          {status === 'error' && <p role="alert" className="fixed bottom-4 left-4 right-4 z-20 mx-auto max-w-lg rounded-lg bg-white px-4 py-3 shadow-lg text-gray-600">Search couldn’t load. <button onClick={retry} className="underline">Try again</button> or reload this page.</p>}
+          {!view && status === 'loading' && [0, 1, 2].map(index => (
+            <div aria-hidden="true" key={index} className={`w-full md:w-1/2 xl:w-1/3 px-2 py-2 h-[338px] ${index === 1 ? 'hidden md:block' : index === 2 ? 'hidden xl:block' : ''}`}>
+              <div className="h-full rounded-lg bg-gray-200" />
+            </div>
+          ))}
+          {searching && status === 'ready' && filteredPreviews.length === 0 && <p className="px-2 text-gray-500">No results for “{query}”.</p>}
           {!searching && filteredPreviews.length === 0 && (
             <p className={`text-gray-500 text-sm text-center sm:text-left`}>
               No articles found in this category <span className={`italic font-semibold`}>(yet!)</span>
@@ -116,7 +126,6 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
             return (
               <div className={`w-full md:w-1/2 xl:w-1/3 px-2 py-2 h-[338px]`} key={article.url} data-article-card={article.url}>
                 <div
-                  key={`article-${idx}`}
                   className={`flex flex-col h-full flex-1 bg-white rounded-lg cursor-pointer hover:scale-[1.02] hover:duration-200`}
                 >
                   <div className={`relative bg-gray-100`}>
