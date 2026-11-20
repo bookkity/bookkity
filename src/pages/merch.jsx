@@ -119,6 +119,7 @@ export default function Merch({ merchItems }) {
     <>
       <Seo page={{kind: 'page', title: 'Merch', description: 'Explore Bookkity merchandise.', path: '/merch'}} />
       <Layout dark={dark}>
+        <h1 className="pt-8 text-3xl font-semibold">Bookkity merch</h1>
         <PolishOnlyPopup />
         {/* Fill the screen between the header (73px) and layout footer (56px), so perks sit at the bottom */}
         <div className="pt-4 px-4 flex flex-col gap-6 md:min-h-[calc(100vh-129px)]">

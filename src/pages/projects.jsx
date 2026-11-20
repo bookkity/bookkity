@@ -100,6 +100,7 @@ export default function Projects({ projects }) {
     <>
       <Seo page={{kind: 'page', title: 'Projects', description: 'Discover projects built by the Bookkity community.', path: '/projects'}} />
       <Layout>
+        <h1 className="pt-8 text-3xl font-semibold">Community projects</h1>
         <div className="pt-4 px-4">
           <div className="w-full px-4 py-6 bg-white rounded-lg mb-6">
             {/* <h1 className="text-3xl font-bold text-center text-gray-900 mb-4">
