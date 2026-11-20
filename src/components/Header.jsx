@@ -11,6 +11,7 @@ const discordIcons = {
 
 const menuItems = [
   {name: 'Articles', link: '/articles'},
+  {name: 'Search', link: '/search'},
   {name: 'Series', link: '/series'},
   {name: 'Projects', link: '/projects'},
   {name: 'Merch', link: '/merch'},

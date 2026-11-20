@@ -1,21 +1,12 @@
 import {PAGE_SIZE} from "@/helpers/listing"
 import {SITE_DESCRIPTION} from "@/helpers/seo"
 import Layout from "@/components/Layout"
-import {Input} from "@/components/ui/input"
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
-import {faSearch} from "@fortawesome/free-solid-svg-icons"
+import SearchForm from "@/components/SearchForm"
 import {legacyTagDestination} from "@/helpers/tags"
 import {useEffect, useMemo, useState} from "react"
 import Seo from "@/components/Seo"
 import {Toggle} from "@/components/ui/toggle"
 import {RssIcon} from "lucide-react";
-
-const satisfiesSearch = (article, search) => {
-  search = search.toLowerCase()
-  if (article.title.toLowerCase().includes(search)) return true
-  if (article.tags.some(it => it.toLowerCase().includes(search))) return true
-  return false
-}
 
 export default function PostListing({ previews, authors, tags, selectedTag = '', path, start, total, previous, next }) {
   useEffect(() => {
@@ -29,7 +20,6 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
     return () => window.removeEventListener('hashchange', migrateHash)
   }, [path, tags])
 
-  const [search, setSearch] = useState('')
   const [languages, setLanguages] = useState({ value: ['pl', 'en'] })
   const [showSeries, setShowSeries] = useState(true)
 
@@ -38,8 +28,7 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
       .filter(it => showSeries ? true : it.type === 'article')
       .filter(it => languages.value.includes(it.language))
       .filter(it => selectedTag ? it.tags.includes(selectedTag) : true)
-      .filter(it => search ? satisfiesSearch(it, search) : true)
-  }, [previews, languages, selectedTag, search, showSeries])
+  }, [previews, languages, selectedTag, showSeries])
 
   const toggleLanguage = (lang) => {
     let updated = languages.value.includes(lang)
@@ -58,17 +47,7 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
         <p className="pt-3 text-sm text-gray-600">Showing {total ? start + 1 : 0}–{Math.min(start + previews.length, total)} of {total}. Filters apply to this page.</p>
         <div className={`md:px-4 pt-6 md:pt-16`}>
           <div className={`flex items-center bg-white rounded-lg text-gray-500`}>
-            <div className={`pl-4`}>
-              <div className={`h-5 w-5`}>
-                <FontAwesomeIcon icon={faSearch}/>
-              </div>
-            </div>
-            <Input
-              className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-hidden focus-visible:ring-0 placeholder:focus-visible:text-white`}
-              placeholder="Filter articles on this page"
-              aria-label="Filter articles on this page"
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <SearchForm />
             <div className={`pr-4 text-purple-400`}>
               <a title={"RSS"} href={'/rss.xml'}>
                 <RssIcon />
@@ -114,17 +93,8 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
             ))}
           </div>
         </div>
-        {search && (
-          <>
-            <div className={`pt-6 px-4`}>
-              <p className={`text-gray-500`}>
-                {filteredPreviews.length} results for <span className={`italic font-semibold`}>"{search}"</span>
-              </p>
-            </div>
-          </>
-        )}
         <div className={`pt-5 px-4 flex flex-col sm:flex-row flex-wrap -mx-2`}>
-          {!search && filteredPreviews.length === 0 && (
+          {filteredPreviews.length === 0 && (
             <p className={`text-gray-500 text-sm text-center sm:text-left`}>
               No articles found in this category <span className={`italic font-semibold`}>(yet!)</span>
             </p>
