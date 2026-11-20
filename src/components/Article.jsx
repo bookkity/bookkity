@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import TagLinks from "@/components/TagLinks"
 import Layout from "@/components/Layout"
 import {contentImage} from "@/helpers/seo"
@@ -14,9 +15,9 @@ export default function Article({ article, authorRecords }) {
       <Seo page={{kind: 'post', title: article.title, description, path: `/articles/${article.url}`, image: imageUrl, language: article.language, date: article.date, authors: authorRecords, tags: article.tags, noindex: article.url.startsWith('_')}} />
       <Layout>
         <p className={`text-sm text-gray-500 pt-12`}>
-          <a href={`/articles`} className={`hover:underline hover:decoration-gray-400`}>
+          <NextLink prefetch={false} href={`/articles`} className={`hover:underline hover:decoration-gray-400`}>
             Articles
-          </a>
+          </NextLink>
           &nbsp;/&nbsp;
           <span className={`font-semibold`}>
             {article.title}
@@ -26,11 +27,11 @@ export default function Article({ article, authorRecords }) {
           {article.title}
         </h1>
         <span className={'text-xs text-gray-500'}>
-          {/*by <a className={`text-purple-500`} href={`/${article.author}`}>{article.author}</a> on {article.date}*/}
+          {/*by <NextLink prefetch={false} className={`text-purple-500`} href={`/${article.author}`}>{article.author}</NextLink> on {article.date}*/}
           by {article.authors.map((author, idx) => (
-            <a key={`author-url-${author}`} href={`/${author}`}>
+            <NextLink prefetch={false} key={`author-url-${author}`} href={`/${author}`}>
               {idx > 0 ? ',' : ''}&nbsp;<span className={`text-purple-700`}>{author}</span>
-            </a>
+            </NextLink>
           ))} on {article.date}
         </span>
         <TagLinks tags={article.tags} />

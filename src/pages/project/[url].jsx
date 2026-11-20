@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import {getAuthors} from "@/helpers/authors"
 import Layout from "@/components/Layout"
 import Seo from "@/components/Seo"
@@ -45,13 +46,13 @@ export default function ProjectPage({ project, authorNames }) {
         <div className="pt-6 px-4">
           {/* Back Button */}
           <div className="mb-6">
-            <a
+            <NextLink prefetch={false}
               href="/projects"
               className="inline-flex items-center text-purple-600 hover:text-purple-700 transition-colors text-sm"
             >
               <FontAwesomeIcon icon={faArrowLeft} className="mr-1 w-3 h-3" />
               Back to Projects
-            </a>
+            </NextLink>
           </div>
 
           {/* Project Header */}
@@ -92,12 +93,12 @@ export default function ProjectPage({ project, authorNames }) {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Authors</h3>
                   <div className="flex flex-wrap gap-2">
                     {project.authors.map((author, index) => (
-                      <span key={index}>{authorNames.includes(author) ? <a
+                      <span key={index}>{authorNames.includes(author) ? <NextLink prefetch={false}
                         href={`/${author}`}
                         className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition-colors"
                       >
                         {author}
-                      </a> : author}</span>
+                      </NextLink> : author}</span>
                     ))}
                   </div>
                 </div>
@@ -105,7 +106,7 @@ export default function ProjectPage({ project, authorNames }) {
                 {/* Action Buttons */}
                 <div className="flex gap-4">
                   {project.githubUrl && (
-                    <a
+                    <NextLink prefetch={false}
                       href={project.githubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -113,17 +114,17 @@ export default function ProjectPage({ project, authorNames }) {
                     >
                       <FontAwesomeIcon icon={faGithub} className="mr-2" />
                       View on GitHub
-                    </a>
+                    </NextLink>
                   )}
                   {project.demoUrl && (
-                    <a
+                    <NextLink prefetch={false}
                       href={project.demoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
                     >
                       Live Demo
-                    </a>
+                    </NextLink>
                   )}
                 </div>
               </div>

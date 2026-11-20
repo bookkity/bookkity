@@ -62,9 +62,9 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
           <div className={`flex items-center bg-white rounded-lg text-gray-500`}>
             <SearchForm query={query} />
             <div className={`pr-4 text-purple-400`}>
-              <a title={"RSS"} href={'/rss.xml'}>
+              <Link prefetch={false} title={"RSS"} href={'/rss.xml'}>
                 <RssIcon />
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
           <div aria-label="Topics" className={`flex flex-wrap pt-4 md:pt-0 justify-center md:justify-start`}>
             {BROWSE_TOPICS.map((tag) => (
               <div key={tag.slug} className={`p-2 px-6 font-semibold ${tag.slug === selectedTag.toLowerCase() ? 'text-purple-800' : ''}`}>
-                <a href={tag.path}>{tag.label}</a>
+                <Link prefetch={false} href={tag.path}>{tag.label}</Link>
               </div>
             ))}
           </div>
@@ -137,13 +137,13 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
                   <div className={`flex flex-1 items-center py-0`}>
                     <div className="flex -space-x-5 pl-3 pr-2 py-0">
                       {article.authors.map((author, idx) => (
-                        <a key={`author-avatar-${author}`} href={`/${author}`} className="inline-block">
+                        <Link prefetch={false} key={`author-avatar-${author}`} href={`/${author}`} className="inline-block">
                           <img
                             src={`/author/${authors.find(a => a.name === author)?.avatar}`}
                             alt={author}
                             className="rounded-full h-12 w-12 min-w-12 border-2 border-white bg-white"
                           />
-                        </a>
+                        </Link>
                       ))}
                     </div>
                     <div className={`flex flex-col justify-center`}>
@@ -155,9 +155,9 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
                       <p className={`text-xs text-gray-400 pt-1`}>
                         <time dateTime={article.date}>{new Date(article.date).toLocaleDateString('en-GB', {timeZone: 'UTC'})}</time> by
                         {article.authors.map((author, idx) => (
-                          <a key={`author-url-${author}`} href={`/${author}`}>
+                          <Link prefetch={false} key={`author-url-${author}`} href={`/${author}`}>
                             {idx > 0 ? ',' : ''}&nbsp;<span className={`text-gray-700`}>{author}</span>
-                          </a>
+                          </Link>
                         ))}
                       </p>
                     </div>
@@ -168,8 +168,8 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
           })}
         </div>
         {!searching && <nav aria-label="Pagination" className="flex justify-between gap-6 px-4 py-8">
-          {previous && <a href={previous} rel="prev">← Previous</a>}
-          {next && <a href={next} rel="next">Next →</a>}
+          {previous && <Link prefetch={false} href={previous} rel="prev">← Previous</Link>}
+          {next && <Link prefetch={false} href={next} rel="next">Next →</Link>}
         </nav>}
       </Layout>
     </>

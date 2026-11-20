@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import {getArticles} from "@/helpers/articles"
 import {contentImage} from "@/helpers/seo"
 import Layout from "@/components/Layout"
@@ -55,9 +56,9 @@ export default function Author({ author, series, articles }) {
       <Seo page={{kind: 'profile', title: author.name, description: author.description, path: `/${author.name}`, person: author, image: contentImage('author', author.avatar)}} />
       <Layout>
         <p className={`text-sm text-gray-500 pt-12 px-1`}>
-          <a href={`/about`} className={`hover:underline hover:decoration-gray-400`}>
+          <NextLink prefetch={false} href={`/about`} className={`hover:underline hover:decoration-gray-400`}>
             Authors
-          </a>
+          </NextLink>
           &nbsp;/&nbsp;
           <span className={`font-semibold`}>
               {author.name}
@@ -90,7 +91,7 @@ export default function Author({ author, series, articles }) {
                               <span className={`mr-1 text-gray-400 text-xs`}>[UNPUBLISHED]</span>
                             )}
                             {idx + 1}.&nbsp;
-                            <a href={`/series/${series.url}/${chapter.order}`}>{chapter.title}</a>
+                            <NextLink prefetch={false} href={`/series/${series.url}/${chapter.order}`}>{chapter.title}</NextLink>
                           </p>
                         ))}
                         {/*<p className={`text-xs text-gray-400`}>*/}
@@ -116,7 +117,7 @@ export default function Author({ author, series, articles }) {
               <div className={`flex flex-col pt-3 pb-6`}>
                 {articles && articles.map((article, idx) => {
                   return (
-                    <a key={idx} href={`/articles/${article.url}`} className={'mb-2'}>
+                    <NextLink prefetch={false} key={idx} href={`/articles/${article.url}`} className={'mb-2'}>
                       <div className={`flex items-center w-full bg-white max-h-16 rounded-lg`}>
                         <p
                           className={`text-sm pl-4 pr-4 border-r-gray-100 border-r-2`}>{article.date}</p>
@@ -128,7 +129,7 @@ export default function Author({ author, series, articles }) {
                           {/*<MDXRemote components={MDX} {...article.content} />*/}
                         </div>
                       </div>
-                    </a>
+                    </NextLink>
                   )
                 })}
                 {articles.length === 0 && (

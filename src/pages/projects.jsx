@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import Layout from "@/components/Layout"
 import Seo from "@/components/Seo"
 import {getProjects} from "@/helpers/projects"
@@ -59,14 +60,14 @@ function ProjectCard({ project }) {
   )
 
   return (
-    <a
+    <NextLink prefetch={false}
       href={linkUrl}
       target={isExternalUrl ? "_blank" : "_self"}
       rel={isExternalUrl ? "noopener noreferrer" : ""}
       className="block cursor-pointer hover:scale-[1.02] transition-transform duration-200"
     >
       {cardContent}
-    </a>
+    </NextLink>
   )
 }
 export default function Projects({ projects }) {

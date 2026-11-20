@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import Layout from "@/components/Layout"
 import Seo from "@/components/Seo"
 import {getAuthors} from "@/helpers/authors"
@@ -34,7 +35,7 @@ export default function About({ authors }) {
                    className={`w-full md:w-1/2 lg:w-1/3 xl:w-1/4 p-4 cursor-pointer hover:scale-[1.02] hover:duration-200`}
               >
                 <div className={`bg-white rounded-lg flex flex-col relative`}>
-                  <a href={`/${author.name}`}>
+                  <NextLink prefetch={false} href={`/${author.name}`}>
                     <div className={`w-full bg-gray-200 h-20 rounded-t-lg`}></div>
                     <img
                       src={`/author/${author.avatar}`}
@@ -45,7 +46,7 @@ export default function About({ authors }) {
                       <h3 className={`text-lg font-semibold mt-4`}>{author.name}</h3>
                       <p className={`text-gray-600 text-sm mt-2`}>{author.description}</p>
                     </div>
-                  </a>
+                  </NextLink>
                 </div>
               </div>
             ))}

@@ -1,3 +1,4 @@
+import NextLink from "next/link"
 import TagLinks from "@/components/TagLinks"
 import Seo from "@/components/Seo";
 import Layout from "@/components/Layout";
@@ -68,7 +69,7 @@ export default function ChapterIdx({series, chapter: selectedChapter, authorReco
               return (
                 <div key={idx} className={`flex pl-4 py-2 text-gray-700`}>
                   <div className={`flex`}>
-                    <a
+                    <NextLink prefetch={false}
                       href={`/series/${series.details.url}/${chapter.order}`}
                       className={`hover:underline hover:text-gray-500 ${chapter.order === selectedChapter.order ? 'font-semibold text-purple-800' : ''}`}
                     >
@@ -77,7 +78,7 @@ export default function ChapterIdx({series, chapter: selectedChapter, authorReco
                         <span className={`mr-1 text-gray-400 text-xs`}>[UNPUBLISHED]</span>
                       )}
                       {chapter.title}
-                    </a>
+                    </NextLink>
                   </div>
                 </div>
               )
@@ -94,9 +95,9 @@ export default function ChapterIdx({series, chapter: selectedChapter, authorReco
             </h1>
             <span className={'text-xs text-gray-500 pt-2'}>
               by {series.details.authors.map((author, idx) => (
-                <a key={idx} className={`text-purple-500`} href={`/${author}`}>
+                <NextLink prefetch={false} key={idx} className={`text-purple-500`} href={`/${author}`}>
                   {author}
-                </a>
+                </NextLink>
               ))}
               <span> on {selectedChapter.date}</span>
             </span>
@@ -107,22 +108,22 @@ export default function ChapterIdx({series, chapter: selectedChapter, authorReco
             <div className={`flex w-full pt-4 justify-between`}>
               {selectedChapter.order > 1 && (
                 <div className={`w-full flex`}>
-                  <a
+                  <NextLink prefetch={false}
                     href={`/series/${series.details.url}/${selectedChapter.order - 1}`}
                     className={`bg-white text-purple-900 rounded px-4 py-2 font-semibold text-sm`}
                   >
                     &larr; Previous Chapter
-                  </a>
+                  </NextLink>
                 </div>
               )}
               {series.chapters.length > selectedChapter.order && (
                 <div className={`w-full flex`}>
-                  <a
+                  <NextLink prefetch={false}
                     href={`/series/${series.details.url}/${selectedChapter.order + 1}`}
                     className={`bg-white text-purple-900 rounded px-4 py-2 font-semibold text-sm`}
                   >
                     Next Chapter &rarr;
-                  </a>
+                  </NextLink>
                 </div>
               )}
             </div>
