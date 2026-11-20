@@ -1,13 +1,13 @@
 import {getArticles} from '@/helpers/articles'
 import {getSeries} from '@/helpers/series'
 import {getAuthors} from '@/helpers/authors'
-import {collectTags} from '@/helpers/tags'
+import {listingTags} from '@/helpers/tags'
 import {createPreviews, listingPage} from '@/helpers/listing'
 import generateRssFeed from '@/helpers/rss'
 
 export async function getListingProps(tagSlug, range) {
   const [articles, series, authors] = await Promise.all([getArticles(), getSeries(), getAuthors()])
-  const tags = collectTags(articles, series)
+  const tags = listingTags(articles, series)
   const tag = tagSlug === undefined ? null : tags.find(t => t.slug === tagSlug)
   if (tagSlug !== undefined && !tag) return {notFound: true}
   const selectedTag = tag?.label || ''

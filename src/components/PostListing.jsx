@@ -2,13 +2,21 @@ import {PAGE_SIZE} from "@/helpers/listing"
 import {SITE_DESCRIPTION} from "@/helpers/seo"
 import Layout from "@/components/Layout"
 import SearchForm from "@/components/SearchForm"
-import {legacyTagDestination} from "@/helpers/tags"
+import Link from "next/link"
+import {useRouter} from "next/router"
+import useSearch from "@/search/useSearch"
+import {BROWSE_TOPICS, legacyTagDestination} from "@/helpers/tags"
 import {useEffect, useMemo, useState} from "react"
 import Seo from "@/components/Seo"
 import {Toggle} from "@/components/ui/toggle"
 import {RssIcon} from "lucide-react";
 
-export default function PostListing({ previews, authors, tags, selectedTag = '', path, start, total, previous, next }) {
+export default function PostListing({ previews, authors, tags, selectedTag = '', path, start, total, previous, next, searchMode = false }) {
+  const router = useRouter()
+  const query = searchMode && router.isReady && typeof router.query.q === 'string' ? router.query.q.trim().slice(0, 200) : ''
+  const {status, results, retry} = useSearch(query)
+  const searching = searchMode && Boolean(query)
+  const visiblePreviews = searching ? results : previews
   useEffect(() => {
     if (path !== '/articles') return
     const migrateHash = () => {
@@ -24,11 +32,11 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
   const [showSeries, setShowSeries] = useState(true)
 
   const filteredPreviews = useMemo(() => {
-    return previews
+    return visiblePreviews
       .filter(it => showSeries ? true : it.type === 'article')
       .filter(it => languages.value.includes(it.language))
-      .filter(it => selectedTag ? it.tags.includes(selectedTag) : true)
-  }, [previews, languages, selectedTag, showSeries])
+      .filter(it => !searching && selectedTag ? it.tags.includes(selectedTag) : true)
+  }, [visiblePreviews, languages, selectedTag, showSeries, searching])
 
   const toggleLanguage = (lang) => {
     let updated = languages.value.includes(lang)
@@ -40,14 +48,19 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
 
   return (
     <>
-      <Seo page={{kind: 'collection', title: `${selectedTag ? `${selectedTag} articles and tutorials` : 'Articles and tutorials'}${start ? ` - Page ${start / PAGE_SIZE + 1}` : ''}`, description: selectedTag ? `Explore ${selectedTag} articles and series chapters by the Bookkity community.` : SITE_DESCRIPTION, path, items: previews.map(p => ({title: p.title, path: p.url}))}} />
+      <Seo page={searchMode ? {kind: 'page', title: 'Search articles and tutorials', description: SITE_DESCRIPTION, path: '/search', noindex: true} : {kind: 'collection', noindex: Boolean(selectedTag && !total), title: `${selectedTag ? `${selectedTag} articles and tutorials` : 'Articles and tutorials'}${start ? ` - Page ${start / PAGE_SIZE + 1}` : ''}`, description: selectedTag ? `Explore ${selectedTag} articles and series chapters by the Bookkity community.` : SITE_DESCRIPTION, path, items: previews.map(p => ({title: p.title, path: p.url}))}} />
       <Layout>
         <h1 className="pt-8 text-3xl font-semibold">{selectedTag ? `${selectedTag} articles and tutorials` : "Articles and tutorials"}</h1>
         {selectedTag && <p className="pt-3 text-gray-600">Explore {selectedTag} articles and series chapters by the Bookkity community.</p>}
-        <p className="pt-3 text-sm text-gray-600">Showing {total ? start + 1 : 0}–{Math.min(start + previews.length, total)} of {total}. Filters apply to this page.</p>
+        {searching && <div role="status" aria-live="polite" className="pt-3 text-sm text-gray-600">
+          {status === 'loading' && 'Searching…'}
+          {status === 'ready' && (filteredPreviews.length ? `${filteredPreviews.length === 20 ? 'Top 20' : filteredPreviews.length} results for “${query}”.` : `No results for “${query}”.`)}
+          {status === 'error' && <>Search couldn’t load. <button onClick={retry} className="underline">Try again</button> or reload this page.</>}
+        </div>}
+        {!searching && <p className="pt-3 text-sm text-gray-600">Showing {total ? start + 1 : 0}–{Math.min(start + previews.length, total)} of {total}. Filters apply to this page.</p>}
         <div className={`md:px-4 pt-6 md:pt-16`}>
           <div className={`flex items-center bg-white rounded-lg text-gray-500`}>
-            <SearchForm />
+            <SearchForm query={query} />
             <div className={`pr-4 text-purple-400`}>
               <a title={"RSS"} href={'/rss.xml'}>
                 <RssIcon />
@@ -85,23 +98,23 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
               </Toggle>
             </div>
           </div>
-          <div className={`flex flex-wrap pt-4 md:pt-0 justify-center md:justify-start`}>
-            {[{ label: 'All', slug: '', path: '/articles' }, ...tags].map((tag) => (
-              <div key={tag.slug} className={`p-2 px-6 font-semibold ${tag.label === selectedTag ? 'text-purple-800' : ''}`}>
+          <div aria-label="Topics" className={`flex flex-wrap pt-4 md:pt-0 justify-center md:justify-start`}>
+            {BROWSE_TOPICS.map((tag) => (
+              <div key={tag.slug} className={`p-2 px-6 font-semibold ${tag.slug === selectedTag.toLowerCase() ? 'text-purple-800' : ''}`}>
                 <a href={tag.path}>{tag.label}</a>
               </div>
             ))}
           </div>
         </div>
-        <div className={`pt-5 px-4 flex flex-col sm:flex-row flex-wrap -mx-2`}>
-          {filteredPreviews.length === 0 && (
+        <div aria-label={searching ? 'Search results' : 'Articles'} className={`pt-5 px-4 flex flex-col sm:flex-row flex-wrap -mx-2`}>
+          {!searching && filteredPreviews.length === 0 && (
             <p className={`text-gray-500 text-sm text-center sm:text-left`}>
               No articles found in this category <span className={`italic font-semibold`}>(yet!)</span>
             </p>
           )}
           {filteredPreviews.map((article, idx) => {
             return (
-              <div className={`w-full md:w-1/2 xl:w-1/3 px-2 py-2 h-[338px]`} key={idx}>
+              <div className={`w-full md:w-1/2 xl:w-1/3 px-2 py-2 h-[338px]`} key={article.url} data-article-card={article.url}>
                 <div
                   key={`article-${idx}`}
                   className={`flex flex-col h-full flex-1 bg-white rounded-lg cursor-pointer hover:scale-[1.02] hover:duration-200`}
@@ -113,13 +126,13 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
                         : <p className={`text-gray-600 font-semibold`}>Chapter</p>
                       }
                     </div>
-                    <a href={article.url}>
+                    <Link href={article.url} prefetch={false}>
                       <img
                         src={article.image}
                         alt={article.title}
                         className={`rounded-t-2xl w-full h-56 object-cover`}
                       />
-                    </a>
+                    </Link>
                   </div>
                   <div className={`flex flex-1 items-center py-0`}>
                     <div className="flex -space-x-5 pl-3 pr-2 py-0">
@@ -134,11 +147,11 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
                       ))}
                     </div>
                     <div className={`flex flex-col justify-center`}>
-                      <a href={article.url}>
+                      <Link href={article.url} prefetch={false}>
                         <h2 className={`text-md font-semibold leading-5 pr-1`}>
                           {article.title}
                         </h2>
-                      </a>
+                      </Link>
                       <p className={`text-xs text-gray-400 pt-1`}>
                         <time dateTime={article.date}>{new Date(article.date).toLocaleDateString('en-GB', {timeZone: 'UTC'})}</time> by
                         {article.authors.map((author, idx) => (
@@ -154,10 +167,10 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
             )
           })}
         </div>
-        <nav aria-label="Pagination" className="flex justify-between gap-6 px-4 py-8">
+        {!searching && <nav aria-label="Pagination" className="flex justify-between gap-6 px-4 py-8">
           {previous && <a href={previous} rel="prev">← Previous</a>}
           {next && <a href={next} rel="next">Next →</a>}
-        </nav>
+        </nav>}
       </Layout>
     </>
   )

@@ -16,15 +16,16 @@ export const MAX_QUERY_LENGTH = 200
 
 export function buildSearchArtifact(records) {
   return {
-    schemaVersion: 2, fuseVersion: Fuse.version,
+    schemaVersion: 3, fuseVersion: Fuse.version,
     // The index owns searchable metadata; results carry only what the UI renders.
-    records: records.map(({url, title, description, authors, series}) => ({url, title, description, authors, series})),
+    records: records.map(({url, displayTitle: title, authorHandles: authors, image, date, type, language}) =>
+      ({url, title, authors, image, date, type, language})),
     index: Fuse.createIndex(SEARCH_KEYS, records).toJSON(),
   }
 }
 
 export function createSearch(artifact, options = SEARCH_OPTIONS) {
-  if (artifact.schemaVersion !== 2 || artifact.fuseVersion !== Fuse.version || !Array.isArray(artifact.records)) {
+  if (artifact.schemaVersion !== 3 || artifact.fuseVersion !== Fuse.version || !Array.isArray(artifact.records)) {
     throw new Error('Search data version mismatch. Reload this page.')
   }
   const fuse = new Fuse(artifact.records, options, Fuse.parseIndex(artifact.index))

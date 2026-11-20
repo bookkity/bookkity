@@ -39,6 +39,9 @@ export async function collectSearchRecords(root = process.cwd()) {
     if (!data.title || !data.authors || !url.startsWith('/')) throw new Error(`Incomplete searchable content: ${url}`)
     const body = searchText(raw)
     records.push({url, type, title: data.title, description: data.description || body.slice(0, 180),
+      authorHandles: list(data.authors),
+      image: `/${type === 'article' ? 'article' : 'series'}/${(data.image || '').replace(/^\/+/, '')}`,
+      date: data.date || '', displayTitle: series ? `${series}: ${data.shortTitle || data.title}` : data.title,
       authors: [...new Set(list(data.authors).flatMap(handle => [handle, authors.get(handle) || handle]))],
       tags: list(data.tags), keywords: [...list(data.keywords), ...list(data.shortTitle)], series, language: data.language || 'en', body})
   }
