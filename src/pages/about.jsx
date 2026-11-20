@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import {getAuthors} from "@/helpers/authors"
 
 export async function getStaticProps() {
@@ -15,9 +15,7 @@ export async function getStaticProps() {
 export default function About({ authors }) {
   return (
     <>
-      <Head>
-        <title>Bookkity - About Us</title>
-      </Head>
+      <Seo page={{kind: 'page', title: 'About Bookkity', description: 'Meet the authors behind Bookkity, a community blog about programming and technology.', path: '/about'}} />
       <Layout>
         <div className={`pt-6 px-4`}>
           <div className={`w-full px-4 py-6 bg-white rounded-lg`}>

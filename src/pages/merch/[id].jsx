@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import { getMerchItems, getMerchItem } from "@/helpers/merch"
 import { useState } from "react"
 import PolishOnlyPopup from "@/components/PolishOnlyPopup"
@@ -39,13 +39,7 @@ export default function MerchProduct({ item }) {
 
   return (
     <>
-      <Head>
-        <title>{item.title} | X Merch</title>
-        <meta name="description" content={item.description} />
-        <meta property="og:title" content={`${item.title} | Bookkity Merch`} />
-        <meta property="og:description" content={item.description} />
-        <meta property="og:image" content={images[0]} />
-      </Head>
+      <Seo page={{kind: 'page', title: `${item.title} - Merch`, description: item.description, path: `/merch/${item.id}`, image: images[0]}} />
       <Layout dark={medieval}>
         <PolishOnlyPopup />
         <div className={`py-8 ${medieval ? 'theme-medieval' : ''}`}>

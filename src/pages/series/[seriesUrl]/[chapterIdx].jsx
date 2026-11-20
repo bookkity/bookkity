@@ -1,5 +1,7 @@
-import Head from "next/head";
+import Seo from "@/components/Seo";
 import Layout from "@/components/Layout";
+import {getAuthors} from "@/helpers/authors"
+import {contentImage} from "@/helpers/seo"
 import {getSeries} from "@/helpers/series";
 import {MDXRemote} from "next-mdx-remote";
 import MDX from "@/components/mdx/MdxComponents";
@@ -33,56 +35,19 @@ export async function getStaticProps({params: {seriesUrl, chapterIdx}}) {
   return {
     props: {
       series,
-      chapter
+      chapter,
+      authorRecords: (await getAuthors()).filter(author => series.details.authors.includes(author.name))
     }
   }
 }
 
-export default function ChapterIdx({series, chapter: selectedChapter}) {
-  const title = `${selectedChapter.title} - ${series.details.title} | Bookkity`
-  const description = series.details.description || `Read "${selectedChapter.title}" from the "${series.details.title}" series on Bookkity - A community blog about programming, software development, and technology.`
-  const url = `https://bookkity.com/series/${series.details.url}/${selectedChapter.order}`
-  const imageUrl = series.details.image ? `https://bookkity.com/series${series.details.image}` : 'https://bookkity.com/images/boo.png'
-  const authorNames = series.details.authors?.join(', ') || 'Bookkity Team'
+export default function ChapterIdx({series, chapter: selectedChapter, authorRecords}) {
+  const description = series.details.description || `Read "${selectedChapter.title}" on Bookkity.`
+  const imageUrl = contentImage('series', selectedChapter.image || series.details.image)
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-
-        {/* Open Graph Meta Tags */}
-        <meta property="og:title" content={selectedChapter.title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={url} />
-        <meta property="og:image" content={imageUrl} />
-        <meta property="og:image:alt" content={`Cover image for ${selectedChapter.title}`} />
-        <meta property="og:site_name" content="Bookkity" />
-        <meta property="og:locale" content={series.details.language === 'en' ? 'en_US' : 'en_US'} />
-
-        {/* Article specific OG tags */}
-        {selectedChapter.date && <meta property="article:published_time" content={new Date(selectedChapter.date).toISOString()} />}
-        {series.details.authors?.map(author => (
-          <meta key={`og-author-${author}`} property="article:author" content={author} />
-        ))}
-        {series.details.tags?.map(tag => (
-          <meta key={`og-tag-${tag}`} property="article:tag" content={tag} />
-        ))}
-        <meta property="article:section" content={series.details.title} />
-
-        {/* Twitter Card Meta Tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={selectedChapter.title} />
-        <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={imageUrl} />
-        <meta name="twitter:image:alt" content={`Cover image for ${selectedChapter.title}`} />
-
-        {/* Additional SEO Meta Tags */}
-        <meta name="author" content={authorNames} />
-        {selectedChapter.published !== true && <meta key="robots" name="robots" content="noindex" />}
-        <link rel="canonical" href={url} />
-      </Head>
+      <Seo page={{kind: 'post', title: `${selectedChapter.title} - ${series.details.title}`, description, path: `/series/${series.details.url}/${selectedChapter.order}`, image: imageUrl, language: series.details.language, date: selectedChapter.date, authors: authorRecords, tags: series.details.tags, noindex: selectedChapter.published !== true}} />
       <Layout>
         <div className={`flex min-h-full flex-col md:flex-row`}>
           <div

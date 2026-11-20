@@ -1,6 +1,7 @@
 import {getArticles} from "@/helpers/articles"
+import {contentImage} from "@/helpers/seo"
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import {getAuthor, getAuthors} from "@/helpers/authors"
 import {getSeries} from "@/helpers/series";
 
@@ -48,13 +49,10 @@ export async function getStaticPaths() {
 
 
 export default function Author({ author, series, articles }) {
-  const title = `Bookkity - ${author.name}`
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
-      </Head>
+      <Seo page={{kind: 'profile', title: author.name, description: author.description, path: `/${author.name}`, person: author, image: contentImage('author', author.avatar)}} />
       <Layout>
         <p className={`text-sm text-gray-500 pt-12 px-1`}>
           <a href={`/about`} className={`hover:underline hover:decoration-gray-400`}>

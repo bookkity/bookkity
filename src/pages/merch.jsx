@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import { getMerchItems } from "@/helpers/merch"
 import { useState } from "react"
 import PolishOnlyPopup from "@/components/PolishOnlyPopup"
@@ -117,10 +117,7 @@ export default function Merch({ merchItems }) {
 
   return (
     <>
-      <Head>
-        <title>Merch | Bookkity</title>
-        <meta name="description" content="Merch Bookkity - Ręcznie robione produkty stworzone z myślą o naszej społeczności ✨" />
-      </Head>
+      <Seo page={{kind: 'page', title: 'Merch', description: 'Explore Bookkity merchandise.', path: '/merch'}} />
       <Layout dark={dark}>
         <PolishOnlyPopup />
         {/* Fill the screen between the header (73px) and layout footer (56px), so perks sit at the bottom */}

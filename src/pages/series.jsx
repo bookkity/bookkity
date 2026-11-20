@@ -1,4 +1,4 @@
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import {getSeries} from "@/helpers/series"
 import Layout from "@/components/Layout"
 
@@ -15,9 +15,7 @@ export async function getStaticProps() {
 export default function Series({series}) {
   return (
     <>
-      <Head>
-        <title>Bookkity - Series</title>
-      </Head>
+      <Seo page={{kind: 'page', title: 'Programming series', description: 'Explore programming tutorials and series by Bookkity authors.', path: '/series'}} />
       <Layout>
         <div className={'flex flex-col w-full'}>
           {series.map(({details, chapters}, index) => {

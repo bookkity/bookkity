@@ -1,9 +1,11 @@
+import {SITE_DESCRIPTION} from "@/helpers/seo"
+import {tagPath} from "@/helpers/tags"
 import Layout from "@/components/Layout"
 import {Input} from "@/components/ui/input"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faSearch} from "@fortawesome/free-solid-svg-icons"
 import {useMemo, useState} from "react"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import {Toggle} from "@/components/ui/toggle"
 import {RssIcon} from "lucide-react";
 
@@ -88,7 +90,7 @@ export default function PostListing({ allArticles, allSeries, tags, selectedTag 
       .filter(it => selectedTag ? it.tags.includes(selectedTag) : true)
       .filter(it => search ? satisfiesSearch(it, search) : true)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-  }, [previews, languages, selectedTag, search])
+  }, [previews, languages, selectedTag, search, showSeries])
 
   const toggleLanguage = (lang) => {
     let updated = languages.value.includes(lang)
@@ -100,9 +102,7 @@ export default function PostListing({ allArticles, allSeries, tags, selectedTag 
 
   return (
     <>
-      <Head>
-        <title>Bookkity</title>
-      </Head>
+      <Seo page={{kind: 'collection', title: selectedTag ? `${selectedTag} articles and tutorials` : 'Bookkity', description: selectedTag ? `Explore ${selectedTag} articles and series chapters by the Bookkity community.` : SITE_DESCRIPTION, path: selectedTag ? tagPath(selectedTag) : '/', items: previews.filter(p => !p.url.startsWith('/article/_')).map(p => ({title: p.title, path: p.url}))}} />
       <Layout>
         <h1 className="pt-8 text-3xl font-semibold">{selectedTag ? `${selectedTag} articles and tutorials` : "Articles and tutorials"}</h1>
         {selectedTag && <p className="pt-3 text-gray-600">Explore {selectedTag} articles and series chapters by the Bookkity community.</p>}

@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import {getProjects} from "@/helpers/projects"
 import {useMemo, useState} from "react"
 
@@ -98,10 +98,7 @@ export default function Projects({ projects }) {
 
   return (
     <>
-      <Head>
-        <title>Bookkity - Community Projects</title>
-        <meta name="description" content="Discover amazing projects created by our community members" />
-      </Head>
+      <Seo page={{kind: 'page', title: 'Projects', description: 'Discover projects built by the Bookkity community.', path: '/projects'}} />
       <Layout>
         <div className="pt-4 px-4">
           <div className="w-full px-4 py-6 bg-white rounded-lg mb-6">

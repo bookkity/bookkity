@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout"
-import Head from "next/head"
+import Seo from "@/components/Seo"
 import { getProjects, getProject } from "@/helpers/projects"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons"
@@ -38,10 +38,7 @@ export async function getStaticProps({ params }) {
 export default function ProjectPage({ project }) {
   return (
     <>
-      <Head>
-        <title>{project.title} - Bookkity Projects</title>
-        <meta name="description" content={project.description} />
-      </Head>
+      <Seo page={{kind: 'page', title: project.title, description: project.description, path: `/project/${project.id}`, image: project.image}} />
       <Layout>
         <div className="pt-6 px-4">
           {/* Back Button */}
