@@ -46,7 +46,9 @@
     "eslint-config-next": "^16.4.6",
     "jsdoc": "^4.0.5",
     "postcss": "^8.5.33",
-    "tailwindcss": "^4.3.5"
+    "schema-dts": "^2.1.0",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^6.0.3"
   },
   "overrides": {
     "postcss": "$postcss",
