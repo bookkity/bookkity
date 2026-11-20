@@ -6,7 +6,6 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "audit:osv": "python3 scripts/audit-osv.py package-lock.json audit/osv-after.json",
     "lint": "eslint ."
   },
   "dependencies": {
