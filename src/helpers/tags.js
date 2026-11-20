@@ -4,7 +4,7 @@ export function tagSlug(label) {
 }
 
 export function tagPath(label) {
-  return `/tags/${encodeURIComponent(tagSlug(label))}`
+  return `/tag/${encodeURIComponent(tagSlug(label))}`
 }
 
 export function collectTags(articles, series) {

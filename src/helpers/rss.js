@@ -23,7 +23,7 @@ export default async function generateRssFeed(allArticles, allSeries) {
         .filter(article => !article.url.startsWith('_')) // hidden articles
         .map(article => ({
             title: article.title,
-            url: `${site_url}/article/${article.url}`,
+            url: `${site_url}/articles/${article.url}`,
             date: article.date,
             type: 'article'
         }));

@@ -52,7 +52,7 @@ export default function PostListing({ allArticles, allSeries, authors, tags, sel
       authors: article.authors,
       language: article.language,
       image: `/article/${article.image.replace(/^\//, '')}`,
-      url: `/article/${article.url}`,
+      url: `/articles/${article.url}`,
       date: new Date(article.date),
       data: article
     }
@@ -81,7 +81,7 @@ export default function PostListing({ allArticles, allSeries, authors, tags, sel
   })
 
   const previews = articlePreviews.concat(chapterPreviews)
-    .filter(it => !it.url.startsWith("/article/_"))
+    .filter(it => !it.url.startsWith("/articles/_"))
     .sort((a, b) => b.date - a.date)
 
   const filteredPreviews = useMemo(() => {
@@ -102,7 +102,7 @@ export default function PostListing({ allArticles, allSeries, authors, tags, sel
 
   return (
     <>
-      <Seo page={{kind: 'collection', title: selectedTag ? `${selectedTag} articles and tutorials` : 'Bookkity', description: selectedTag ? `Explore ${selectedTag} articles and series chapters by the Bookkity community.` : SITE_DESCRIPTION, path: selectedTag ? tagPath(selectedTag) : '/', items: previews.map(p => ({title: p.title, path: p.url}))}} />
+      <Seo page={{kind: 'collection', title: selectedTag ? `${selectedTag} articles and tutorials` : 'Bookkity', description: selectedTag ? `Explore ${selectedTag} articles and series chapters by the Bookkity community.` : SITE_DESCRIPTION, path: selectedTag ? tagPath(selectedTag) : '/articles', items: previews.map(p => ({title: p.title, path: p.url}))}} />
       <Layout>
         <h1 className="pt-8 text-3xl font-semibold">{selectedTag ? `${selectedTag} articles and tutorials` : "Articles and tutorials"}</h1>
         {selectedTag && <p className="pt-3 text-gray-600">Explore {selectedTag} articles and series chapters by the Bookkity community.</p>}
@@ -156,7 +156,7 @@ export default function PostListing({ allArticles, allSeries, authors, tags, sel
             </div>
           </div>
           <div className={`flex flex-wrap pt-4 md:pt-0 justify-center md:justify-start`}>
-            {[{ label: 'All', slug: '', path: '/' }, ...tags].map((tag) => (
+            {[{ label: 'All', slug: '', path: '/articles' }, ...tags].map((tag) => (
               <div key={tag.slug} className={`p-2 px-6 font-semibold ${tag.label === selectedTag ? 'text-purple-800' : ''}`}>
                 <a href={tag.path}>{tag.label}</a>
               </div>

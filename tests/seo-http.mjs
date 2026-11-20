@@ -35,7 +35,7 @@ for (const url of urls) {
     const offsets = list.itemListElement.map(item => html.indexOf(`href="${new URL(item.url).pathname}"`))
     assert.ok(offsets.every((offset, i) => offset >= 0 && (i === 0 || offset > offsets[i - 1])), `schema matches visible order ${path}`)
   }
-  if(path.startsWith('/tags/')) assert.ok(/href="\/(article|series)\//.test(html),`topic links ${path}`)
+  if(path.startsWith('/tag/')) assert.ok(/href="\/(articles|series)\//.test(html),`topic links ${path}`)
   visited.add(path)
 }
 for(const path of Object.keys(manifest.routes)) {
@@ -44,6 +44,6 @@ for(const path of Object.keys(manifest.routes)) {
   assert.match(html,/name="robots" content="noindex"/,`omitted route must be noindex: ${path}`)
   assert.ok(!html.includes('"@type":"BlogPosting"'),`draft rich markup ${path}`)
 }
-assert.equal((await fetch(`${origin}/tags/not-a-real-topic`)).status,404)
+assert.equal((await fetch(`${origin}/tag/not-a-real-topic`)).status,404)
 assert.match(await (await fetch(`${origin}/robots.txt`)).text(),/Sitemap: https:\/\/bookkity.com\/sitemap.xml/)
 console.log(`Verified ${urls.length} indexable routes, draft exclusions, tag 404, robots and sitemap headers.`)

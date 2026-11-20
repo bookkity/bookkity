@@ -4,9 +4,9 @@ import {collectTags} from './tags.js'
 /** Enumerate indexable routes, independently of home-feed visibility. */
 export function sitemapPaths({articles, series, authors, projects, merch}) {
   return [...new Set([
-    '/', '/about', '/series', '/projects', '/merch',
+    '/articles', '/about', '/series', '/projects', '/merch',
     ...authors.map(a => `/${encodeURIComponent(a.name)}`),
-    ...articles.filter(a => !a.url.startsWith('_')).map(a => `/article/${encodeURIComponent(a.url)}`),
+    ...articles.filter(a => !a.url.startsWith('_')).map(a => `/articles/${encodeURIComponent(a.url)}`),
     ...series.flatMap(s => s.chapters.filter(c => c.published === true).map(c => `/series/${encodeURIComponent(s.details.url)}/${c.order}`)),
     ...projects.filter(p => !p.url.startsWith('http')).map(p => `/project/${encodeURIComponent(p.id)}`),
     ...merch.map(m => `/merch/${encodeURIComponent(m.id)}`),

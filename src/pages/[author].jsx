@@ -116,7 +116,7 @@ export default function Author({ author, series, articles }) {
               <div className={`flex flex-col pt-3 pb-6`}>
                 {articles && articles.map((article, idx) => {
                   return (
-                    <a key={idx} href={`/article/${article.url}`} className={'mb-2'}>
+                    <a key={idx} href={`/articles/${article.url}`} className={'mb-2'}>
                       <div className={`flex items-center w-full bg-white max-h-16 rounded-lg`}>
                         <p
                           className={`text-sm pl-4 pr-4 border-r-gray-100 border-r-2`}>{article.date}</p>

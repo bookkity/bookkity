@@ -38,10 +38,10 @@ export default function Article({ article, authorRecords }) {
 
   return (
     <>
-      <Seo page={{kind: 'post', title: article.title, description, path: `/article/${article.url}`, image: imageUrl, language: article.language, date: article.date, authors: authorRecords, tags: article.tags, noindex: article.url.startsWith('_')}} />
+      <Seo page={{kind: 'post', title: article.title, description, path: `/articles/${article.url}`, image: imageUrl, language: article.language, date: article.date, authors: authorRecords, tags: article.tags, noindex: article.url.startsWith('_')}} />
       <Layout>
         <p className={`text-sm text-gray-500 pt-12`}>
-          <a href={`/`} className={`hover:underline hover:decoration-gray-400`}>
+          <a href={`/articles`} className={`hover:underline hover:decoration-gray-400`}>
             Articles
           </a>
           &nbsp;/&nbsp;
