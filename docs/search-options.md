@@ -51,3 +51,11 @@ The keyword follow-up compared two independent designs; both selected metadata-o
 The homepage's original navigation was curated: All, JVM, Java, Kotlin, Rust, DevOps, Hardware. It was distinct from the richer article/series frontmatter taxonomy. The curated labels and order are restored, while content tags keep their crawlable topic routes. Empty curated topics return an empty listing with noindex and remain outside the sitemap until content exists.
 
 Browser regression checks cover automatic debouncing, IME composition, focus across the initial route transition, clearing, Back/Forward, leaving during a pending debounce, shared article/chapter card markup, series filtering, the absence of the added navigation item/button, and empty topic routes. Timing samples captured by the browser script use Enter to bypass the intentional debounce delay.
+
+## Stable listing transitions
+
+`getListingProps` marks listing pages, and `_app` gives all of them the same `PostListing` owner, including numeric ranges served by the mixed article/range route. This preserves the input, filters, and worker across pagination, topics, and search. `useListingResults` owns one committed card set: pending work retains it, a current reply replaces it atomically, and superseded replies cannot replace a newer route. This is one displayed view, not a cache of every query or page.
+
+Static search cannot know its request query at build time. A hydration snapshot keeps its server and first client render consistent, including empty `/search`; a direct load starts with neutral, non-animated placeholders instead of unrelated archive cards. An already-open listing keeps its actual cards while search loads. Status announcements do not alter control geometry, and retry feedback is outside document flow.
+
+Listings retain SEO head metadata and JSON-LD but have no visible static title, description, or count paragraph. App and MDX links use Next Link; lint prevents new raw JSX anchors. Inter uses Next's font loading with optional display to avoid a late font swap, and icon styles are included in initial CSS. An empty footer spacer was replaced by equivalent content padding. Detailed journey evidence is in [listing-journeys.md](listing-journeys.md).
