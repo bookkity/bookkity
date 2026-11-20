@@ -1,55 +1,61 @@
-# Search benchmark: homelab
+# Metadata search benchmark: homelab
 
-All-token matching at threshold `0.3` passed all 23 relevance cases. It is the selected configuration; this report makes no before/after application-speedup claim. Exact matching misses typos, any-token matching accepts incomplete queries, and extended syntax changes the meaning of pasted punctuation.
+Metadata-only search is substantially smaller and faster on the tested corpus. It preserves all 21 metadata-query expectations and intentionally loses two historical code-only queries. The improvement comes from searching a narrower set of fields; full-text coverage is no longer promised.
 
-Measured on 2026-11-20 on the NixOS homelab, Intel Core i7-8650U, four online cores (`nproc=4`), Node 24.18.0, Fuse 7.5.0, Chromium 145.0.7632.109. No Mac timings are used below. Initial load averages were `2.08, 1.05, 0.53` after build/browser work; final averages were `1.16, 1.05, 0.61`. Process inspection showed the benchmark using one CPU, with no competing high-CPU workload. Configurations and synthetic sizes alternate between rounds to limit drift.
+Both actual production builds ran on the NixOS homelab: Intel Core i7-8650U, four online cores, Node 24.18.0, Fuse 7.5.0, Chromium 145.0.7632.109. The preserved full-body implementation is `12da8c7`. No Mac measurements are used. Five alternating runs per side use identical documents, query order and matching options; results are consumed and validated. Initial/final load averages were `0.7, 0.46, 0.37` / `0.95, 0.62, 0.45`; process snapshots showed one benchmark CPU and no competing high-CPU workload.
 
-The declared claim was to select natural-query relevance for this corpus and characterize latency, not promise flawless future ranking or a speedup. The scripts time consumed results and check expected URLs/empty results. Five runs per configuration are reported as median (minimum–maximum). Raw samples and failure cases are in [search-benchmark.csv](search-benchmark.csv).
+## Browser results at 1,000 records
 
-## Matching coverage
+Milliseconds, median (minimum–maximum). Both sides use the same queries: cold `api sets`, then warm `quick fixes`. The search shell is already loaded; timing ends at the matching result DOM update. Synthetic JSON is supplied by the harness, so these timings exclude realistic Internet transfer. They include the actual bundled worker and Next/React result path.
 
-The real corpus contains seven public posts/chapters. Cases cover title and body terms, reordered words, author-plus-topic queries, misspellings, impossible tokens, empty input, and operator-shaped punctuation. Separate fixture tests cover optional keywords, chapter navigation titles, C++/C#, diacritics, newly added content, and publication rules.
+| Measurement | Full bodies | Metadata only |
+| --- | ---: | ---: |
+| Cold worker + first result | 1113.8 (1087.1–1129.5) | 139.9 (135.7–158.5) |
+| Warm subsequent result | 659.6 (650.8–673.1) | 51.2 (49.5–64.4) |
+| Repeated warm query inside worker only | 619.2 (605.7–658.0) | 41.9 (41.7–45.4) |
 
-| Matcher | 0 (exact tolerance) | 0.2 | 0.3 | 0.4 | 0.6 (Fuse default tolerance) |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| fuzzy | 13/23 | 20/23 | 22/23 | 22/23 | 18/23 |
-| token-all | 21/23 | 22/23 | 23/23 | 23/23 | 20/23 |
-| token-any | 20/23 | 21/23 | 21/23 | 21/23 | 20/23 |
-| extended | 17/23 | 18/23 | 19/23 | 19/23 | 17/23 |
+The paired medians improve by 8.0× cold and 12.9× warm. The warmed worker-only call is 81.8% of the metadata warm end-to-end median. It repeats the query and benefits from Fuse's last-searcher cache; it excludes message delivery/rendering, so this ratio is an approximate cost breakdown, not an exact causal attribution.
 
-All 20 configurations used the same field weights, location-independent matching and diacritic handling. Token-all `0.4` also passes, but the stricter `0.3` passes the same cases with less fuzzy work. The default `0.6` admits false positives for deliberately nonexistent words. Structured `$and`/`$or` queries are not exposed by this free-text input; extended operator behavior was evaluated as an alternative, not enabled alongside token matching.
+## Asset sizes
 
-## Node measurements
+| Representation | Records | Raw JSON bytes | Calculated gzip bytes |
+| --- | ---: | ---: | ---: |
+| fullBody | 7 | 54,179 | 18,076 |
+| metadata | 7 | 5,958 | 1,508 |
+| metadataHeadings | 7 | 6,737 | 1,815 |
+| fullBody | 1,000 | 7,679,725 | 2,357,172 |
+| metadata | 1,000 | 796,912 | 13,168 |
+| metadataHeadings | 1,000 | 898,853 | 16,524 |
 
-Initialization restores the prebuilt index and constructs token statistics. Query batches contain all 23 cases, including empty/no-result cases. Collection, index generation, JSON parsing, network, and rendering are outside these timings. These are batch times, not single-query latencies.
+**Compression caveat:** the 1,000-record fixture repeats seven real documents with unique URLs. Repeated metadata compresses exceptionally well; its 13,168-byte gzip result is not an estimate for 1,000 distinct articles. Raw size is the safer comparison for this fixture. The actual seven-document production asset is 5,958 bytes raw / 1,508 bytes calculated gzip. Deployed CDN encoding and Internet latency were not measured.
 
-| Corpus | Initialization ms | 23-query batch ms | JSON bytes | gzip bytes |
-| --- | ---: | ---: | ---: | ---: |
-| Real: 7 | 2.3 (2.2–2.6) | 130.7 (129.3–137.9) | 54,179 | 18,076 |
-| Synthetic: 250 | 85.6 (80.9–86.2) | 4801.7 (4681.9–4951.9) | 1,918,563 | 590,895 |
-| Synthetic: 1000 | 339.1 (329.7–364.7) | 19347.6 (18312.7–19699.1) | 7,674,725 | 2,357,188 |
+At 1,000 records, removing only the body field while preserving old display records produces 885,337 raw bytes. Projecting only URL/title/description/authors/series saves another 88,425 bytes, reaching 796,912. The combined raw reduction is 89.6%; most of it comes from excluding bodies, not display compaction.
 
-The synthetic sets repeat the real documents with unique URLs; they test capacity and expected-result presence, not relevance on hundreds of independently authored posts. gzip sizes are calculated estimates, not observed CDN transfer. There were zero execution errors across the matcher runs and zero correctness failures in the scale probes; mismatched matcher rankings are counted in the relevance table.
+## CPU work and headings alternative
 
-A separate, unreported timing run profiled two passes through the 1,000-record fixture. Roughly 92% of sampled CPU time was in Fuse’s Bitap search and wrappers (`fuse.mjs` lines 402, 572 and 592 in pinned 7.5.0). This is CPU-bound text scanning on one worker/core, not a saturated request generator or disk/network bandwidth measurement. Prebuilding the field index does not remove fuzzy-search work.
+Node initialization restores the index and builds token statistics. The batch contains the same 21 metadata cases, including empty/no-result cases. It excludes collection, serialization, JSON parsing, network and UI; these are batch times, not per-query browser percentiles.
 
-## Browser path
+| Representation, 1,000 records | Initialization ms | 21-query batch ms |
+| --- | ---: | ---: |
+| fullBody | 341.3 (332.2–366.7) | 18089.0 (17128.2–18136.0) |
+| metadata | 16.4 (16.1–17.5) | 1030.9 (1015.3–1057.0) |
+| metadataHeadings | 21.4 (21.0–23.1) | 1317.7 (1292.5–1328.5) |
 
-The production build and Chromium both ran on the homelab. Timings start at form submission and end at the matching result’s DOM mutation. Fresh browser contexts alternate real and synthetic corpora over five rounds; the static shell is already loaded. Cold real queries fetch the worker/index over localhost. Synthetic JSON is fulfilled by the test harness, so its timing does not represent an Internet download.
+The optional headings candidate adds a deduplicated, joined heading field capped at 1,024 characters, at weight 1. It costs 12.8% more raw bytes and 27.8% more batch CPU time than metadata alone. A separate coverage probe confirms that it recovers `immutable objects`, a Java section-title query missed by metadata. It does not recover `ApiSetMap`. Headings are therefore a credible future scope extension, but are left out of the requested minimal metadata index. The headings candidate was measured in Node only, not as a shipped browser variant.
 
-| Path | Milliseconds, median (range) |
-| --- | ---: |
-| Real cold worker + `ApiSetMap` result | 68.5 (67.0–71.2) |
-| Real warm worker + `quick fixes` result | 17.8 (15.2–24.2) |
-| Same warm query inside browser worker only | 6.9 (6.5–8.6) |
-| Synthetic 1,000-record cold worker + `ApiSetMap` result | 1143.5 (1130.0–1168.4) |
+A separate, unreported timing run profiled five passes through the 1,000-record metadata fixture. About 84% of sampled CPU remained in Fuse Bitap search/wrappers (pinned `fuse.mjs` lines 402, 572 and 592). Scanning still uses one worker/core; there is simply far less text to scan. The large timing gaps exceed the run-to-run ranges. No disk/network-throughput claim is derived from the CPU benchmark.
 
-The warmed worker-only call is 38.8% of the warmed end-to-end median. It uses the actual browser worker and validates its result, but excludes message delivery and rendering; this ratio of medians is an approximate cost breakdown, not a causal speedup estimate. Node batch timings are not substituted for browser latency.
+## Coverage and behavior
 
-Behavior checks passed for direct URLs, client navigation, back/forward, a failed asset download and retry, superseding queries, explicit stale responses, and a different browser locale/timezone. Archives do not fetch the search corpus; successful repeated queries fetch it once; result links do not eagerly prefetch article page data. No uncaught browser errors occurred. The static search shell has no corpus in `__NEXT_DATA__`, is noindex, and uses the generated immutable asset URL.
+- All three representations pass the 21 metadata expectations. At 1,000 records, each timed variant consumed 1,600 result records with zero correctness failures over five runs.
+- The historical 23-case suite is retained. Full bodies pass 23/23; metadata and metadata+headings pass 21/23. Lost cases are `ApiSetMap` and `^ApiSetMap`, whose identifier occurs only in code/body text.
+- `windows loader` remains covered by tags; `pure functions` remains covered by the description excerpt. No metadata was edited to rescue benchmark queries.
+- Fixture tests verify explicit description, tags, authors, optional keywords, chapter short title, series, Unicode/diacritics, and automatic new-content discovery. A deep-body/code/heading fixture is intentionally absent from the metadata asset.
+- The homelab production build, all 11 unit tests, schema checking and lint passed (zero errors / 26 existing warnings). Development add/delete discovery, browser history/direct URLs/retry/stale responses, lazy one-time fetching and disabled result prefetch passed. No uncaught browser errors occurred.
+- SEO checks passed for 32 indexable routes; legacy checks retained seven redirects, 18 routes, 67 byte-identical assets and RSS identities. Tested source/content parity is checked before delivery.
 
-## Practical boundary
+## Reproduction and evidence
 
-The current asset is about 18 KB gzipped. New content needs no index registry or tuning step, and a development add/delete test confirmed automatic discovery without restarting Next. However, this design downloads the full corpus, and the 1,000-record probe has a noticeable cold start and substantially larger transfer. It is viable for this blog, not evidence of unlimited scale, mobile performance, deployed CDN behavior, or perfect future relevance. No search-function invocations are added; static hosting traffic and build work still count.
+Run `node scripts/benchmark-search-representations.mjs /path/to/full-body-checkout` with the baseline at `12da8c7` and its dependencies installed. Add `--coverage-only` for the separate heading probe. For paired browser runs, start both production builds on separate loopback ports and set `SEARCH_BASELINE_ROOT`, `SEARCH_BASELINE_ORIGIN` and, if needed, `CHROMIUM_EXECUTABLE` before invoking `tests/search-browser.mjs` against the metadata origin.
 
-Reproduce with the commands in [search-options.md](search-options.md). The full production build, 11 unit tests, schema checks, browser tests, 32-route SEO audit and legacy route/asset/RSS audit passed on the homelab.
+Raw five-run samples: [search-benchmark.csv](search-benchmark.csv). Previous full-body measurements: [historical report](search-fulltext-benchmark.md). [Implementation and download lifecycle](search-options.md). New content requires normal builds, not a maintained keyword registry; metadata size can still grow with authored descriptions/tags/keywords, and mobile or distinct 1,000-article performance is not established by this repeated fixture.

@@ -126,10 +126,16 @@ Known legacy home fragments such as `/#java` are mapped to their topic route by 
 
 Pre-search checks: production webpack build, all 8 unit tests, 32-route SEO HTTP suite and the full legacy route/asset/RSS suite passed. Lint remains 0 errors / 27 warnings. Search/homepage options are recorded in [search-options.md](search-options.md); the subsequently implemented search is described below.
 
-## Build-time full-text search
+## Initial build-time full-text search
 
 The archive input now searches all public articles and published chapters through a static, noindex `/search?q=...` page and a lazy custom Fuse worker. Topic/archive pages retain static generation and ordinary pagination. A pre-compilation index includes metadata and MDX text automatically; development source changes regenerate it without restarting Next. Result links disable viewport prefetching to avoid eagerly downloading matched article payloads.
 
 Final verification ran on the NixOS homelab: the default Turbopack production build, 11 unit tests, schema checking, browser worker/history/retry/stale-response checks, development add/delete discovery, 32-route SEO HTTP suite, and the complete legacy route/asset/RSS suite passed. Lint has zero errors and 26 existing warnings. The listing date formatter now uses an explicit locale and UTC to keep server/browser hydration consistent.
 
-See [search-options.md](search-options.md) for the implementation contract and [search-benchmark.md](search-benchmark.md) for the 20-configuration matching comparison, five-run measurements, separate profiling evidence, and scale limits. Search and archive requests do not require dynamic rendering; deployed edge caching and indexing remain unverified.
+See [search-options.md](search-options.md) for the current implementation contract and [search-fulltext-benchmark.md](search-fulltext-benchmark.md) for the initial 20-configuration matching comparison, five-run measurements, separate profiling evidence, and scale limits. Search and archive requests do not require dynamic rendering; deployed edge caching and indexing remain unverified.
+
+## Metadata-only search follow-up
+
+The full-body representation was replaced with title, tags, description/excerpt, author, series title, chapter short title and optional existing keywords. Full bodies are no longer serialized into the Fuse index; result records carry only the fields rendered by the UI. The schema version was incremented, while worker loading, routes and cache behavior remain unchanged. This deliberately removes arbitrary body/code-term coverage.
+
+The updated implementation and its full-body baseline were compared on the homelab in five alternating rounds, including cold and warm 1,000-record browser paths. All 21 metadata expectations pass; the two historical code-only queries are reported as lost coverage. Headings were evaluated separately and left out to keep the shipped representation minimal. Current numbers, compression caveats, raw samples and validation are in [search-benchmark.md](search-benchmark.md); the prior full-body report is retained separately.
