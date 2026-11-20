@@ -1,5 +1,7 @@
 # Metadata search benchmark: homelab
 
+These measurements describe schema v2 at `e3c024e`, before the listing-UI restoration. Schema v3 keeps the same searchable fields and matcher but replaces result display records with article-card metadata. The figures below are retained as historical measurements, not asserted as current payload sizes or browser timings.
+
 Metadata-only search is substantially smaller and faster on the tested corpus. It preserves all 21 metadata-query expectations and intentionally loses two historical code-only queries. The improvement comes from searching a narrower set of fields; full-text coverage is no longer promised.
 
 Both actual production builds ran on the NixOS homelab: Intel Core i7-8650U, four online cores, Node 24.18.0, Fuse 7.5.0, Chromium 145.0.7632.109. The preserved full-body implementation is `12da8c7`. No Mac measurements are used. Five alternating runs per side use identical documents, query order and matching options; results are consumed and validated. Initial/final load averages were `0.7, 0.46, 0.37` / `0.95, 0.62, 0.45`; process snapshots showed one benchmark CPU and no competing high-CPU workload.

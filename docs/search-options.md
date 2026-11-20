@@ -1,6 +1,6 @@
 # Build-time metadata search
 
-`/articles` and topic listings stay statically generated. `/` redirects to `/articles`. Their search form navigates with Next's Pages Router to `/search?q=...`; submitted searches within that page use shallow navigation and browser history. Search runs on submission, not on every keystroke. `/search` is a static, noindex shell excluded from the sitemap.
+`/articles` and topic listings stay statically generated. `/` redirects to `/articles`. Their original search input navigates with Next's Pages Router to `/search?q=...` after a 300 ms typing debounce (Enter flushes it). Subsequent queries use shallow `replace`, without scrolling or adding one history entry per edit; Back returns to the listing. IME composition waits until committed, and leaving cancels pending input. No separate navigation item or search button is added. `/search` is statically generated and noindex, excluded from the sitemap. It uses the same `PostListing` component, cards, controls, and curated topic bar as `/articles`; an empty query shows the normal first listing page.
 
 ## Automatic content coverage
 
@@ -12,9 +12,9 @@ An MDX syntax tree supplies the opening plain-text excerpt when a description is
 
 ## Build and browser boundary
 
-`buildSearchIndex()` writes one content-hashed JSON asset containing public result records and `Fuse.createIndex(...).toJSON()`. Only metadata enters the index. Result records contain URL, title, description, authors, and series; tags and keywords live only in the index. The generated manifest points the bundled worker to that exact asset. Both files are generated, ignored by Git, and written before compilation. Obsolete generated JSON files are removed; a clean deployment does not accumulate historical corpora.
+`buildSearchIndex()` writes one content-hashed JSON asset containing public result records and `Fuse.createIndex(...).toJSON()`. Only metadata enters the index. Schema-v3 result records contain only card data: URL, display title, author handles, image path, date, content type, and language. Searchable descriptions, author names, series titles, tags, and keywords remain in the serialized index. Images remain separate assets, not embedded in JSON. The generated manifest points the bundled worker to that exact asset. Both files are generated, ignored by Git, and written before compilation. Obsolete generated JSON files are removed; a clean deployment does not accumulate historical corpora.
 
-The browser creates **one custom Web Worker**, lazily on the first submitted non-empty query. The worker downloads the asset once, restores it with `Fuse.parseIndex`, and searches locally. The normal archive page does not fetch the corpus, and `/search` does not embed it in `__NEXT_DATA__`. The worker is terminated when its page unmounts. Request IDs prevent older responses from replacing newer searches. Failed downloads can be retried; an old tab spanning deployments may need a reload.
+The browser creates **one custom Web Worker**, lazily on the first debounced non-empty query. The worker downloads the asset once, restores it with `Fuse.parseIndex`, and searches locally. The normal archive page does not fetch the corpus, and `/search` only embeds ordinary first-page listing props in `__NEXT_DATA__`, not the complete search corpus. The worker is terminated when the shared listing component unmounts. Request IDs prevent older responses from replacing newer searches. Failed downloads can be retried; an old tab spanning deployments may need a reload.
 
 Fuse's public serialized index contains field values and norms, not its token-ranking statistics. Those statistics initialize once in the worker. This uses public Fuse APIs and does not patch private internals or create a worker pool.
 
@@ -45,3 +45,9 @@ Independent designs compared pre-compilation MDX collection with post-build HTML
 References: [Fuse prebuilt indexes](https://www.fusejs.io/performance.html), [token search](https://www.fusejs.io/token-search.html), [extended matching](https://www.fusejs.io/extended-search.html), [worker API](https://www.fusejs.io/web-workers.html), [Next Pages Router navigation](https://nextjs.org/docs/pages/building-your-application/routing/linking-and-navigating).
 
 The keyword follow-up compared two independent designs; both selected metadata-only search without a mining algorithm. The judge selected the design that separates field-removal savings from display-record compaction. A bounded, joined headings field was evaluated only in benchmark tooling; it was not introduced as a runtime mode.
+
+## Restored listing UI
+
+The homepage's original navigation was curated: All, JVM, Java, Kotlin, Rust, DevOps, Hardware. It was distinct from the richer article/series frontmatter taxonomy. The curated labels and order are restored, while content tags keep their crawlable topic routes. Empty curated topics return an empty listing with noindex and remain outside the sitemap until content exists.
+
+Browser regression checks cover automatic debouncing, IME composition, focus across the initial route transition, clearing, Back/Forward, leaving during a pending debounce, shared article/chapter card markup, series filtering, the absence of the added navigation item/button, and empty topic routes. Timing samples captured by the browser script use Enter to bypass the intentional debounce delay.
