@@ -35,7 +35,7 @@ function ProjectCard({ project }) {
           {project.tags.map((tag, index) => (
             <span
               key={index}
-              className="bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs backdrop-blur-sm"
+              className="bg-black/70 text-white px-2 py-1 rounded text-xs backdrop-blur-xs"
             >
               {tag}
             </span>

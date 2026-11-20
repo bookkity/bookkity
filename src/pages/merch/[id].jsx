@@ -118,7 +118,7 @@ export default function MerchProduct({ item }) {
                     <button
                       key={idx}
                       onClick={() => setSelectedImage(idx)}
-                      className={`flex-shrink-0 w-20 h-20 dark:h-24 rounded-md dark:rounded-none dark:rounded-t-full overflow-hidden border-2 dark:border transition-colors ${
+                      className={`shrink-0 w-20 h-20 dark:h-24 rounded-md dark:rounded-none dark:rounded-t-full overflow-hidden border-2 dark:border transition-colors ${
                         selectedImage === idx ? 'border-purple-600 dark:border-ember' : 'border-transparent hover:border-gray-300 dark:border-parchment/20 dark:hover:border-parchment/50'
                       }`}
                     >
@@ -212,7 +212,7 @@ export default function MerchProduct({ item }) {
                   <dl className="space-y-3">
                     {item.author?.instagram && (
                       <div className="flex">
-                        <dt className="w-32 flex-shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Artysta</dt>
+                        <dt className="w-32 shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Artysta</dt>
                         <dd className="text-gray-900 dark:text-parchment">
                           <a
                             href={item.author.instagram}
@@ -232,25 +232,25 @@ export default function MerchProduct({ item }) {
                     )}
                     {item.details.material && (
                       <div className="flex">
-                        <dt className="w-32 flex-shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Materiał</dt>
+                        <dt className="w-32 shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Materiał</dt>
                         <dd className="text-gray-900 dark:text-parchment">{item.details.material}</dd>
                       </div>
                     )}
                     {item.details.dimensions && (
                       <div className="flex">
-                        <dt className="w-32 flex-shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Wymiary</dt>
+                        <dt className="w-32 shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Wymiary</dt>
                         <dd className="text-gray-900 dark:text-parchment">{item.details.dimensions}</dd>
                       </div>
                     )}
                     {item.details.care && (
                       <div className="flex">
-                        <dt className="w-32 flex-shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Pielęgnacja</dt>
+                        <dt className="w-32 shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Pielęgnacja</dt>
                         <dd className="text-gray-900 dark:text-parchment">{item.details.care}</dd>
                       </div>
                     )}
                     {item.details.handmade && (
                       <div className="flex">
-                        <dt className="w-32 flex-shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Handmade</dt>
+                        <dt className="w-32 shrink-0 text-gray-500 dark:text-parchment-500 dark:font-smallcaps dark:tracking-wide">Handmade</dt>
                         <dd className="text-gray-900 dark:text-parchment">
                           <span className="inline-flex items-center gap-1">
                             <svg className="w-4 h-4 text-green-500 dark:text-ember-400" fill="currentColor" viewBox="0 0 20 20">

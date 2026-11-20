@@ -6,46 +6,53 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.6.0",
-    "@fortawesome/free-brands-svg-icons": "^6.6.0",
-    "@fortawesome/free-solid-svg-icons": "^6.6.0",
-    "@fortawesome/react-fontawesome": "^0.2.2",
-    "@radix-ui/react-select": "^2.1.1",
-    "@radix-ui/react-tabs": "^1.1.0",
-    "@radix-ui/react-toggle": "^1.1.0",
-    "axios": "^1.13.2",
+    "@fortawesome/fontawesome-svg-core": "^7.3.1",
+    "@fortawesome/free-brands-svg-icons": "^7.3.1",
+    "@fortawesome/free-solid-svg-icons": "^7.3.1",
+    "@fortawesome/react-fontawesome": "^3.5.0",
+    "@radix-ui/react-select": "^2.4.1",
+    "@radix-ui/react-tabs": "^1.2.1",
+    "@radix-ui/react-toggle": "^1.2.1",
+    "axios": "^1.21.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
-    "khangul": "^1.0.18",
-    "lucide-react": "^0.561.0",
-    "next": "^15.5.28",
+    "katex": "^0.19.1",
+    "khangul": "^1.1.2",
+    "lucide-react": "^1.77.0",
+    "next": "^16.4.6",
     "next-mdx-remote": "^6.0.0",
-    "react": "^18",
-    "react-dom": "^18",
-    "react-simple-keyboard": "^3.8.141",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-simple-keyboard": "^3.8.297",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-katex": "^7.0.1",
-    "rehype-pretty-code": "^0.14.0",
-    "rehype-prism-plus": "^2.0.1",
+    "rehype-pretty-code": "^0.14.6",
+    "rehype-prism-plus": "^2.0.2",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "rss": "^1.2.2",
-    "tailwind-merge": "^2.5.2",
+    "tailwind-merge": "^3.7.1",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.23",
+    "@tailwindcss/postcss": "^4.3.5",
+    "autoprefixer": "^10.7.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.6",
     "jsdoc": "^4.0.5",
-    "postcss": "^8.5.32",
-    "tailwindcss": "^3.4.11"
+    "postcss": "^8.5.33",
+    "tailwindcss": "^4.3.5"
   },
   "overrides": {
     "postcss": "$postcss",
-    "katex": "^0.19.1"
+    "katex": "$katex"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }
