@@ -17,6 +17,7 @@ export default function Series({series}) {
     <>
       <Seo page={{kind: 'page', title: 'Programming series', description: 'Explore programming tutorials and series by Bookkity authors.', path: '/series'}} />
       <Layout>
+        <h1 className="pt-8 text-3xl font-semibold">Programming series</h1>
         <div className={'flex flex-col w-full'}>
           {series.map(({details, chapters}, index) => {
             const firstChapterUrl = `/series/${details.url}/1`
@@ -42,9 +43,9 @@ export default function Series({series}) {
                       </a>
                       <p className={`px-2 text-sm`}>
                         by&nbsp;
-                        <a href={`/${details.authors}`} className={'text-purple-700'}>
-                          {details.authors}
-                        </a>
+                        {details.authors.map((author, index) => <span key={author}>
+                          {index > 0 && ', '}<a href={`/${author}`} className="text-purple-700">{author}</a>
+                        </span>)}
                       </p>
                     </div>
                     <div className={`h-full flex px-2 py-2 rounded-md mt-2 w-full`}>

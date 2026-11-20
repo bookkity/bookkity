@@ -1,3 +1,4 @@
+import TagLinks from "@/components/TagLinks"
 import Seo from "@/components/Seo";
 import Layout from "@/components/Layout";
 import {getAuthors} from "@/helpers/authors"
@@ -99,6 +100,7 @@ export default function ChapterIdx({series, chapter: selectedChapter, authorReco
               ))}
               <span> on {selectedChapter.date}</span>
             </span>
+        <TagLinks tags={series.details.tags} />
             <div className={`mdx pt-4`}>
               <MDXRemote components={MDX} {...selectedChapter.content} />
             </div>

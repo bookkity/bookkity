@@ -74,14 +74,14 @@ export default function Author({ author, series, articles }) {
           <div className={`flex flex-col w-full`}>
             <div className={`flex flex-col w-full md:pl-12 pt-6 md:pt-12`}>
               <div>
-                <h1 className={`text-xl font-bold`}>
+                <h2 className={`text-xl font-bold`}>
                   Series
-                </h1>
+                </h2>
               </div>
               <div className={`flex flex-col pt-3 pb-6`}>
                 {series && series.map((series, idx) => {
                   return (
-                    <a key={idx} href={`/series/${series.url}/1`} className={'mb-2'}>
+                    <div key={idx} className="mb-2">
                       <div className={`flex flex-col justify-center w-full bg-white rounded-lg px-2 py-3`}>
                         <h2 className={`text-xl font px-4 py-1`}>{series.title}</h2>
                         {series.chapters.map((chapter, idx) => (
@@ -90,14 +90,14 @@ export default function Author({ author, series, articles }) {
                               <span className={`mr-1 text-gray-400 text-xs`}>[UNPUBLISHED]</span>
                             )}
                             {idx + 1}.&nbsp;
-                            {chapter.title}
+                            <a href={`/series/${series.url}/${chapter.order}`}>{chapter.title}</a>
                           </p>
                         ))}
                         {/*<p className={`text-xs text-gray-400`}>*/}
                         {/*  {article.date} by <span className={`text-gray-700`}>{article.author}</span>*/}
                         {/*</p>*/}
                       </div>
-                    </a>
+                    </div>
                   )
                 })}
                 {series.length === 0 && (
@@ -109,9 +109,9 @@ export default function Author({ author, series, articles }) {
             </div>
             <div className={`flex flex-col w-full md:pl-12 pt-0`}>
               <div>
-                <h1 className={`text-xl font-bold`}>
+                <h2 className={`text-xl font-bold`}>
                   Articles
-                </h1>
+                </h2>
               </div>
               <div className={`flex flex-col pt-3 pb-6`}>
                 {articles && articles.map((article, idx) => {

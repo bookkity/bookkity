@@ -1,3 +1,4 @@
+import {getAuthors} from "@/helpers/authors"
 import PostListing from "@/components/PostListing"
 import {getArticles} from "@/helpers/articles"
 import {getSeries} from "@/helpers/series"
@@ -11,6 +12,7 @@ export async function getStaticProps() {
 
   return {
     props: {
+      authors: await getAuthors(),
       allArticles,
       allSeries,
       tags: collectTags(allArticles, allSeries)

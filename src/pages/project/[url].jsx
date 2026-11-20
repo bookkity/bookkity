@@ -1,3 +1,4 @@
+import {getAuthors} from "@/helpers/authors"
 import Layout from "@/components/Layout"
 import Seo from "@/components/Seo"
 import { getProjects, getProject } from "@/helpers/projects"
@@ -30,12 +31,13 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      project
+      project,
+      authorNames: (await getAuthors()).map(author => author.name)
     }
   }
 }
 
-export default function ProjectPage({ project }) {
+export default function ProjectPage({ project, authorNames }) {
   return (
     <>
       <Seo page={{kind: 'page', title: project.title, description: project.description, path: `/project/${project.id}`, image: project.image}} />
@@ -90,13 +92,12 @@ export default function ProjectPage({ project }) {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Authors</h3>
                   <div className="flex flex-wrap gap-2">
                     {project.authors.map((author, index) => (
-                      <a
-                        key={index}
+                      <span key={index}>{authorNames.includes(author) ? <a
                         href={`/${author}`}
                         className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition-colors"
                       >
                         {author}
-                      </a>
+                      </a> : author}</span>
                     ))}
                   </div>
                 </div>

@@ -1,3 +1,4 @@
+import TagLinks from "@/components/TagLinks"
 import Layout from "@/components/Layout"
 import {getAuthors} from "@/helpers/authors"
 import {contentImage} from "@/helpers/seo"
@@ -59,6 +60,7 @@ export default function Article({ article, authorRecords }) {
             </a>
           ))} on {article.date}
         </span>
+        <TagLinks tags={article.tags} />
         <div className={'mdx pt-2'}>
           <MDXRemote components={MDX} {...article.content} />
         </div>

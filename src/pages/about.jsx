@@ -17,6 +17,7 @@ export default function About({ authors }) {
     <>
       <Seo page={{kind: 'page', title: 'About Bookkity', description: 'Meet the authors behind Bookkity, a community blog about programming and technology.', path: '/about'}} />
       <Layout>
+        <h1 className="pt-8 text-3xl font-semibold">About Bookkity</h1>
         <div className={`pt-6 px-4`}>
           <div className={`w-full px-4 py-6 bg-white rounded-lg`}>
             <p className={`text-center`}>

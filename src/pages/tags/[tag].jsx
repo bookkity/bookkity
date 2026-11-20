@@ -1,3 +1,4 @@
+import {getAuthors} from "@/helpers/authors"
 import PostListing from '@/components/PostListing'
 import {getArticles} from '@/helpers/articles'
 import {getSeries} from '@/helpers/series'
@@ -14,7 +15,7 @@ export async function getStaticProps({params}) {
   const tags = collectTags(allArticles, allSeries)
   const tag = tags.find(tag => tag.slug === params.tag)
   if (!tag) return { notFound: true }
-  return { props: { allArticles: allArticles.filter(a => !a.url.startsWith('_') && a.tags.includes(tag.label)),
+  return { props: { authors: await getAuthors(), allArticles: allArticles.filter(a => !a.url.startsWith('_') && a.tags.includes(tag.label)),
     allSeries: allSeries.filter(s => s.details.tags.includes(tag.label)), tags, selectedTag: tag.label } }
 }
 

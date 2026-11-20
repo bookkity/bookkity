@@ -38,7 +38,7 @@ const satisfiesSearch = (article, search) => {
  * @param allArticles {Array<Article>}
  * @param allSeries {Array<Series>}
  */
-export default function PostListing({ allArticles, allSeries, tags, selectedTag = '' }) {
+export default function PostListing({ allArticles, allSeries, authors, tags, selectedTag = '' }) {
   const [search, setSearch] = useState('')
   const [languages, setLanguages] = useState({ value: ['pl', 'en'] })
   const [showSeries, setShowSeries] = useState(true)
@@ -205,8 +205,8 @@ export default function PostListing({ allArticles, allSeries, tags, selectedTag 
                       {article.authors.map((author, idx) => (
                         <a key={`author-avatar-${author}`} href={`/${author}`} className="inline-block">
                           <img
-                            src={`/author/${author}.jpg`}
-                            alt={'Bookkity'}
+                            src={`/author/${authors.find(a => a.name === author)?.avatar}`}
+                            alt={author}
                             className="rounded-full h-12 w-12 min-w-12 border-2 border-white bg-white"
                           />
                         </a>
