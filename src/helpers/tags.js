@@ -19,3 +19,10 @@ export function collectTags(articles, series) {
   }
   return [...tags.values()].sort((a, b) => a.slug.localeCompare(b.slug))
 }
+
+/** Old home-page topic fragments never reach the HTTP redirect handler. */
+export function legacyTagDestination(hash, tags) {
+  let slug
+  try { slug = tagSlug(decodeURIComponent(hash.replace(/^#/, ''))) } catch { return null }
+  return tags.find(tag => tag.slug === slug)?.path || null
+}

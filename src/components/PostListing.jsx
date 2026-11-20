@@ -4,7 +4,8 @@ import Layout from "@/components/Layout"
 import {Input} from "@/components/ui/input"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faSearch} from "@fortawesome/free-solid-svg-icons"
-import {useMemo, useState} from "react"
+import {legacyTagDestination} from "@/helpers/tags"
+import {useEffect, useMemo, useState} from "react"
 import Seo from "@/components/Seo"
 import {Toggle} from "@/components/ui/toggle"
 import {RssIcon} from "lucide-react";
@@ -17,6 +18,17 @@ const satisfiesSearch = (article, search) => {
 }
 
 export default function PostListing({ previews, authors, tags, selectedTag = '', path, start, total, previous, next }) {
+  useEffect(() => {
+    if (path !== '/articles') return
+    const migrateHash = () => {
+      const destination = legacyTagDestination(window.location.hash, tags)
+      if (destination) window.location.replace(destination + window.location.search)
+    }
+    migrateHash()
+    window.addEventListener('hashchange', migrateHash)
+    return () => window.removeEventListener('hashchange', migrateHash)
+  }, [path, tags])
+
   const [search, setSearch] = useState('')
   const [languages, setLanguages] = useState({ value: ['pl', 'en'] })
   const [showSeries, setShowSeries] = useState(true)

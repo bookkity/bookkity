@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {collectTags, tagPath} from '../src/helpers/tags.js'
+import {collectTags, tagPath, legacyTagDestination} from '../src/helpers/tags.js'
 import {contentImage, pageGraph, serializeJsonLd} from '../src/helpers/seo.js'
 import {sitemapPaths, renderSitemap} from '../src/helpers/sitemap.js'
 
@@ -36,4 +36,11 @@ test('sitemap preserves URL data while encoding XML text delimiters', () => {
   const xml = renderSitemap(["/articles?a=1&label='quoted'&payload=<script>"])
   assert.ok(xml.includes("a=1&amp;label=%27quoted%27&amp;payload=%3Cscript%3E"))
   assert.ok(!xml.includes('<script>'))
+})
+
+test('legacy home fragments resolve only to known topic paths', () => {
+  const tags=collectTags(articles,series)
+  assert.equal(legacyTagDestination('#Java',tags),'/tag/java')
+  assert.equal(legacyTagDestination('#Windows%20Internals',tags),'/tag/windows-internals')
+  for(const hash of ['#unknown','#%ZZ','#https://evil.example','#']) assert.equal(legacyTagDestination(hash,tags),null)
 })
