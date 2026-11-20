@@ -7,7 +7,7 @@ import {gzipSync} from 'node:zlib'
 import Fuse from 'fuse.js'
 import {collectSearchRecords} from './search-content.mjs'
 import {buildSearchArtifact,createSearch,SEARCH_OPTIONS} from '../src/search/engine.mjs'
-import {searchCases} from '../tests/search-cases.mjs'
+import {metadataCases as searchCases} from '../tests/search-cases.mjs'
 
 const loadBefore = os.loadavg()
 const records = await collectSearchRecords()

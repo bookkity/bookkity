@@ -2,6 +2,8 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
+import {pathToFileURL} from 'node:url'
+import path from 'node:path'
 import {collectSearchRecords} from '../scripts/search-content.mjs'
 import {buildSearchArtifact} from '../src/search/engine.mjs'
 
@@ -14,9 +16,9 @@ assert.match(artifactResponse.headers.get('cache-control'), /max-age=31536000.*i
 const artifact = await artifactResponse.json()
 const sitemap = await (await fetch(origin + '/sitemap.xml')).text()
 for (const record of artifact.records) assert.ok(sitemap.includes(`<loc>https://bookkity.com${record.url}</loc>`), `search result is indexable: ${record.url}`)
-const html = await (await fetch(origin + '/search?q=ApiSetMap')).text()
+const html = await (await fetch(origin + '/search?q=api sets')).text()
 assert.match(html, /name="robots" content="noindex"/)
-assert.ok(!html.includes('ApiSetMap'), 'query/results must not be server rendered')
+assert.ok(!html.includes('api sets'), 'query/results must not be server rendered')
 const data = JSON.parse(html.match(/<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/s)[1])
 assert.deepEqual(data.props.pageProps, {}, 'static shell has no full corpus')
 const pageErrors = []
@@ -46,7 +48,7 @@ const submit = async (page, query, expected) => {
   }), {query, expected})
 }
 const summarize = values => ({median: [...values].sort((a,b)=>a-b)[Math.floor(values.length/2)], min: Math.min(...values), max: Math.max(...values)})
-const cold = [], warm = [], workerOnly = [], stress = []
+const measurements = []
 try {
   const {context, page} = await newPage({locale: 'pl-PL', timezoneId: 'Pacific/Honolulu'})
   const requests = []
@@ -54,12 +56,12 @@ try {
   await page.goto(origin + '/articles')
   await page.getByRole('searchbox').waitFor()
   assert.equal(requests.filter(url=>url.includes('/search-assets/')).length, 0, 'archive does not fetch search data')
-  await submit(page, 'ApiSetMap', '/articles/api-sets')
+  await submit(page, 'api sets', '/articles/api-sets')
   assert.equal(new URL(page.url()).pathname, '/search')
   await submit(page, 'multiplatfrom', '/articles/kotlin-multiplatform-a-practical-use-case-of-js-target')
   await page.goBack()
   await page.waitForFunction(() => document.querySelector('[aria-label="Search results"] a')?.getAttribute('href') === '/articles/api-sets')
-  assert.equal(new URL(page.url()).searchParams.get('q'), 'ApiSetMap')
+  assert.equal(new URL(page.url()).searchParams.get('q'), 'api sets')
   await page.goForward()
   await page.waitForFunction(() => document.querySelector('[aria-label="Search results"] a')?.getAttribute('href')?.includes('kotlin-multiplatform'))
   await submit(page, 'java qzxvnonexistent', null)
@@ -68,7 +70,7 @@ try {
   await page.evaluate(() => {
     const form = document.querySelector('form[role=search]')
     const input = form.querySelector('input')
-    input.value = 'ApiSetMap'; form.requestSubmit()
+    input.value = 'api sets'; form.requestSubmit()
     input.value = 'reposilite'; form.requestSubmit()
   })
   await page.waitForFunction(() => document.querySelector('[aria-label="Search results"] a')?.getAttribute('href') === '/series/reposilite-3x-backstage/1')
@@ -81,7 +83,7 @@ try {
   const retry = await newPage()
   let blocked = true
   await retry.page.route('**/search-assets/*.json', route => blocked ? route.abort() : route.continue())
-  await retry.page.goto(origin + '/search?q=ApiSetMap')
+  await retry.page.goto(origin + '/search?q=api sets')
   await retry.page.getByRole('button', {name: 'Try again'}).waitFor()
   blocked = false
   await retry.page.getByRole('button', {name: 'Try again'}).click()
@@ -90,38 +92,50 @@ try {
   await retry.context.close()
 
   const records = await collectSearchRecords()
-  const large = JSON.stringify(buildSearchArtifact(Array.from({length: 1000}, (_, i) => ({...records[i % records.length], url: records[i % records.length].url + '?copy=' + i}))))
-  // Five alternating real / synthetic cold contexts; no profile instrumentation.
+  const versions = [{name: 'metadata', origin, build: buildSearchArtifact}]
+  if (process.env.SEARCH_BASELINE_ROOT && process.env.SEARCH_BASELINE_ORIGIN) {
+    const baseline = await import(pathToFileURL(path.join(process.env.SEARCH_BASELINE_ROOT, 'src/search/engine.mjs')))
+    versions.push({name: 'fullBody', origin: process.env.SEARCH_BASELINE_ORIGIN, build: baseline.buildSearchArtifact})
+  }
+  const expanded = Array.from({length: 1000}, (_, i) => ({...records[i % records.length], url: records[i % records.length].url + '?copy=' + i}))
+  const apiCopy = records.findIndex(record => record.url === '/articles/api-sets')
+  const chapterCopy = records.findIndex(record => record.url === '/series/intellij-plugin-development/2')
+  const scenarios = versions.flatMap(version => [false, true].map(synthetic => ({
+    ...version, synthetic, large: JSON.stringify(version.build(expanded)), cold: [], warm: [], workerOnly: [],
+  })))
+  // Alternate both versions and sizes. Both origins serve actual production builds.
   for (let run = 0; run < 5; run++) {
-    for (const synthetic of run % 2 ? [true, false] : [false, true]) {
+    for (const scenario of run % 2 ? [...scenarios].reverse() : scenarios) {
       const {context, page} = await newPage()
-      if (synthetic) await page.route('**/search-assets/*.json', route => route.fulfill({contentType: 'application/json', body: large}))
-      await page.goto(origin + '/search')
+      if (scenario.synthetic) await page.route('**/search-assets/*.json', route => route.fulfill({contentType: 'application/json', body: scenario.large}))
+      await page.goto(scenario.origin + '/search')
       await page.getByRole('searchbox').waitFor()
-      const elapsed = await submit(page, 'ApiSetMap', '/articles/api-sets' + (synthetic ? '?copy=0' : ''))
-      if (synthetic) stress.push(elapsed)
-      else {
-        cold.push(elapsed)
-        warm.push(await submit(page, 'quick fixes', '/series/intellij-plugin-development/2'))
-        // Same warmed query in the actual browser worker, excluding message delivery/UI.
-        const measured = await page.workers()[0].evaluate(() => new Promise((resolve, reject) => {
-          const original = self.postMessage
-          const start = performance.now()
-          self.postMessage = data => {
-            self.postMessage = original
-            if (data.error) reject(new Error('Worker timing query failed'))
-            else resolve({ms: performance.now() - start, url: data.results[0]?.url})
-          }
-          self.onmessage({data: {id: -1, query: 'quick fixes'}})
-        }))
-        assert.equal(measured.url, '/series/intellij-plugin-development/2')
-        workerOnly.push(measured.ms)
-      }
+      scenario.cold.push(await submit(page, 'api sets', '/articles/api-sets' + (scenario.synthetic ? '?copy=' + apiCopy : '')))
+      const expected = '/series/intellij-plugin-development/2' + (scenario.synthetic ? '?copy=' + chapterCopy : '')
+      scenario.warm.push(await submit(page, 'quick fixes', expected))
+      const measured = await page.workers()[0].evaluate(() => new Promise((resolve, reject) => {
+        const original = self.postMessage
+        const start = performance.now()
+        self.postMessage = data => {
+          self.postMessage = original
+          if (data.error) reject(new Error('Worker timing query failed'))
+          else resolve({ms: performance.now() - start, url: data.results[0]?.url})
+        }
+        self.onmessage({data: {id: -1, query: 'quick fixes'}})
+      }))
+      assert.equal(measured.url, expected)
+      scenario.workerOnly.push(measured.ms)
       await context.close()
     }
   }
+  for (const {name, synthetic, cold, warm, workerOnly} of scenarios) measurements.push({
+    name, records: synthetic ? 1000 : records.length, synthetic,
+    coldMs: summarize(cold), warmMs: summarize(warm), workerOnlyMs: summarize(workerOnly),
+    workerShareOfWarmMedian: summarize(workerOnly).median / summarize(warm).median,
+    runs: {cold, warm, workerOnly},
+  })
   assert.deepEqual(pageErrors, [], 'no uncaught browser errors')
-  const report = {browser: browser.version(), rounds: 5, measured: 'form submit to matching result DOM mutation, localhost', coldMs: summarize(cold), warmMs: summarize(warm), workerOnlyMs: summarize(workerOnly), workerShareOfWarmMedian: summarize(workerOnly).median / summarize(warm).median, synthetic1000Ms: summarize(stress), runs: {cold, warm, workerOnly, stress}, errors: pageErrors}
+  const report = {browser: browser.version(), rounds: 5, measured: 'form submit to matching result DOM mutation, homelab localhost', measurements, errors: pageErrors}
   await fs.writeFile('/tmp/bookkity-search-browser.json', JSON.stringify(report, null, 2)+'\n')
   console.log(report)
 } finally {
