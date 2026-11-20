@@ -87,7 +87,7 @@ A compatible shared cache serves it fresh for 12 hours, then refreshes on demand
 - Existing oversized MDX page-data build warnings remain; loader/payload optimization is outside this change.
 - Submit the production sitemap in Search Console and inspect representative rich results after deployment. Local tests do not prove Google indexing or ranking.
 
-## Verification results
+## Initial verification results (before pagination)
 
 - `npm run check:seo`: passed; graph constructors are checked against schema-dts.
 - `node --test tests/seo.test.mjs`: 3 tests passed (tag paths/collisions, sitemap publication/XML rules, graph identity/safe serialization).
@@ -97,3 +97,21 @@ A compatible shared cache serves it fresh for 12 hours, then refreshes on demand
 - Preview configuration was evaluated with `VERCEL_ENV=preview`: build flag and wildcard X-Robots-Tag assertions passed. No live preview or production edge-cache verification is claimed.
 - The branch retains its existing separate noindex prerequisite commit; it is not replaced or squashed into this work.
 - Independent final review identified collection schema ordering differing from visible cards. Both now derive from the same public, newest-first list, and the HTTP check verifies ItemList order against rendered links.
+
+## Review follow-up: URLs, pagination and XML encoding
+
+The initial route-preservation scope above was superseded by the requested URL migration. Current post pages use `/articles/<slug>`; the general listing is `/articles`; topics use `/tag/<topic>`. Root `/`, `/article`, old single-segment `/article/<slug>` and `/tags/<topic>` permanently redirect. Nested `/article/<folder>/<file>` assets remain untouched.
+
+Ranges contain ten entries with an exclusive end: `10-20` selects entries 11–20. `/articles/0-10` and `/tag/<topic>/0-10` redirect to their base first pages. Later nonempty pages have self-canonicals and ordinary previous/next anchors. Malformed, unaligned, unsafe or empty later ranges return 404. Numeric `digits-digits` post slugs are reserved and rejected during static generation. Filters explicitly apply to the current page.
+
+A second design comparison selected a single native `/articles/[url]` dispatcher over rewriting to a separate internal listing URL (25/25 versus 20/25). Existing content loaders feed one pure `createPreviews` ordering and `listingPage` range/slice helper. Both listings and sitemap use `listingPaths`; listing props contain only selected card metadata. The alternative's safe-integer checks and bounded props were retained. This avoids duplicate internal URLs and preserves the Pages Router.
+
+First-page redirects live in `next.config.mjs`: a build experiment confirmed Next rejects `getStaticProps` redirects for explicitly prerendered static paths. Aliases are not generated or included in the sitemap.
+
+The sitemap interpolates URL values into XML text nodes, so it requires URL encoding followed by XML entity escaping. `isomorphic-dompurify` sanitizes HTML and is not a replacement for this encoding. A regression test verifies preservation of URL data containing ampersands, quotes and a script-shaped value. No dependency was added.
+
+References: [Google pagination guidance](https://developers.google.com/search/docs/specialty/ecommerce/pagination-and-incremental-page-loading), [Next.js permanent 308 redirects](https://nextjs.org/docs/pages/api-reference/config/next-config-js/redirects), [sitemap XML entity escaping](https://www.sitemaps.org/protocol.html#escaping).
+
+Follow-up verification: 7 unit tests passed, including 0/1/10/11/21-item boundaries, stable tie ordering, range rejection and sitemap page inventory. HTTP checks passed on the real 32-route content and on a temporary build with 21 additional uniquely named posts (57 indexable routes), requiring actual second and third pages for both `/articles` and `/tag/java`. The temporary posts were removed. The fixture run asserted canonical/schema/card order, bounded slices, navigation, sitemap inclusion, 308 aliases, malformed-range 404s and unchanged image responses. Lint remains 0 errors / 27 warnings; schema checking passed.
+
+Final real-content rebuild and HTTP verification passed again after fixture removal: 32 indexable routes. Independent review found no blocking code issues and independently reran all seven unit tests.
