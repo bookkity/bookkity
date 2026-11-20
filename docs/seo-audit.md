@@ -124,4 +124,12 @@ The deeper audit identified RSS IDs implicitly changing with URLs. Article GUIDs
 
 Known legacy home fragments such as `/#java` are mapped to their topic route by a small client effect after the root redirect, preserving query strings. Fragments cannot be redirected by the server because they are not sent in HTTP requests. Unknown/empty categories stay on the listing. The original app did not restore filters from directly loaded fragments either; this is bookmark compatibility improvement, not a claim that a previously working deep-link feature was removed. Fragment resolution is unit-tested; a real-browser navigation test was not performed.
 
-Latest checks: production webpack build, all 8 unit tests, 32-route SEO HTTP suite and the full legacy route/asset/RSS suite passed. Lint remains 0 errors / 27 warnings. Search/homepage options are recorded in [search-options.md](search-options.md); search implementation remains a separate decision.
+Pre-search checks: production webpack build, all 8 unit tests, 32-route SEO HTTP suite and the full legacy route/asset/RSS suite passed. Lint remains 0 errors / 27 warnings. Search/homepage options are recorded in [search-options.md](search-options.md); the subsequently implemented search is described below.
+
+## Build-time full-text search
+
+The archive input now searches all public articles and published chapters through a static, noindex `/search?q=...` page and a lazy custom Fuse worker. Topic/archive pages retain static generation and ordinary pagination. A pre-compilation index includes metadata and MDX text automatically; development source changes regenerate it without restarting Next. Result links disable viewport prefetching to avoid eagerly downloading matched article payloads.
+
+Final verification ran on the NixOS homelab: the default Turbopack production build, 11 unit tests, schema checking, browser worker/history/retry/stale-response checks, development add/delete discovery, 32-route SEO HTTP suite, and the complete legacy route/asset/RSS suite passed. Lint has zero errors and 26 existing warnings. The listing date formatter now uses an explicit locale and UTC to keep server/browser hydration consistent.
+
+See [search-options.md](search-options.md) for the implementation contract and [search-benchmark.md](search-benchmark.md) for the 20-configuration matching comparison, five-run measurements, separate profiling evidence, and scale limits. Search and archive requests do not require dynamic rendering; deployed edge caching and indexing remain unverified.

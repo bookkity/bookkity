@@ -1,66 +1,43 @@
-# Search and homepage recommendation
+# Build-time search
 
-Keep `/articles` and topic pagination statically generated. The homepage currently redirects to `/articles`; its controls make it an interactive archive, not a reason to render every request on the server. Its source content only changes with deployments. A future editorial homepage can also be static.
+`/articles` and topic listings stay statically generated. `/` redirects to `/articles`. Their search form navigates with Next's Pages Router to `/search?q=...`; submitted searches within that page use shallow navigation and browser history. Search runs on submission, not on every keystroke. `/search` is a static, noindex shell excluded from the sitemap.
 
-The current input filters titles/tags on the current ten-card page. It is labeled accordingly, but it is not global search. The following is a proposal, not installed search functionality.
+## Automatic content coverage
 
-## Smallest viable global search
+The Next configuration generates the index before compilation, including direct `next build` invocations. `npm run dev` also watches `articles/`, `series/`, and `authors/` and regenerates it after edits, additions, and deletions. Reload an already-open search page after development edits; each worker holds one content snapshot. No per-post search configuration or separate indexing command is needed. Production content changes require the normal rebuild/deployment.
 
-Generate a versioned static JSON index of canonical URL, title, description, author handles, language and tags. Include public articles and all published chapters, even those absent from the home feed. Exclude hidden articles/unpublished chapters. Fetch the index only when search is used; keep it in browser memory across keystrokes. Normalize query tokens and rank title matches first. React should render result text without raw HTML injection.
+The collector reads public articles and **all published chapters**, including chapters omitted from the home feed. It excludes article slugs beginning with `_` and unpublished chapters, matching the existing publication rules. It searches titles, chapter navigation titles, tags, optional frontmatter `keywords`, author handles/names, series titles, descriptions, and body text. Missing descriptions get a short plain-text excerpt. Keywords are optional; authors do not need to add them to make content searchable.
 
-This needs no search library or backend. It searches metadata only: text found solely in an article body will not match. Add a lazy Fuse.js dependency only if fuzzy/typo-tolerant metadata search is wanted; adding Fuse alone does not give full-text content coverage.
+An MDX syntax tree supplies prose, literal JSX children, image alt text, inline code, and code blocks. It does not evaluate imports, JavaScript expressions, or components; text generated only by executable MDX is outside this index. This keeps build-time collection independent of rendering and avoids shipping MDX implementation code. Future content must follow the site's existing frontmatter contract; invalid routes and duplicate search URLs fail the build.
 
-Caller shape:
+## Build and browser boundary
 
-```jsx
-<form action="/search" role="search">
-  <input name="q" aria-label="Search all articles" />
-</form>
-```
+`buildSearchIndex()` writes one content-hashed JSON asset containing public result records and `Fuse.createIndex(...).toJSON()`. Body text appears in the index, without a second copy in result records. The generated manifest points the bundled worker to that exact asset. Both files are generated, ignored by Git, and written before compilation. Obsolete generated JSON files are removed; a clean deployment does not accumulate historical corpora.
 
-```js
-// Proposed contracts, not implementation.
-async function loadSearchIndex() { throw Error('not implemented') }
-function searchMetadata(documents, query) { throw Error('not implemented') }
-// SearchDocument: {url, title, description, authors, tags, language, type}
-```
+The browser creates **one custom Web Worker**, lazily on the first submitted non-empty query. The worker downloads the asset once, restores it with `Fuse.parseIndex`, and searches locally. The normal archive page does not fetch the corpus, and `/search` does not embed it in `__NEXT_DATA__`. The worker is terminated when its page unmounts. Request IDs prevent older responses from replacing newer searches. Failed downloads can be retried; an old tab spanning deployments may need a reload.
 
-A static `/search` shell reads `q` after router readiness and computes results in the browser. Mark the shell noindex for every query, leave it out of the sitemap, and retain ordinary archive/topic navigation without JavaScript. Query strings give shareable searches; do not generate indexable pages for every query or canonicalize them to the unrelated archive. Keep loading, empty and failure states explicit.
+Fuse's public serialized index contains field values and norms, not its token-ranking statistics. Those statistics initialize once in the worker. This uses public Fuse APIs and does not patch private internals or create a worker pool.
 
-## Full-text option: Pagefind
+Content-hashed JSON responses use one-year immutable caching. The search page and worker use Next's normal asset handling. There is no search API or runtime server computation per query. Result links disable viewport prefetching so displaying matches does not eagerly download their article payloads. Static transfer, asset requests, and build work still consume hosting resources; this is not a zero-quota claim.
 
-For searches inside long technical articles, Pagefind is the better fit. It indexes rendered HTML at build time and serves a chunked static search bundle, queried in the browser. Load it only on search interaction. No hosted search account or runtime search function is needed.
+## Matching and limits
 
-Integrate after Next emits post HTML, using an explicit public-content allowlist and canonical result URLs. Pagefind's Node API can accept `{url, content}` HTML records. Scope `data-pagefind-body` to the article region; exclude navigation, archives, profiles and drafts rather than assuming robots noindex controls Pagefind. Excerpts/highlights require safe rendering.
+Pinned Fuse 7.5.0 uses fuzzy **all-token** search, threshold `0.3`, location-independent matching, and diacritic folding. Titles, tags, and keywords rank above body text; author and series fields also contribute. Tokens may match across fields and in any order. `C++` and `C#` retain their suffixes. Extended operators are not exposed as query syntax, so pasted punctuation does not unexpectedly exclude documents or create OR branches.
 
-Verify the build order and final Vercel artifact: a successful local index in `public/pagefind` is not proof that deployment packaging includes it. Do not switch to static export, because the XML sitemap remains a response route. Verify real article-body queries, draft exclusion, published/unlisted chapters, deployed index loading and accurate canonical result URLs before shipping.
+Queries are bounded to 200 characters; results show the top 20. Empty/punctuation-only queries return no matches. Result text is rendered by React without HTML injection. Loading, no-results, failure/retry, direct URL loading, and back/forward states are supported.
 
-## Synthesis decision
+This is a small-blog full-text index, downloaded as a whole. More content requires no manual registry, but download size and search cost grow with the corpus. A worker protects the UI thread; it does not remove that cost. The [homelab benchmark](search-benchmark.md) records tested scale and limitations, not a promise of flawless ranking or unlimited growth.
 
-Independent candidates compared the metadata index and Pagefind integration. The judge agreed on metadata search as the smallest default, with Pagefind selected when body coverage is required. Retained Pagefind's explicit public-content allowlist and deployment-artifact verification as requirements for either integration. Rejected always-SSR because it introduces request-time work without fresher source content here.
+## Verification
 
-## Choice and quota boundary
+- `node --test tests/*.test.mjs`: serialization, natural-query relevance, MDX extraction, automatic new-content discovery, publication rules, URL encoding, cleanup, and collisions, alongside existing SEO tests.
+- `npm run benchmark:search`: five alternating rounds across fuzzy, token-all, token-any, and extended matching at five thresholds (including exact and default-tolerance baselines), plus synthetic scale probes.
+- `node tests/search-browser.mjs http://127.0.0.1:3100`: real worker and route behavior, static headers, retry/history, and browser timings against a production build. Install Chromium using `npx playwright install chromium`, or point `CHROMIUM_EXECUTABLE` at an installed Chromium.
+- `node tests/search-dev.mjs`: adds and deletes a temporary post while the development server runs, verifying the updated worker results without a restart.
+- `node tests/seo-http.mjs` and `node tests/legacy-routes-http.mjs`: sitemap, metadata, redirects, and existing routes/assets against the same production server.
 
-Default for the present title/tag-style search requirement: the metadata JSON approach. If “search the blog” means full article prose, choose Pagefind directly rather than building a home-grown full-text engine. Both preserve the same static archive and separate search-page design. Always-SSR and a hosted search service add infrastructure without a requirement for live or private data here.
+## Design decision and sources
 
-Neither choice adds search-function invocations per query. Neither is zero-quota hosting: static requests/transfer and build work still count. The browser downloads the whole metadata index with the first option; Pagefind loads index chunks. Actual transfer sizes and behavior need measurement on this corpus; no byte budget, speed improvement or free-plan guarantee is claimed. Existing identity requests to `api.bookkity.com` are independent and their infrastructure was not audited.
+Independent designs compared pre-compilation MDX collection with post-build HTML collection. The selected design uses MDX collection plus a single generated artifact: it fits Next's deployment packaging without an additional post-build pass or search service. The development launcher owns its watcher and Next child. A custom worker can restore the public prebuilt index; Fuse's native worker pool constructs its own shards from documents. A chunked static engine such as Pagefind remains a future option if measured corpus growth makes whole-index transfer unsuitable.
 
-Implementation gates: search across different archive pages; direct query URL loading; body-only matches if Pagefind is chosen; stable ranking; draft exclusion; noindex; no per-keystroke server requests; published index available in deployment; safe result rendering. No search package, new search route or dynamic rendering was added during this investigation.
-
-## Sources
-
-- [Pagefind static search](https://pagefind.app/), [build-time execution](https://pagefind.app/docs/running-pagefind/), [Node API](https://pagefind.app/docs/node-api/), [content selection](https://pagefind.app/docs/indexing/)
-- [Fuse.js fuzzy search](https://www.fusejs.io/)
-- [Vercel resource accounting for static and dynamic content](https://vercel.com/docs/pricing/how-does-vercel-calculate-usage-of-resources)
-
-## Follow-up: build-generated Fuse index with a client worker
-
-The proposed Fuse approach fits this architecture and is the preferred refinement if fuzzy matching and worker isolation are wanted now. Build a versioned artifact containing public search records plus `Fuse.createIndex(keys, records).toJSON()`. Lazy-load a single browser Web Worker on search interaction. Inside it, fetch the artifact once and initialize normal Fuse with `Fuse.parseIndex(serializedIndex)`. Keep the exact Fuse version, key configuration and record order consistent across build and runtime. A worker script is shipped as a static asset; the browser creates its own worker instance.
-
-The documented `FuseWorker` class takes documents/options/worker options and creates indexes for its shards in the browser. It does not document a prebuilt-index constructor argument. A small dedicated worker using standard Fuse therefore matches the build-precomputation requirement more directly than that parallel pool. Do not promise indexing speed or startup savings without measuring generated bytes and runtime behavior on this corpus.
-
-Use Next's existing router for `/search?q=...`: normal navigation into the static search page, then shallow query updates within it. Debounced typing can replace the current URL; explicit submitted searches can push history entries. Back/forward restores the URL query and reruns local matching. Carry request IDs and discard stale results; terminate the worker when its owner unmounts. No second router, hash routes, SSR per query or search API is required.
-
-Prebuilding does not eliminate data transfer or runtime search CPU. Ship records plus index together to prevent stale-version mismatches; the index contains searchable values and is not encryption. Full article-body search is possible by indexing cleaned text, but it increases the corpus delivered to the browser. Metadata-only search remains smaller in scope; Pagefind remains an alternative if a larger prose corpus calls for a chunked search bundle.
-
-References: [Fuse prebuilt indexes](https://www.fusejs.io/performance.html), [current Fuse worker API](https://www.fusejs.io/web-workers.html), [Next Pages Router shallow navigation](https://nextjs.org/docs/pages/building-your-application/routing/linking-and-navigating). The supplied npmx URL could not be retrieved by the web tool; API details were verified against upstream documentation instead. No Fuse dependency or search implementation has been installed in this PR yet.
+References: [Fuse prebuilt indexes](https://www.fusejs.io/performance.html), [token search](https://www.fusejs.io/token-search.html), [extended matching](https://www.fusejs.io/extended-search.html), [worker API](https://www.fusejs.io/web-workers.html), [Next Pages Router navigation](https://nextjs.org/docs/pages/building-your-application/routing/linking-and-navigating).
