@@ -115,3 +115,13 @@ References: [Google pagination guidance](https://developers.google.com/search/do
 Follow-up verification: 7 unit tests passed, including 0/1/10/11/21-item boundaries, stable tie ordering, range rejection and sitemap page inventory. HTTP checks passed on the real 32-route content and on a temporary build with 21 additional uniquely named posts (57 indexable routes), requiring actual second and third pages for both `/articles` and `/tag/java`. The temporary posts were removed. The fixture run asserted canonical/schema/card order, bounded slices, navigation, sitemap inclusion, 308 aliases, malformed-range 404s and unchanged image responses. Lint remains 0 errors / 27 warnings; schema checking passed.
 
 Final real-content rebuild and HTTP verification passed again after fixture removal: 32 indexable routes. Independent review found no blocking code issues and independently reran all seven unit tests.
+
+## Legacy-structure verification
+
+`tests/legacy-routes-http.mjs` reconstructs the pre-SEO inventory from commit `fd3742a` (override with `LEGACY_REF`) and checks the built site. Passed: 7 permanent mappings with query-string preservation, 18 unchanged page routes, and 67 byte-identical original public assets. Trailing-slash aliases resolve within two redirects; missing old posts still end at 404. RSS links point at current article URLs.
+
+The deeper audit identified RSS IDs implicitly changing with URLs. Article GUIDs now retain their old `/article/<slug>` values while their links use `/articles/<slug>`, preventing the migration from intentionally changing item identities. HTTP checks assert this distinction.
+
+Known legacy home fragments such as `/#java` are mapped to their topic route by a small client effect after the root redirect, preserving query strings. Fragments cannot be redirected by the server because they are not sent in HTTP requests. Unknown/empty categories stay on the listing. The original app did not restore filters from directly loaded fragments either; this is bookmark compatibility improvement, not a claim that a previously working deep-link feature was removed. Fragment resolution is unit-tested; a real-browser navigation test was not performed.
+
+Latest checks: production webpack build, all 8 unit tests, 32-route SEO HTTP suite and the full legacy route/asset/RSS suite passed. Lint remains 0 errors / 27 warnings. Search/homepage options are recorded in [search-options.md](search-options.md); search implementation remains a separate decision.
