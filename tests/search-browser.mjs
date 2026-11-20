@@ -20,7 +20,8 @@ const html = await (await fetch(origin + '/search?q=api sets')).text()
 assert.match(html, /name="robots" content="noindex"/)
 assert.ok(!html.includes('api sets'), 'query/results must not be server rendered')
 const data = JSON.parse(html.match(/<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/s)[1])
-assert.deepEqual(data.props.pageProps, {}, 'static shell has no full corpus')
+assert.ok(data.props.pageProps.previews.length <= 10, 'static shell carries only the normal first listing page')
+assert.ok(data.props.pageProps.previews.every(record => !('body' in record)), 'no bodies in listing props')
 const pageErrors = []
 const newPage = async (options = {}) => {
   const context = await browser.newContext(options)
@@ -47,9 +48,63 @@ const submit = async (page, query, expected) => {
     document.querySelector('form[role=search]').requestSubmit()
   }), {query, expected})
 }
+// SSR and client rendering can emit identical attributes in different orders.
+const cardMarkup = node => {
+  const copy = node.cloneNode(true)
+  for (const element of [copy, ...copy.querySelectorAll('*')]) {
+    const attributes = [...element.attributes].map(attribute => [attribute.name, attribute.value]).sort(([a], [b]) => a.localeCompare(b))
+    for (const [name] of attributes) element.removeAttribute(name)
+    for (const [name, value] of attributes) element.setAttribute(name, value)
+  }
+  return copy.innerHTML
+}
 const summarize = values => ({median: [...values].sort((a,b)=>a-b)[Math.floor(values.length/2)], min: Math.min(...values), max: Math.max(...values)})
 const measurements = []
 try {
+  const live = await newPage()
+  const livePage = live.page
+  await livePage.goto(origin + '/articles')
+  assert.equal(await livePage.locator('a[href="/search"]').count(), 0, 'no search navigation item')
+  assert.equal(await livePage.getByRole('button', {name: 'Search', exact: true}).count(), 0)
+  assert.deepEqual(await livePage.locator('[aria-label="Topics"] a').allTextContents(), ['All', 'JVM', 'Java', 'Kotlin', 'Rust', 'DevOps', 'Hardware'])
+  const chapterCard = await livePage.locator('[data-article-card="/series/intellij-plugin-development/2"]').evaluate(cardMarkup)
+  const apiCard = await livePage.locator('[data-article-card="/articles/api-sets"]').evaluate(cardMarkup)
+  await livePage.getByRole('searchbox').dispatchEvent('compositionstart')
+  await livePage.getByRole('searchbox').fill('api')
+  await livePage.waitForTimeout(400)
+  assert.equal(new URL(livePage.url()).pathname, '/articles', 'IME composition does not navigate')
+  await livePage.getByRole('searchbox').dispatchEvent('compositionend')
+  await livePage.waitForTimeout(100)
+  assert.equal(new URL(livePage.url()).pathname, '/articles', 'typing waits for debounce')
+  await livePage.getByRole('searchbox').fill('api sets')
+  await livePage.waitForURL(url => url.pathname === '/search' && url.searchParams.get('q') === 'api sets')
+  await livePage.locator('[aria-label="Search results"] [data-article-card="/articles/api-sets"]').waitFor()
+  assert.equal(await livePage.locator('[data-article-card="/articles/api-sets"]').evaluate(cardMarkup), apiCard, 'same card markup and content as archive')
+  assert.equal(await livePage.getByRole('searchbox').evaluate(node => node === document.activeElement), true, 'focus survives initial navigation')
+  await livePage.getByRole('searchbox').fill('quick fixes')
+  await livePage.locator('[data-article-card="/series/intellij-plugin-development/2"]').waitFor()
+  assert.equal(await livePage.locator('[data-article-card="/series/intellij-plugin-development/2"]').evaluate(cardMarkup), chapterCard, 'chapter card matches archive')
+  await livePage.getByTitle('Show new chapters in series or display only articles').click()
+  await livePage.waitForFunction(() => document.querySelector('[role=status]')?.textContent.includes('No results'))
+  await livePage.getByTitle('Show new chapters in series or display only articles').click()
+  await livePage.getByRole('searchbox').fill('')
+  await livePage.waitForURL(origin + '/search')
+  await livePage.locator('[aria-label="Articles"] [data-article-card]').first().waitFor()
+  await livePage.goBack()
+  await livePage.waitForURL(origin + '/articles')
+  await livePage.getByRole('searchbox').fill('unfinished')
+  await livePage.locator('[aria-label="Topics"] a').filter({hasText: /^Java$/}).click()
+  await livePage.waitForURL(origin + '/tag/java')
+  await livePage.waitForTimeout(400)
+  assert.equal(new URL(livePage.url()).pathname, '/tag/java', 'leaving cancels a pending search')
+  for (const topic of ['rust', 'devops', 'hardware']) {
+    const response = await livePage.goto(origin + '/tag/' + topic)
+    assert.equal(response.status(), 200)
+    assert.equal(await livePage.locator('meta[name="robots"]').getAttribute('content'), 'noindex')
+    assert.ok(!sitemap.includes('<loc>https://bookkity.com/tag/' + topic + '</loc>'))
+  }
+  await live.context.close()
+
   const {context, page} = await newPage({locale: 'pl-PL', timezoneId: 'Pacific/Honolulu'})
   const requests = []
   page.on('request', request => requests.push(request.url()))
@@ -60,10 +115,17 @@ try {
   assert.equal(new URL(page.url()).pathname, '/search')
   await submit(page, 'multiplatfrom', '/articles/kotlin-multiplatform-a-practical-use-case-of-js-target')
   await page.goBack()
-  await page.waitForFunction(() => document.querySelector('[aria-label="Search results"] a')?.getAttribute('href') === '/articles/api-sets')
-  assert.equal(new URL(page.url()).searchParams.get('q'), 'api sets')
+  await page.waitForURL(origin + '/articles')
+  await page.waitForFunction(() => document.querySelector('input[name=q]')?.value === '')
   await page.goForward()
   await page.waitForFunction(() => document.querySelector('[aria-label="Search results"] a')?.getAttribute('href')?.includes('kotlin-multiplatform'))
+  await page.waitForFunction(() => document.querySelector('input[name=q]')?.value === 'multiplatfrom')
+  // Rapid reversal must not clear the input while retaining the restored results.
+  await page.goBack()
+  await page.waitForURL(origin + '/articles')
+  await page.goForward()
+  await page.waitForURL(url => url.pathname === '/search')
+  await page.waitForFunction(() => document.querySelector('input[name=q]')?.value === 'multiplatfrom')
   await submit(page, 'java qzxvnonexistent', null)
   assert.equal(requests.filter(url=>url.includes('/search-assets/')).length, 1, 'worker downloads corpus once')
   // Two submissions in the same task: the final route owns the displayed results.

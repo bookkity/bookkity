@@ -44,3 +44,11 @@ test('legacy home fragments resolve only to known topic paths', () => {
   assert.equal(legacyTagDestination('#Windows%20Internals',tags),'/tag/windows-internals')
   for(const hash of ['#unknown','#%ZZ','#https://evil.example','#']) assert.equal(legacyTagDestination(hash,tags),null)
 })
+
+test('curated navigation retains its original labels and empty topic routes', async () => {
+  const {BROWSE_TOPICS, listingTags} = await import('../src/helpers/tags.js')
+  assert.deepEqual(BROWSE_TOPICS.map(tag => tag.label), ['All', 'JVM', 'Java', 'Kotlin', 'Rust', 'DevOps', 'Hardware'])
+  const routes = listingTags(articles, series)
+  for (const slug of ['rust', 'devops', 'hardware']) assert.ok(routes.some(tag => tag.slug === slug))
+  assert.equal(routes.filter(tag => tag.slug === 'java').length, 1)
+})
