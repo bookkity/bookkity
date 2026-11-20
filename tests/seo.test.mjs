@@ -31,3 +31,9 @@ test('post and profile share person IDs; schema is safe inside HTML and omits dr
   assert.ok(!pageGraph({...base,noindex:true})['@graph'].some(n=>n['@type']==='BlogPosting'))
   assert.equal(contentImage('article','/0001/image.png'),'https://bookkity.com/article/0001/image.png')
 })
+
+test('sitemap preserves URL data while encoding XML text delimiters', () => {
+  const xml = renderSitemap(["/articles?a=1&label='quoted'&payload=<script>"])
+  assert.ok(xml.includes("a=1&amp;label=%27quoted%27&amp;payload=%3Cscript%3E"))
+  assert.ok(!xml.includes('<script>'))
+})

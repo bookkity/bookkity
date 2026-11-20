@@ -15,6 +15,7 @@ export function sitemapPaths({articles, series, authors, projects, merch}) {
 }
 
 export function renderSitemap(paths) {
+  // URL values occupy XML text nodes: entity-encode them, do not sanitize as HTML.
   const escape = value => value.replace(/[<>&"']/g, c => ({'<':'&lt;', '>':'&gt;', '&':'&amp;', '"':'&quot;', "'":'&apos;'}[c]))
   return '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
