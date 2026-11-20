@@ -17,7 +17,7 @@ export default function Search() {
         <SearchForm query={query} />
         <noscript>Enable JavaScript to search, or browse <Link href="/articles">articles</Link> and <Link href="/series">series</Link>.</noscript>
         <div role="status" aria-live="polite" className="py-6">
-          {status === 'idle' && 'Search by title, topic, author, or words inside an article.'}
+          {status === 'idle' && 'Search titles, descriptions, topics, authors, and series.'}
           {status === 'loading' && 'Searching…'}
           {status === 'ready' && (results.length ? `Showing ${results.length === 20 ? 'the top 20' : results.length} results for “${query}”.` : `No results for “${query}”.`)}
           {status === 'error' && <>Search couldn’t load. <button onClick={retry} className="underline">Try again</button> or reload this page.</>}

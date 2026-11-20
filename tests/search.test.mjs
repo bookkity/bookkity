@@ -6,14 +6,14 @@ import path from 'node:path'
 import {collectSearchRecords, searchText} from '../scripts/search-content.mjs'
 import {buildSearchIndex} from '../scripts/build-search-index.mjs'
 import {buildSearchArtifact, createSearch} from '../src/search/engine.mjs'
-import {searchCases} from './search-cases.mjs'
+import {metadataCases} from './search-cases.mjs'
 
-test('public corpus: all relevance cases survive index serialization', async () => {
+test('public corpus: metadata relevance cases survive index serialization', async () => {
   const records = await collectSearchRecords()
   const artifact = JSON.parse(JSON.stringify(buildSearchArtifact(records)))
   assert.ok(artifact.records.every(record => !('body' in record)))
   const search = createSearch(artifact)
-  for (const [query, expected] of searchCases) assert.equal(search(query)[0]?.url ?? null, expected, query)
+  for (const [query, expected] of metadataCases) assert.equal(search(query)[0]?.url ?? null, expected, query)
   assert.equal(search('memory training').length, 0, 'unpublished chapter')
   assert.throws(() => createSearch({...artifact, fuseVersion: 'old'}), /version mismatch/)
 })
@@ -32,7 +32,7 @@ test('new content and author metadata automatically change the generated index',
     await fs.writeFile(full, text)
   }
   await write('authors/ada.md', '---\nname: Ada Lovelace\n---')
-  await write('articles/one.mdx', '---\ntitle: C++ notes\nurl: cpp\nauthors: [ada]\ntags: [programming]\nkeywords: [platypus]\n---\nCrème brûlée. `UniqueCompilerIdentifier`')
+  await write('articles/one.mdx', '---\ntitle: C++ notes\nurl: cpp\nauthors: [ada]\ntags: [programming]\nkeywords: [platypus]\ndescription: Crème brûlée. DescriptionOnlyConcept\n---\n' + 'Ordinary prose. '.repeat(30) + '\n\n## HeadingOnlyTerm\n\n`UniqueCompilerIdentifier` DeepBodyOnlyTerm')
   await write('articles/hidden.mdx', '---\ntitle: Hidden\nurl: _hidden\nauthors: [ada]\n---\nclassifiedsecret')
   await write('series/tutorial/.mdx', '---\ntitle: Compiler series\nurl: compiler\nauthors: [ada]\ntags: [toolchain]\n---')
   await write('series/tutorial/one.mdx', '---\ntitle: C# notes\nshortTitle: ConciseAlias\norder: 1\npublished: true\nlisted: false\n---\nExclusiveChapterText')
@@ -40,7 +40,7 @@ test('new content and author metadata automatically change the generated index',
   const first = await buildSearchIndex(root)
   const readArtifact = async result => JSON.parse(await fs.readFile(path.join(root, 'public', result.url), 'utf8'))
   const search = createSearch(await readArtifact(first))
-  for (const query of ['platypus', 'UniqueCompilerIdentifier', 'creme brulee', 'Ada Lovelace C++']) {
+  for (const query of ['platypus', 'DescriptionOnlyConcept', 'creme brulee', 'Ada Lovelace C++']) {
     assert.equal(search(query)[0]?.url, '/articles/cpp', query)
   }
   assert.equal(search('C#')[0]?.url, '/series/compiler/1')
@@ -48,6 +48,11 @@ test('new content and author metadata automatically change the generated index',
   assert.equal(search('C++')[0]?.url, '/articles/cpp')
   assert.equal(search('toolchain ExclusiveChapterText')[0]?.url, '/series/compiler/1')
   assert.equal(search('classifiedsecret').length, 0)
+  const serialized = JSON.stringify(await readArtifact(first))
+  for (const bodyOnly of ['UniqueCompilerIdentifier', 'DeepBodyOnlyTerm', 'HeadingOnlyTerm']) {
+    assert.equal(search(bodyOnly).length, 0)
+    assert.ok(!serialized.includes(bodyOnly), 'body/heading text must not enter the asset')
+  }
   assert.equal(first.records, 2)
   assert.deepEqual(await buildSearchIndex(root), first, 'unchanged input produces the same artifact')
   await write('articles/new.mdx', '---\ntitle: Newly added article\nurl: new space\nauthors: [ada]\n---\nFreshlyDiscoverable')

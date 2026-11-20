@@ -17,3 +17,9 @@ export const searchCases = [
   ['java | qzxvnonexistent', null],
   ['java qzxvnonexistent', null], ['qzxvnonexistent', null], ['', null], ['!^|', null],
 ]
+
+// Metadata search deliberately excludes queries requiring arbitrary body text.
+// Keep the original suite above for an honest full-body comparison.
+export const metadataCases = searchCases.filter(([query]) => ![
+  'ApiSetMap', '^ApiSetMap',
+].includes(query))
