@@ -69,7 +69,7 @@ export default function Article({ article }) {
 
         {/* Additional SEO Meta Tags */}
         <meta name="author" content={authorNames} />
-        <meta name="robots" content="index, follow" />
+        {article?.url.startsWith('_') && <meta key="robots" name="robots" content="noindex" />}
         <link rel="canonical" href={url} />
       </Head>
       <Layout>

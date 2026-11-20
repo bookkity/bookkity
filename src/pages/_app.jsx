@@ -11,6 +11,9 @@ export default function App({ Component, pageProps }) {
       <Head>
         <link rel="icon" href="/images/boo.png"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        {process.env.NEXT_PUBLIC_PREVIEW_NOINDEX === 'true' && (
+          <meta key="robots" name="robots" content="noindex" />
+        )}
       </Head>
       <IdentityContextProvider>
         <Component {...pageProps} />
