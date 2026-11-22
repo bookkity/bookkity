@@ -1,18 +1,23 @@
-import { useState, useEffect } from "react"
+import {useSyncExternalStore} from 'react'
+
+const storageKey = 'merch-polish-popup-seen'
+const changeEvent = 'merch-popup-change'
+const subscribe = notify => {
+  window.addEventListener('storage', notify)
+  window.addEventListener(changeEvent, notify)
+  return () => {
+    window.removeEventListener('storage', notify)
+    window.removeEventListener(changeEvent, notify)
+  }
+}
+const getSnapshot = () => !localStorage.getItem(storageKey)
+const getServerSnapshot = () => false
 
 export default function PolishOnlyPopup() {
-  const [showPopup, setShowPopup] = useState(false)
-
-  useEffect(() => {
-    const hasSeenPopup = localStorage.getItem('merch-polish-popup-seen')
-    if (!hasSeenPopup) {
-      setShowPopup(true)
-    }
-  }, [])
-
+  const showPopup = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
   const handleClose = () => {
-    localStorage.setItem('merch-polish-popup-seen', 'true')
-    setShowPopup(false)
+    localStorage.setItem(storageKey, 'true')
+    window.dispatchEvent(new Event(changeEvent))
   }
 
   if (!showPopup) return null
@@ -30,7 +35,7 @@ export default function PolishOnlyPopup() {
             All products are handmade and shipped only within Poland.
           </p>
           <p className="text-gray-500 text-sm mb-6">
-            If you're from Poland, feel free to browse our collection!
+            If you&apos;re from Poland, feel free to browse our collection!
           </p>
           <button
             onClick={handleClose}

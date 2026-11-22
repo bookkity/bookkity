@@ -9,19 +9,18 @@ export const CodeVariant = ({ name, children }) => {
     )
 }
 
-export const CodeVariants = ({ tabs, symbol, children }) => {
-    tabs = tabs === undefined ? true : tabs
-    children = Array.isArray(children) ? children : [children]
+export const CodeVariants = ({ tabs = true, symbol = '→', children }) => {
+    const variants = React.Children.toArray(children)
 
     if (tabs) {
         return (
-            <Tabs defaultValue={children[0].props.name} className={`code-variants bg-gray-50 rounded-lg`}>
+            <Tabs defaultValue={variants[0].props.name} className={`code-variants bg-gray-50 rounded-lg`}>
                 <TabsList>
-                    {children.map(({props}) => (
+                    {variants.map(({props}) => (
                         <TabsTrigger key={props.name} value={props.name}>{props.name}</TabsTrigger>
                     ))}
                 </TabsList>
-                {children.map(((variant, idx) => (
+                {variants.map(((variant, idx) => (
                     <TabsContent key={`code-variant-${idx}-${variant.props.name}`} value={variant.props.name} paddingY={2} paddingX={6}>
                         {variant}
                     </TabsContent>
@@ -30,12 +29,11 @@ export const CodeVariants = ({ tabs, symbol, children }) => {
         )
     }
 
-    symbol = symbol === undefined ? '→' : symbol
 
     return (
         <div className={`code-variants w-full flex flex-col lg:flex-row pt-5 pb-3 relative max-w-full justify-center`}>
             {
-              children
+              variants
                 .flatMap((variant, idx) => {
                     const elements = []
                     if (symbol && idx % 2 === 1) {

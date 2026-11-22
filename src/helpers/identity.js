@@ -1,10 +1,8 @@
-import {createContext, useEffect, useState} from "react"
+import {useEffect} from "react"
 import axios from "axios"
 
-const IdentityContext = createContext()
 
 export default function IdentityContextProvider({ children }) {
-  const [identity, setIdentity] = useState(null)
 
   const checkEndpoint = (identity) => {
     axios
@@ -20,7 +18,6 @@ export default function IdentityContextProvider({ children }) {
     const storedIdentity = localStorage.getItem('identity')
 
     if (storedIdentity) {
-      setIdentity(storedIdentity)
       checkEndpoint(storedIdentity)
       return
     }
@@ -29,15 +26,10 @@ export default function IdentityContextProvider({ children }) {
       .post('https://api.bookkity.com/api/user')
       .then(response => {
         localStorage.setItem('identity', response.data.uid)
-        setIdentity(response.data.uid)
         checkEndpoint(response.data.uid)
       })
       .catch(error => console.error('Error fetching user', error))
   }, []);
 
-  return (
-    <IdentityContext.Provider value={{ identity }}>
-      {children}
-    </IdentityContext.Provider>
-  )
+  return children
 }
