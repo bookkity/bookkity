@@ -7,15 +7,28 @@ const origin = process.argv[2] || 'http://127.0.0.1:3324'
 const routes = ['/series/math-fixture/1', '/series/math-fixture/2', ...process.argv.slice(3)]
 const browser = await chromium.launch({executablePath: process.env.CHROMIUM_EXECUTABLE, headless: true})
 const errors = [], views = []
+const fontResponses = []
 try {
   const page = await browser.newPage({viewport: {width: 390, height: 844}})
   await page.route('https://api.bookkity.com/**', route => route.fulfill({json: {uid: 'math-test'}}))
   page.on('pageerror', error => errors.push(error.message))
+  page.on('response', response => {
+    if (response.url().includes('/KaTeX_')) {
+      fontResponses.push({url: response.url(), status: response.status(), cache: response.headers()['cache-control']})
+    }
+  })
+  await page.goto(origin + '/articles')
+  await page.evaluate(() => document.fonts.ready)
+  assert.equal(fontResponses.length, 0, 'A listing does not download math fonts')
   for (const route of routes) {
     const response = await page.goto(origin + route)
     assert.equal(response.status(), 200, route)
     await page.evaluate(() => document.fonts.ready)
     assert.equal(await page.locator('.katex-error').count(), 0)
+    if (route.includes('math-fixture')) {
+      const fonts = await page.evaluate(() => [...document.fonts].filter(font => font.status === 'loaded').map(font => font.family))
+      for (const family of ['KaTeX_AMS', 'KaTeX_Fraktur', 'KaTeX_Main']) assert.ok(fonts.includes(family), `${family} loads when needed`)
+    }
     const props = await page.evaluate(() => JSON.parse(document.querySelector('#__NEXT_DATA__').textContent).props.pageProps)
     assert.ok(props.chapter.content.compiledSource)
     assert.ok(props.series.chapters.every(chapter => !('content' in chapter)), 'Sidebar must contain metadata only')
@@ -102,6 +115,9 @@ try {
   assert.notEqual(await page.locator('.math-scroll[tabindex="0"]').first().evaluate(e => getComputedStyle(e.parentElement).outlineStyle), 'none')
   assert.equal(await page.locator('.math-scroll').first().evaluate(e => getComputedStyle(e).maskImage), 'none')
   assert.deepEqual(errors, [])
+  assert.ok(fontResponses.length > 0, 'Math pages download their required font faces')
+  assert.ok(fontResponses.every(font => font.url.startsWith(origin) && font.url.endsWith('.woff2') && font.status === 200), 'Every math font is self-hosted WOFF2')
+  assert.ok(fontResponses.every(font => /immutable/.test(font.cache)), 'Next caches content-hashed fonts immutably')
   const report = {views, errors}
   if (process.env.MATH_REPORT) await fs.writeFile(process.env.MATH_REPORT, JSON.stringify(report, null, 2))
   console.log(JSON.stringify({views: views.length, errors, widths: [320, 390, 768, 1024, 1440]}))

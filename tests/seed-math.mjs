@@ -16,6 +16,8 @@ tags: []
 const terms = Array.from({length: 12}, (_, i) => `a_{${i}} x^{${i}}`).join(' + ')
 const body = String.raw`Inline $x^2 + 1 = 2$ remains part of this sentence.
 
+Other font variants $\mathbb{R} + \mathfrak{g} + \mathbf{v}$ load on demand too.
+
 $$
 x = 1
 $$

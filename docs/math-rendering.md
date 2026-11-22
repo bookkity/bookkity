@@ -14,7 +14,30 @@ Chapter lists carry frontmatter only. Only the selected chapter's body is
 serialized. Invalid TeX fails serialization with the source filename instead of
 publishing KaTeX error markup.
 
+## Font delivery
+
+Next's build/dev configuration generates `src/generated/katex.css` from the
+installed KaTeX stylesheet, preserving its license, typography, all font faces
+and `font-display: block`. Only WOFF2 sources remain. Next owns font hashing,
+self-hosting and immutable caching; browsers request only faces the page uses.
+No font list or article metadata needs maintaining when content changes.
+
+The small stylesheet stays globally available so client navigation has the math
+styles ready. Conditional inline styles would duplicate CSS in article payloads;
+font preloads chosen heuristically could download unused faces. Neither is needed
+for demand loading. Removing legacy formats reduces build assets, not the WOFF2
+bytes already transferred by modern browsers. Cold fonts can still briefly be
+invisible under KaTeX's existing `font-display: block` policy.
+
 ## Regression checks
+
+The WOFF2-only build was checked on the homelab with 17 unit tests, lint,
+production build, clean dev startup and 15 math views. Its font inventory dropped
+from 60 files (1,076,572 bytes) to 20 files (259,792 bytes). Fresh listings still
+requested zero KaTeX fonts; the isolated Fourier draft still requested four faces
+(53,388 bytes). Five client transitions with delayed font responses showed no
+unstyled math frames. This is not a claim of zero cold-font layout movement or
+faster typesetting.
 
 Run application builds and browser checks in the test environment. In a disposable
 checkout, `node tests/seed-math.mjs` creates two synthetic unpublished chapters.
