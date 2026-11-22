@@ -44,7 +44,7 @@ export default function Header() {
           <NextLink prefetch={false}
             key={index}
             href={item.link}
-            className={`px-3 sm:pt-2 pb-2 md:py-4 hover:text-black dark:hover:text-ember-400 ${(item.link === '/articles' ? browsingArticles : currentPath === item.link) ? 'font-semibold' : ''}`}
+            className={`px-1 min-[360px]:px-3 sm:pt-2 pb-2 md:py-4 hover:text-black dark:hover:text-ember-400 ${(item.link === '/articles' ? browsingArticles : currentPath === item.link) ? 'font-semibold' : ''}`}
           >
             {item.name}
           </NextLink>
