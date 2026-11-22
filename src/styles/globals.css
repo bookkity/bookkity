@@ -133,3 +133,10 @@
   text-transform: uppercase;
   clip-path: polygon(0.4rem 0, 100% 0, calc(100% - 0.4rem) 100%, 0 100%);
 }
+
+/* Next removes the inline background image when loading finishes. */
+@media (prefers-reduced-motion: reduce) {
+  img[data-image-shimmer][style*="background-image:"] {
+    background-image: linear-gradient(#e5e7eb, #e5e7eb) !important;
+  }
+}
