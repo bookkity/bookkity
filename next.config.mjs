@@ -43,7 +43,8 @@ const configureNext = async phase => {
   if ([PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD].includes(phase)) {
     const {buildSearchIndex} = await import('./scripts/build-search-index.mjs');
     const {buildImageSizes} = await import('./scripts/build-image-sizes.mjs');
-    await Promise.all([buildSearchIndex(), buildImageSizes()]);
+    const {buildMathStyles} = await import('./scripts/build-math-styles.mjs');
+    await Promise.all([buildSearchIndex(), buildImageSizes(), buildMathStyles()]);
   }
   return nextConfig;
 };

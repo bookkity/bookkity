@@ -44,3 +44,4 @@ next-env.d.ts
 /src/generated/search.json
 
 /src/generated/image-sizes.json
+/src/generated/katex.css
