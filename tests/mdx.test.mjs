@@ -22,7 +22,6 @@ test('invalid TeX fails serialization instead of publishing error markup', async
   }
 })
 
-
 test('invalid math identifies its source file', async () => {
   await assert.rejects(
     () => serializeMdx(String.raw`$\unknownBookkityCommand{x}$`, 'articles/example.mdx'),
