@@ -12,6 +12,7 @@ import {
 import KhangulKeyboard from "@/components/mdx/KhangulKeyboard";
 import {CodeVariant, CodeVariants} from "@/components/mdx/CodeVariants";
 import Spoiler from "@/components/mdx/Spoiler";
+import MathBlock from "@/components/mdx/MathBlock";
 
 function getAnchor(text) {
   return text
@@ -142,6 +143,7 @@ const ScrollableWrapper = ({ height, children }) => {
 
 const components = {
   ContentImage,
+  'math-block': MathBlock,
   a: (props) => <NextLink prefetch={false} className={'text-purple-500'} {...props} />,
   p: (props) => <div className={'py-2'} {...props} />,
   h1: (props) => <H as='h1' size={'2xl'} {...props} />,

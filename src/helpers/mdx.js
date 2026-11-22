@@ -15,6 +15,28 @@ function mapJsxImages() {
   }
 }
 
+function wrapDisplayMath() {
+  return function visit(node) {
+    if (!node.children) return
+    node.children = node.children.map(child => {
+      if (child.type === 'element' && child.properties?.className?.includes('katex-display')) {
+        const html = child.children[0].children.find(element => element.properties?.className?.includes('katex-html'))
+        const tag = html.children.find(element => element.properties?.className?.includes('katex-tag'))
+        if (tag) {
+          // Keep operator spacing and explicit line breaks inside the formula intact.
+          html.children = [
+            {type: 'element', tagName: 'span', properties: {className: ['math-equation']}, children: html.children.filter(element => element !== tag)},
+            tag,
+          ]
+        }
+        return {type: 'element', tagName: 'math-block', properties: {}, children: [child]}
+      }
+      visit(child)
+      return child
+    })
+  }
+}
+
 export function serializeMdx(mdx) {
   return serialize(mdx, {
     // Content comes from this repository, and component props like links={[...]} need JS expressions.
@@ -27,6 +49,7 @@ export function serializeMdx(mdx) {
       rehypePlugins: [
         rehypeSlug,
         rehypeKatex,
+        wrapDisplayMath,
         [rehypePrettyCode, { theme: "min-light"}],
       ]
     }

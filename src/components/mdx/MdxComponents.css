@@ -22,6 +22,93 @@
     margin-bottom: -1rem;
 }
 
+/* Math */
+
+/* Display math retains its intrinsic width; numbers scroll with the equation. */
+.math-block {
+    --math-scroll-fade: hsl(var(--background) / 0.95);
+    display: block;
+    position: relative;
+    min-width: 0;
+    margin-block: 1em;
+}
+
+.math-scroll {
+    display: block;
+    overflow: auto hidden;
+    overscroll-behavior-x: contain;
+    direction: ltr;
+    padding-block: 0.25em;
+}
+
+.math-scroll:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+}
+
+.math-scroll .katex-display {
+    margin: 0;
+}
+
+.math-scroll .katex-display > .katex {
+    width: max-content;
+    min-width: 100%;
+}
+
+.math-scroll .katex-display > .katex > .katex-html:has(> .katex-tag) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5em;
+}
+
+.math-scroll .katex-display > .katex > .katex-html > .katex-tag {
+    position: static;
+    flex: none;
+}
+
+.math-scroll .math-equation {
+    flex: none;
+}
+
+.math-block::before,
+.math-block::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: 0.25em;
+    bottom: 0.25em;
+    width: 1rem;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.math-block::before {
+    left: 0;
+    background: linear-gradient(to right, var(--math-scroll-fade), transparent);
+}
+
+.math-block::after {
+    right: 0;
+    background: linear-gradient(to left, var(--math-scroll-fade), transparent);
+}
+
+.math-block[data-scroll-left]::before,
+.math-block[data-scroll-right]::after {
+    opacity: 1;
+}
+
+@media (forced-colors: active) {
+    .math-block::before,
+    .math-block::after {
+        display: none;
+    }
+
+    .math-scroll:focus-visible {
+        outline-color: Highlight;
+    }
+}
+
 /* Code */
 
 .mdx:not(pre) code {
