@@ -26,7 +26,7 @@ export default function Header() {
   const [discordIcon, setDiscordIcon] = useState(discordIcons.default)
 
   return (
-    <div className={`header flex flex-col md:flex-row items-center justify-center md:justify-between h-18 border-b border-b-gray-200 dark:border-b-ink-700 shadow-xs w-full transition-colors duration-500`}>
+    <div className={`header flex flex-col md:flex-row items-center justify-center md:justify-between min-h-18 border-b border-b-gray-200 dark:border-b-ink-700 shadow-xs w-full transition-colors duration-500`}>
       <NextLink prefetch={false} href={"/articles"} className={`md:w-1/4`}>
         <div className={'flex flex-col md:flex-row items-center justify-center md:justify-start px-4 py-4'}>
           <div className={``}>
@@ -39,7 +39,7 @@ export default function Header() {
           <p className={'font-semibold text-md md:pl-3 pt-1 md:pt-0'}>Bookkity</p>
         </div>
       </NextLink>
-      <div className={`md:w-2/4 flex justify-center`}>
+      <div className={`md:w-2/4 max-w-full flex flex-wrap justify-center`}>
         {menuItems.map((item, index) => (
           <NextLink prefetch={false}
             key={index}
@@ -50,12 +50,12 @@ export default function Header() {
           </NextLink>
         ))}
       </div>
-      <div className={`md:w-1/4 flex flex-col md:flex-row justify-center md:justify-end items-center pt-4 md:pt-1`}>
-        <div className={`discord-parent bg-gray-200 dark:bg-ink-700 transition-colors duration-500 rounded-lg h-7 flex items-center justify-between text-xs`}>
-          <div className={`bg-purple-900 px-1.5 w-8 flex items-center justify-center h-full rounded-l-lg`}>
+      <div className={`md:w-1/4 max-w-full flex flex-col md:flex-row justify-center md:justify-end items-center pt-4 md:pt-1`}>
+        <div className={`discord-parent bg-gray-200 dark:bg-ink-700 transition-colors duration-500 rounded-lg min-h-7 max-w-full flex items-stretch justify-between text-xs`}>
+          <div className={`bg-purple-900 px-1.5 w-8 shrink-0 flex items-center justify-center rounded-l-lg`}>
             {discordIcon}
           </div>
-          <div className={`px-3 flex font-semibold text-gray-700 dark:text-parchment-400 transition-colors duration-500`}>
+          <div className={`px-3 min-w-0 flex flex-wrap items-center justify-center font-semibold text-gray-700 dark:text-parchment-400 transition-colors duration-500`}>
             <NextLink prefetch={false}
               href={`https://discord.gg/CYvyq3u`}
               className={`px-2 hover:text-black dark:hover:text-parchment`}
