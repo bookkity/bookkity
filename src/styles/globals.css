@@ -17,6 +17,11 @@
     font-family: var(--font-inter), sans-serif;
   }
 
+  /* KaTeX's specialized fonts override this layer; other glyphs inherit KaTeX_Main. */
+  .katex * {
+    font-family: inherit;
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
