@@ -31,7 +31,7 @@ export async function getArticles() {
 async function readArticleMdx(file) {
   const content = await readSpecificFile(file)
   const { content: raw, data: metadata } = matter(content)
-  const serializedContent = await serializeMdx(raw)
+  const serializedContent = await serializeMdx(raw, file)
 
   return {
     content: serializedContent,

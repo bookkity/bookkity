@@ -37,8 +37,17 @@ function wrapDisplayMath() {
   }
 }
 
-export function serializeMdx(mdx) {
-  return serialize(mdx, {
+function rejectInvalidMath() {
+  return (_tree, file) => {
+    const error = file.messages.find(message => message.source === 'rehype-katex')
+    if (error) {
+      file.fail(`${file.path || 'MDX'}: ${error.reason}. ${error.cause?.message || ''}`, error.place)
+    }
+  }
+}
+
+export function serializeMdx(mdx, sourcePath) {
+  return serialize({value: mdx, path: sourcePath}, {
     // Content comes from this repository, and component props like links={[...]} need JS expressions.
     // blockDangerousJS stays on (default) and still rejects eval, Function, process, require and similar.
     blockJS: false,
@@ -49,6 +58,7 @@ export function serializeMdx(mdx) {
       rehypePlugins: [
         rehypeSlug,
         rehypeKatex,
+        rejectInvalidMath,
         wrapDisplayMath,
         [rehypePrettyCode, { theme: "min-light"}],
       ]

@@ -64,7 +64,7 @@ export async function getChapter(seriesDirectory, order) {
   for (const file of files) {
     const {content, data} = matter(await readSpecificFile(path.join(directory, file)))
     if (data.order === order) {
-      return {...data, content: await serializeMdx(content)}
+      return {...data, content: await serializeMdx(content, path.join(directory, file))}
     }
   }
   return null
