@@ -20,17 +20,9 @@ Candidate gates also checked horizontal movement/width (at most 0.5 px), focus a
 
 This is **not a claim of zero CLS or zero compositor flashes on every device**. The probe samples DOM state at animation frames and streams it across document changes. Layout-shift entries include recent input; their sums are not CLS session-window scores. The candidate's remaining entries were cards moving to their new positions on category changes (three journey types, raw sums 0.40143 desktop / 0.41776 mobile). Controls stayed fixed. Different results necessarily change content and page height; deliberate scrolling is separate from document-relative control movement. Direct cold search still needs to load its worker/index and shows neutral placeholders until ready.
 
-## Root causes and changes
+## Implementation
 
-- Raw anchors caused full document loads. All app JSX links and the MDX anchor renderer now use Next Link, including hash and external links. A lint rule prevents raw JSX anchors from returning. External destinations still leave the app normally.
-- The mixed article/range route introduced a different component owner. The shared listing data producer now marks listing pages; `_app` preserves the same `PostListing` owner across articles, ranges, topics, and search.
-- The previous search hook cleared records when a query changed. One committed-view presenter now retains current records while pending, then commits a current response atomically. Request IDs and route keys reject superseded responses; settled empty results remain distinct from never-loaded results.
-- Static search initially rendered unrelated archive cards. A hydration snapshot gives server and first client render the same neutral initial state, including empty `/search`.
-- Visible listing headings, descriptions, counts, and loading/error paragraphs moved controls or cards. Listings now match the production hierarchy: search, existing filters/topics, cards, pagination. Head metadata and JSON-LD remain. Announcements are visually hidden; retry feedback sits outside layout flow.
-- Late icon CSS and a swapping Inter font moved initial content. FontAwesome styles are in initial CSS, and Next's built-in font loader self-hosts Inter with optional display. Existing empty footer space is content padding, so it cannot move a footer box into view.
-- Stable URL card identity avoids replacing a retained card's subtree solely because its result rank changed.
-
-The design comparison selected the shared listing owner and single committed view (24/25 versus 22/25); independent judgment agreed. The alternative contributed the non-animated initial placeholder. No general routing framework, server search, or new dependency was introduced.
+The current [search flow](search-options.md) and [route contract](seo-audit.md) describe the fixes. These measurements cover persistent listing ownership, retained pending results, hydration, Next Link navigation, initial font/icon styles, and control placement.
 
 ## Environment and method
 
