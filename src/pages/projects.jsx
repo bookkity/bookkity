@@ -2,7 +2,6 @@ import NextLink from "next/link"
 import Layout from "@/components/Layout"
 import Seo from "@/components/Seo"
 import {getProjects} from "@/helpers/projects"
-import {useMemo, useState} from "react"
 
 export async function getStaticProps() {
   const projects = await getProjects()
@@ -71,29 +70,15 @@ function ProjectCard({ project }) {
   )
 }
 export default function Projects({ projects }) {
-  const [search, setSearch] = useState('')
-
-  const filteredProjects = useMemo(() => {
-    return projects.filter(project => {
-      return search === '' ||
-        project.title.toLowerCase().includes(search.toLowerCase()) ||
-        project.description.toLowerCase().includes(search.toLowerCase()) ||
-        project.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
-    })
-  }, [projects, search])
-
-  // Use all projects instead of filtered when search is hidden
-  const displayProjects = projects
-
-  const products = displayProjects
+  const products = projects
     .filter(project => project.category === 'product')
     .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
 
-  const libraries = displayProjects
+  const libraries = projects
     .filter(project => project.category === 'library')
     .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
 
-  const research = displayProjects
+  const research = projects
     .filter(project => project.category === 'research')
     .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
 
@@ -104,32 +89,10 @@ export default function Projects({ projects }) {
         <h1 className="pt-8 text-3xl font-semibold">Community projects</h1>
         <div className="pt-4 px-4">
           <div className="w-full px-4 py-6 bg-white rounded-lg mb-6">
-            {/* <h1 className="text-3xl font-bold text-center text-gray-900 mb-4">
-              Community Projects
-            </h1> */}
             <p className="text-center text-md text-gray-950">
               Discover projects created by our community members - from open-source tools to fun experiments.
             </p>
           </div>
-          {/*
-          <div className="mb-6 space-y-4">
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Search projects..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
-              <FontAwesomeIcon 
-                icon={faSearch} 
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
-              />
-            </div>
-          </div>
-          */}
-
-          {/* Products Section */}
           {products.length > 0 && (
             <div className="mb-12">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
@@ -144,7 +107,6 @@ export default function Projects({ projects }) {
             </div>
           )}
 
-          {/* Libraries Section */}
           {libraries.length > 0 && (
             <div className="mb-12">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
@@ -159,7 +121,6 @@ export default function Projects({ projects }) {
             </div>
           )}
 
-          {/* Research & Fun Section */}
           {research.length > 0 && (
             <div className="mb-12">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
@@ -174,7 +135,7 @@ export default function Projects({ projects }) {
             </div>
           )}
 
-          {displayProjects.length === 0 && (
+          {projects.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">
                 No projects found matching your criteria.

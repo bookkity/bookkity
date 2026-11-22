@@ -48,7 +48,6 @@ export async function getStaticPaths() {
   })
 }
 
-
 export default function Author({ author, series, articles }) {
 
   return (
@@ -94,9 +93,7 @@ export default function Author({ author, series, articles }) {
                             <NextLink prefetch={false} href={`/series/${series.url}/${chapter.order}`}>{chapter.title}</NextLink>
                           </p>
                         ))}
-                        {/*<p className={`text-xs text-gray-400`}>*/}
-                        {/*  {article.date} by <span className={`text-gray-700`}>{article.author}</span>*/}
-                        {/*</p>*/}
+
                       </div>
                     </div>
                   )
@@ -122,11 +119,7 @@ export default function Author({ author, series, articles }) {
                         <p
                           className={`text-sm pl-4 pr-4 border-r-gray-100 border-r-2`}>{article.date}</p>
                         <h2 className={`text-md font px-4 py-1`}>{article.title}</h2>
-                        {/*<p className={`text-xs text-gray-400`}>*/}
-                        {/*  {article.date} by <span className={`text-gray-700`}>{article.author}</span>*/}
-                        {/*</p>*/}
                         <div className={'mdx'}>
-                          {/*<MDXRemote components={MDX} {...article.content} />*/}
                         </div>
                       </div>
                     </NextLink>

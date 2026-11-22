@@ -6,5 +6,4 @@ export async function getStaticProps() {
   return {props: {...props, searchMode: true}}
 }
 
-// Sharing the page component also keeps input focus and filter state during navigation.
 export default PostListing

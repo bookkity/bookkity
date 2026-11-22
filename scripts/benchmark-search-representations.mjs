@@ -1,5 +1,3 @@
-// Expected claim: metadata reduces 1,000-record bytes and cold/warm search latency while retaining metadata-query coverage.
-// Quantify only from homelab measurements; report historical body-query losses separately.
 // Run on the homelab: node scripts/benchmark-search-representations.mjs /path/to/full-body-checkout
 import fs from 'node:fs/promises'
 import path from 'node:path'

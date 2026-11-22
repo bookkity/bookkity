@@ -44,7 +44,6 @@ export default function MerchProduct({ item }) {
       <Layout dark={medieval}>
         <PolishOnlyPopup />
         <div className={`py-8 ${medieval ? 'theme-medieval' : ''}`}>
-          {/* Breadcrumb */}
           <nav className="mb-6">
             <ol className="flex items-center space-x-2 text-sm text-gray-500 dark:text-parchment-500">
               <li>
@@ -56,9 +55,7 @@ export default function MerchProduct({ item }) {
               <li className="text-gray-900 dark:text-parchment font-medium">{item.title}</li>
             </ol>
           </nav>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* Image Section */}
             <div className="space-y-4 dark:w-full dark:max-w-md dark:mx-auto">
               <div className="aspect-square dark:aspect-[3/4] rounded-lg dark:rounded-none dark:rounded-t-full overflow-hidden relative group bg-white dark:bg-ink-800 shadow-md dark:shadow-none dark:ring-1 dark:ring-parchment/30 dark:ring-offset-[6px] dark:ring-offset-ink">
                 <img
@@ -69,7 +66,6 @@ export default function MerchProduct({ item }) {
                     e.target.src = '/images/boo.png'
                   }}
                 />
-                {/* Gallery Navigation Arrows - only visible on hover */}
                 {hasMultipleImages && (
                   <>
                     <button
@@ -90,7 +86,6 @@ export default function MerchProduct({ item }) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
-                    {/* Dot indicators */}
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                       {images.map((_, idx) => (
                         <button
@@ -106,7 +101,6 @@ export default function MerchProduct({ item }) {
                   </>
                 )}
               </div>
-              {/* Thumbnail strip */}
               {hasMultipleImages && (
                 <div className="flex gap-2 dark:gap-3 overflow-x-auto pb-2 dark:pt-2 dark:justify-center">
                   {images.map((img, idx) => (
@@ -123,10 +117,7 @@ export default function MerchProduct({ item }) {
                 </div>
               )}
             </div>
-
-            {/* Product Info Section */}
             <div className="space-y-6">
-              {/* Badges */}
               <div className="flex flex-wrap gap-2">
                 {!item.preorder && (
                   <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
@@ -143,19 +134,11 @@ export default function MerchProduct({ item }) {
                     ⭐ Limitowana Edycja
                   </span>
                 )}
-                {/* {item.region && (
-                  <span className="inline-block bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-                    {item.region === 'PL' && '🇵🇱'} Tylko Polska
-                  </span>
-                )} */}
-              </div>
 
-              {/* Title */}
+              </div>
               <h1 className="text-3xl lg:text-4xl dark:text-6xl dark:lg:text-7xl font-bold dark:font-normal dark:font-blackletter text-gray-900 dark:text-ember-400">
                 {item.title}
               </h1>
-
-              {/* Price / Out of Stock */}
               {item.available ? (
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-3">
@@ -182,7 +165,6 @@ export default function MerchProduct({ item }) {
                 </div>
               )}
 
-              {/* Traits */}
               {item.traits?.map((trait) => (
                 <p key={trait.name} className="text-sm sm:text-[15px] leading-relaxed text-gray-600 dark:text-parchment-400">
                   <span className="trait-badge mr-2 bg-orange-600 dark:bg-ember text-white">
@@ -192,15 +174,12 @@ export default function MerchProduct({ item }) {
                 </p>
               ))}
 
-              {/* Description */}
               <div className="prose prose-gray dark:border-t dark:pt-6 dark:border-parchment/15">
                 <h3 className="text-lg dark:text-2xl font-semibold dark:font-normal dark:font-blackletter mb-2 text-gray-900 dark:text-parchment">Opis</h3>
                 <p className="leading-relaxed dark:text-lg text-gray-600 dark:text-parchment-400">
                   {item.description}
                 </p>
               </div>
-
-              {/* Product Details */}
               {item.details && (
                 <div className="border-t pt-6 border-gray-200 dark:border-parchment/15">
                   <h3 className="text-lg dark:text-2xl font-semibold dark:font-normal dark:font-blackletter mb-4 text-gray-900 dark:text-parchment">Szczegóły produktu</h3>
@@ -260,7 +239,6 @@ export default function MerchProduct({ item }) {
                 </div>
               )}
 
-              {/* Contact/Order Info */}
               <div className="border-t pt-6 border-gray-200 dark:border-parchment/15">
                 <div className={`rounded-lg dark:rounded-none p-4 dark:p-6 bg-purple-50 dark:bg-parchment ${
                   item.preorder ? 'flex flex-wrap items-center gap-x-4 gap-y-3' : ''
@@ -292,8 +270,6 @@ export default function MerchProduct({ item }) {
                   </NextLink>
                 </div>
               </div>
-
-              {/* Shipping Notice */}
               <div className="text-sm sm:text-[15px] text-gray-500 dark:text-parchment-500">
                 <p>📦 Wysyłka tylko na terenie Polski</p>
               </div>

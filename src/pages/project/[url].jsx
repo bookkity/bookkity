@@ -44,7 +44,6 @@ export default function ProjectPage({ project, authorNames }) {
       <Seo page={{kind: 'page', title: project.title, description: project.description, path: `/project/${project.id}`, image: project.image}} />
       <Layout>
         <div className="pt-6 px-4">
-          {/* Back Button */}
           <div className="mb-6">
             <NextLink prefetch={false}
               href="/projects"
@@ -54,8 +53,6 @@ export default function ProjectPage({ project, authorNames }) {
               Back to Projects
             </NextLink>
           </div>
-
-          {/* Project Header */}
           <div className="bg-white rounded-lg p-8 mb-6">
             <div className="flex flex-col lg:flex-row gap-8">
               <div className="lg:w-1/3">
@@ -75,8 +72,6 @@ export default function ProjectPage({ project, authorNames }) {
                 <p className="text-xl text-gray-600 mb-6">
                   {project.description}
                 </p>
-
-                {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-6">
                   {project.tags.map((tag, index) => (
                     <span
@@ -87,8 +82,6 @@ export default function ProjectPage({ project, authorNames }) {
                     </span>
                   ))}
                 </div>
-
-                {/* Authors */}
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Authors</h3>
                   <div className="flex flex-wrap gap-2">
@@ -102,8 +95,6 @@ export default function ProjectPage({ project, authorNames }) {
                     ))}
                   </div>
                 </div>
-
-                {/* Action Buttons */}
                 <div className="flex gap-4">
                   {project.githubUrl && (
                     <NextLink prefetch={false}
@@ -130,8 +121,6 @@ export default function ProjectPage({ project, authorNames }) {
               </div>
             </div>
           </div>
-
-          {/* Project Content */}
           <div className="bg-white rounded-lg p-8">
             <div className="prose max-w-none">
               

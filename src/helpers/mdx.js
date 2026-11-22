@@ -15,11 +15,9 @@ export function serializeMdx(mdx) {
         remarkGfm, remarkMath
       ],
       rehypePlugins: [
-        // rehypePrism,
         rehypeSlug,
         rehypeKatex,
         [rehypePrettyCode, { theme: "min-light"}],
-        // rehypeAutolinkHeadings
       ]
     }
   })

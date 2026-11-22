@@ -38,23 +38,14 @@ const H = ({ children, as, size }) => {
   )
 }
 
-// `text`
 const Highlight = (props) => (
   <pre className={`px-2 text-xs bg-white rounded-lg whitespace-pre break-all spacing`}>
     {props.children}
   </pre>
 )
 
-// ```text```
 const Snippet = (props) => (
-  <div
-    // border="1px solid black"
-    // background={'#282a36'}
-    // marginY='4'
-    // overflow='x-auto'
-    // borderRadius='md'
-    className={`border-1`}
-  >
+  <div className="border-1">
     <pre {...props} />
   </div>
 )
@@ -157,7 +148,7 @@ export default {
   h4: (props) => <H as='h4' size={'md'} {...props} />,
   h5: (props) => <H as='h5' size={'sm'} {...props} />,
   pre: Highlight,
-  // code: Highlight,
+
   table: MdTable,
   thead: (props) => <thead className={``} {...props} />,
   tbody: (props) => <tbody {...props} />,
@@ -170,9 +161,9 @@ export default {
   li: (props) => <li className={`py-0.5 pl-2`} {...props} />,
   img: (props) =>  <img className={`inline-block rounded-md -mb-1 mt-2`} {...props} />,
   blockquote: (props) => <blockquote className={`border-l-4 border-purple-200 py-0 pl-4 mt-2 mb-4 text-md bg-gray-50 rounded-r-md`} {...props} />,
-  // Spoiler: (props) => <Spoiler {...props} />,
-  CodeVariants: (props) => <CodeVariants {...props} />,
-  CodeVariant: (props) => <CodeVariant {...props} />,
+
+  CodeVariants,
+  CodeVariant,
   AlignRight: (props) => <div className={`text-right`} {...props} />,
   KhangulKeyboard,
   Alert,

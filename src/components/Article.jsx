@@ -27,7 +27,7 @@ export default function Article({ article, authorRecords }) {
           {article.title}
         </h1>
         <span className={'text-xs text-gray-500'}>
-          {/*by <NextLink prefetch={false} className={`text-purple-500`} href={`/${article.author}`}>{article.author}</NextLink> on {article.date}*/}
+
           by {article.authors.map((author, idx) => (
             <NextLink prefetch={false} key={`author-url-${author}`} href={`/${author}`}>
               {idx > 0 ? ',' : ''}&nbsp;<span className={`text-purple-700`}>{author}</span>

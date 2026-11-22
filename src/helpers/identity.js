@@ -13,7 +13,6 @@ export default function IdentityContextProvider({ children }) {
           'x-identity': identity
         }
       })
-      .then(() => { /* console.log('Valid') */ })
       .catch(error => console.error('Error checking endpoint', error))
   }
 
