@@ -14,7 +14,8 @@ Bookkity uses the Next.js Pages Router. Local article, series, and author files 
 | `/tag/<slug>/10-20` | Paginated topic listing |
 | Listing paths ending in `/0-10` | Permanent redirect to the base listing |
 | `/articles/<slug>` | Article detail |
-| `/<author>` | Author profile and content links |
+| `/author/<slug>` | Author profile and content links |
+| `/<slug>` for existing authors | Permanent redirect to `/author/<slug>` |
 | `/series/<slug>/<order>` | Chapter detail |
 | `/search?q=...` | Static search page, noindex |
 
@@ -26,7 +27,7 @@ The topic bar keeps the original All, JVM, Java, Kotlin, Rust, DevOps, and Hardw
 
 Article slugs starting with `_` and unpublished chapters remain reachable with noindex. They stay outside the sitemap and search index. Published chapters can be absent from the home feed when `listed` is false, but remain in search, author pages, and relevant topic collections.
 
-`Seo` owns canonical, social, robots, and JSON-LD tags. `src/helpers/seo.js` builds schema-dts-checked graphs. Stable IDs connect the organization (`/#organization`), website (`/#website`), author (`/<handle>#person`), and page (`#webpage`, `#article`, or `#list`). These fragments identify schema entities, not client routes. JSON-LD escapes `<` before insertion into a script element.
+`Seo` owns canonical, social, robots, and JSON-LD tags. `src/helpers/seo.js` builds schema-dts-checked graphs. Stable IDs connect the organization (`/#organization`), website (`/#website`), author (`/author/<handle>#person`), and page (`#webpage`, `#article`, or `#list`). These fragments identify schema entities, not client routes. JSON-LD escapes `<` before insertion into a script element.
 
 Listings have no visible static title or description. Their head metadata and collection schema remain. Vercel preview responses retain noindex headers and meta tags. Dates come from content; the graph does not invent modification dates, ratings, offers, or author identities.
 

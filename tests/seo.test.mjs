@@ -13,7 +13,7 @@ test('tags derive from public content, encode routes and reject collisions', () 
 })
 test('sitemap includes published unlisted chapters, excludes drafts/external projects, deduplicates', () => {
   const paths=sitemapPaths({articles,series,authors:[{name:'alice'}],projects:[{id:'internal',url:'local'},{id:'external',url:'https://example.com'}],merch:[{id:'shirt'}]})
-  for(const path of ['/series/guide/1','/alice','/tag/kotlin','/project/internal','/merch/shirt']) assert.ok(paths.includes(path),path)
+  for(const path of ['/series/guide/1','/author/alice','/tag/kotlin','/project/internal','/merch/shirt']) assert.ok(paths.includes(path),path)
   for(const path of ['/articles/_draft','/series/guide/2','/tag/draft','/project/external']) assert.ok(!paths.includes(path),path)
   assert.equal(new Set(paths).size,paths.length)
   assert.match(renderSitemap(['/a?b=1&c=2']), /&amp;c=2/)
@@ -23,8 +23,9 @@ test('post and profile share person IDs; schema is safe inside HTML and omits dr
   const person={name:'alice',avatar:'alice.png',description:'Writer'}
   const base={title:'</script><script>alert(1)</script>',description:'Example',path:'/articles/hello',kind:'post',date:'2024-01-01',language:'en',authors:[person],tags:['Java']}
   const graph=pageGraph(base), post=graph['@graph'].find(n=>n['@type']==='BlogPosting')
-  const profile=pageGraph({kind:'profile',title:'alice',description:'Writer',path:'/alice',person})
+  const profile=pageGraph({kind:'profile',title:'alice',description:'Writer',path:'/author/alice',person})
   assert.equal(post.author[0]['@id'], profile['@graph'].find(n=>n['@type']==='Person')['@id'])
+  assert.equal(post.author[0]['@id'], 'https://bookkity.com/author/alice#person')
   assert.equal(post.publisher['@id'],'https://bookkity.com/#organization')
   assert.ok(!serializeJsonLd(graph).includes('<'))
   assert.deepEqual(JSON.parse(serializeJsonLd(graph)),JSON.parse(JSON.stringify(graph)))

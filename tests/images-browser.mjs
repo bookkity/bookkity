@@ -11,7 +11,7 @@ try {
     await page.route('https://api.bookkity.com/**', route => route.fulfill({json: {uid: 'image-test'}}))
     page.on('pageerror', error => errors.push(error.message))
     page.on('request', request => { if (request.url().includes('/_next/image?')) optimizerRequests.push(request.url()) })
-    for (const route of ['/articles', '/articles/api-sets', '/series/intellij-plugin-development/2', '/about', '/dzikoysk', '/projects', '/project/funnyguilds', '/merch', '/merch/boo-halloween']) {
+    for (const route of ['/articles', '/articles/api-sets', '/series/intellij-plugin-development/2', '/about', '/author/dzikoysk', '/projects', '/project/funnyguilds', '/merch', '/merch/boo-halloween']) {
       await page.goto(origin + route)
       await page.locator('img').evaluateAll(images => images.forEach(img => { img.loading = 'eager' }))
       await page.waitForFunction(() => [...document.images].every(img => img.complete && img.naturalWidth > 0))

@@ -15,7 +15,7 @@ for(const file of files) {
     const {url} = metadata(file)
     moved.set(`/article/${url}`,`/articles/${url}`)
   }
-  if(file.startsWith('authors/') && file.endsWith('.md')) unchanged.add(`/${metadata(file).name}`)
+  if(file.startsWith('authors/') && file.endsWith('.md')) moved.set(`/${metadata(file).name}`, `/author/${metadata(file).name}`)
   if(file.startsWith('series/') && file.endsWith('.mdx') && !file.endsWith('/.mdx')) {
     const details = metadata(`${file.slice(0,file.lastIndexOf('/'))}/.mdx`)
     unchanged.add(`/series/${details.url}/${metadata(file).order}`)
@@ -28,7 +28,14 @@ for(const [from,to] of moved) {
   const response=await fetch(`${origin}${from}${suffix}`,{redirect:'manual'})
   assert.equal(response.status,308,from)
   assert.equal(response.headers.get('location'),`${to}${suffix}`,from)
-  assert.equal((await fetch(`${origin}${to}`)).status,200,to)
+  const destination = await fetch(`${origin}${to}`)
+  assert.equal(destination.status,200,to)
+  if (to.startsWith('/author/')) {
+    const html = await destination.text()
+    assert.ok(html.includes(`rel="canonical" href="https://bookkity.com${to}"`), to)
+    assert.ok(html.includes(`https://bookkity.com${to}#person`), to)
+    assert.ok(!html.includes(`https://bookkity.com${from}#person`), from)
+  }
 }
 for(const path of unchanged) assert.equal((await fetch(`${origin}${path}`,{redirect:'manual'})).status,200,path)
 let assets=0
@@ -51,6 +58,8 @@ for(const from of ['/article/hello-world/','/articles/0-10/','/tag/java/0-10/'])
   }
 }
 assert.equal((await fetch(`${origin}/article/not-a-real-post`)).status,404)
+assert.equal((await fetch(`${origin}/author/not-a-real-author`)).status,404)
+assert.equal((await fetch(`${origin}/not-a-real-author`, {redirect:'manual'})).status,404)
 const rss=await (await fetch(`${origin}/rss.xml`)).text()
 assert.ok(rss.includes('https://bookkity.com/articles/'))
 for (const item of rss.matchAll(/<item>(.*?)<\/item>/gs)) {

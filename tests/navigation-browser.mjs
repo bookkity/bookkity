@@ -23,7 +23,7 @@ try {
   }
   await follow(page.locator('[data-article-card="/articles/api-sets"] a').first())
   await follow(page.locator('.content a[href*="#"]:not([href^="http"])').first())
-  await follow(page.locator('.content a[href="/thatbakamono"]').first())
+  await follow(page.locator('.content a[href="/author/thatbakamono"]').first())
   await follow(page.locator('.header a').filter({hasText: /^Articles$/}))
   await follow(page.locator('[aria-label="Topics"] a').filter({hasText: /^Java$/}))
   for (const name of ['Series', 'Projects', 'Merch', 'About Us', 'Articles']) {
