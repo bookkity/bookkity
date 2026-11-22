@@ -1,3 +1,4 @@
+import {authorPath} from '@/helpers/author-path'
 import Head from 'next/head'
 import {absoluteUrl, pageGraph, serializeJsonLd} from '@/helpers/seo'
 
@@ -25,7 +26,7 @@ export default function Seo({page}) {
     <meta name="twitter:image" content={image} />
     {noindex && <meta name="robots" content="noindex" key="robots" />}
     {page.kind === 'post' && <meta property="article:published_time" content={page.date} />}
-    {page.kind === 'post' && page.authors.map(author => <meta key={`author-${author.name}`} property="article:author" content={absoluteUrl(`/${encodeURIComponent(author.name)}`)} />)}
+    {page.kind === 'post' && page.authors.map(author => <meta key={`author-${author.name}`} property="article:author" content={absoluteUrl(authorPath(author.name))} />)}
     {page.kind === 'post' && page.tags.map(tag => <meta key={`tag-${tag}`} property="article:tag" content={tag} />)}
     <script key="schema" type="application/ld+json" dangerouslySetInnerHTML={{__html: serializeJsonLd(pageGraph({...page, noindex}))}} />
   </Head>

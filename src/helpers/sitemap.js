@@ -1,3 +1,4 @@
+import {authorPath} from './author-path.js'
 import {absoluteUrl} from './seo.js'
 import {createPreviews, listingPaths} from './listing.js'
 import {collectTags} from './tags.js'
@@ -6,7 +7,7 @@ import {collectTags} from './tags.js'
 export function sitemapPaths({articles, series, authors, projects, merch}) {
   return [...new Set([
     ...listingPaths(createPreviews(articles, series).length, '/articles'), '/about', '/series', '/projects', '/merch',
-    ...authors.map(a => `/${encodeURIComponent(a.name)}`),
+    ...authors.map(a => authorPath(a.name)),
     ...articles.filter(a => !a.url.startsWith('_')).map(a => `/articles/${encodeURIComponent(a.url)}`),
     ...series.flatMap(s => s.chapters.filter(c => c.published === true).map(c => `/series/${encodeURIComponent(s.details.url)}/${c.order}`)),
     ...projects.filter(p => !p.url.startsWith('http')).map(p => `/project/${encodeURIComponent(p.id)}`),

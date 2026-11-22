@@ -1,3 +1,4 @@
+import {authorPath} from '@/helpers/author-path'
 import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import Layout from "@/components/Layout"
@@ -36,7 +37,7 @@ export default function About({ authors }) {
                    className={`w-full md:w-1/2 lg:w-1/3 xl:w-1/4 p-4 cursor-pointer hover:scale-[1.02] hover:duration-200`}
               >
                 <div className={`bg-white rounded-lg flex flex-col relative`}>
-                  <NextLink prefetch={false} href={`/${author.name}`}>
+                  <NextLink prefetch={false} href={authorPath(author.name)}>
                     <div className={`w-full bg-gray-200 h-20 rounded-t-lg`}></div>
                     <ContentImage
                       src={`/author/${author.avatar}`}

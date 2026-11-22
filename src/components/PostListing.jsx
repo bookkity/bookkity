@@ -1,3 +1,4 @@
+import {authorPath} from '@/helpers/author-path'
 import ContentImage from "@/components/ContentImage"
 import {PAGE_SIZE} from "@/helpers/listing"
 import {SITE_DESCRIPTION} from "@/helpers/seo"
@@ -151,7 +152,7 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
                   <div className={`flex flex-1 items-center py-0`}>
                     <div className="flex -space-x-5 pl-3 pr-2 py-0">
                       {article.authors.map(author => (
-                        <Link prefetch={false} key={`author-avatar-${author}`} href={`/${author}`} className="inline-block">
+                        <Link prefetch={false} key={`author-avatar-${author}`} href={authorPath(author)} className="inline-block">
                           <ContentImage
                             src={`/author/${authors.find(a => a.name === author)?.avatar}`}
                             alt={author}
@@ -169,7 +170,7 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
                       <p className={`text-xs text-gray-400 pt-1`}>
                         <time dateTime={article.date}>{new Date(article.date).toLocaleDateString('en-GB', {timeZone: 'UTC'})}</time> by
                         {article.authors.map((author, idx) => (
-                          <Link prefetch={false} key={`author-url-${author}`} href={`/${author}`}>
+                          <Link prefetch={false} key={`author-url-${author}`} href={authorPath(author)}>
                             {idx > 0 ? ',' : ''}&nbsp;<span className={`text-gray-700`}>{author}</span>
                           </Link>
                         ))}

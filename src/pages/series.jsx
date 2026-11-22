@@ -1,3 +1,4 @@
+import {authorPath} from '@/helpers/author-path'
 import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import Seo from "@/components/Seo"
@@ -46,7 +47,7 @@ export default function Series({series}) {
                       <p className={`px-2 text-sm`}>
                         by&nbsp;
                         {details.authors.map((author, index) => <span key={author}>
-                          {index > 0 && ', '}<NextLink prefetch={false} href={`/${author}`} className="text-purple-700">{author}</NextLink>
+                          {index > 0 && ', '}<NextLink prefetch={false} href={authorPath(author)} className="text-purple-700">{author}</NextLink>
                         </span>)}
                       </p>
                     </div>

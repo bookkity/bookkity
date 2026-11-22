@@ -1,3 +1,6 @@
+import {readdir, readFile} from 'node:fs/promises';
+import matter from 'gray-matter';
+import {authorPath} from './src/helpers/author-path.js';
 import {PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD} from 'next/constants.js';
 
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
@@ -8,7 +11,11 @@ const nextConfig = {
     NEXT_PUBLIC_PREVIEW_NOINDEX: String(isPreviewDeployment),
   },
   async redirects() {
+    const directory = new URL('./authors/', import.meta.url);
+    const authors = await Promise.all((await readdir(directory)).filter(file => file.endsWith('.md')).map(async file =>
+      matter(await readFile(new URL(file, directory), 'utf8')).data.name));
     return [
+      ...authors.map(name => ({source: `/${encodeURIComponent(name)}`, destination: authorPath(name), permanent: true})),
       { source: '/articles/0-10', destination: '/articles', permanent: true },
       { source: '/tag/:tag/0-10', destination: '/tag/:tag', permanent: true },
       { source: "/", destination: "/articles", permanent: true },

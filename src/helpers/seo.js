@@ -1,4 +1,5 @@
 // @ts-check
+import {authorPath} from './author-path.js'
 export const SITE_URL = 'https://bookkity.com'
 export const SITE_DESCRIPTION = 'Articles and tutorials about programming, software development, and technology from the Bookkity community.'
 /** @param {string} path */
@@ -14,7 +15,7 @@ export function contentImage(section, image) {
  * {kind:'post', date:string, authors:Author[], tags:string[]})} PageSeo */
 /** @param {Author} author @returns {import('schema-dts').Person} */
 function person(author) {
-  const url = absoluteUrl(`/${encodeURIComponent(author.name)}`)
+  const url = absoluteUrl(authorPath(author.name))
   return { '@type': 'Person', '@id': `${url}#person`, name: author.name, url,
     description: author.description, image: author.avatar ? contentImage('author', author.avatar) : undefined }
 }
@@ -30,7 +31,7 @@ export function pageGraph(page) {
     { '@type': page.kind === 'profile' ? 'ProfilePage' : page.kind === 'collection' ? 'CollectionPage' : 'WebPage',
       '@id': `${url}#webpage`, url, name: page.title, description: page.description,
       inLanguage: page.language, isPartOf: { '@id': website },
-      ...(page.kind === 'profile' ? { mainEntity: { '@id': `${absoluteUrl(`/${encodeURIComponent(page.person.name)}`)}#person` } } : {}),
+      ...(page.kind === 'profile' ? { mainEntity: { '@id': `${absoluteUrl(authorPath(page.person.name))}#person` } } : {}),
       ...(page.kind === 'collection' ? { mainEntity: { '@id': `${url}#list` } } : {}),
       ...(page.kind === 'post' && !page.noindex ? { mainEntity: { '@id': `${url}#article` } } : {}) }
   ]
@@ -43,7 +44,7 @@ export function pageGraph(page) {
       description: page.description, image: page.image || absoluteUrl('/images/boo.png'),
       datePublished: page.date, inLanguage: page.language, keywords: page.tags,
       mainEntityOfPage: { '@id': `${url}#webpage` }, publisher: { '@id': organization },
-      author: page.authors.map(author => ({ '@id': `${absoluteUrl(`/${encodeURIComponent(author.name)}`)}#person` })) })
+      author: page.authors.map(author => ({ '@id': `${absoluteUrl(authorPath(author.name))}#person` })) })
   }
   return { '@context': 'https://schema.org', '@graph': nodes }
 }

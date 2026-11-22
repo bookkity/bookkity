@@ -1,3 +1,4 @@
+import {authorPath} from '@/helpers/author-path'
 import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import {getAuthors} from "@/helpers/authors"
@@ -88,7 +89,7 @@ export default function ProjectPage({ project, authorNames }) {
                   <div className="flex flex-wrap gap-2">
                     {project.authors.map((author, index) => (
                       <span key={index}>{authorNames.includes(author) ? <NextLink prefetch={false}
-                        href={`/${author}`}
+                        href={authorPath(author)}
                         className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition-colors"
                       >
                         {author}

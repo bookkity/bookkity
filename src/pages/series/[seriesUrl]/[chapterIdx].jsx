@@ -1,3 +1,4 @@
+import {authorPath} from '@/helpers/author-path'
 import NextLink from "next/link"
 import Seo from "@/components/Seo";
 import Layout from "@/components/Layout";
@@ -94,7 +95,7 @@ export default function ChapterIdx({series, chapter: selectedChapter, authorReco
             </h1>
             <span className={'text-xs text-gray-500 pt-2'}>
               by {series.details.authors.map((author, idx) => (
-                <NextLink prefetch={false} key={idx} className={`text-purple-500`} href={`/${author}`}>
+                <NextLink prefetch={false} key={idx} className={`text-purple-500`} href={authorPath(author)}>
                   {author}
                 </NextLink>
               ))}

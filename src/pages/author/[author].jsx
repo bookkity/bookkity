@@ -1,3 +1,4 @@
+import {authorPath} from '@/helpers/author-path'
 import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import {getArticles} from "@/helpers/articles"
@@ -53,7 +54,7 @@ export default function Author({ author, series, articles }) {
 
   return (
     <>
-      <Seo page={{kind: 'profile', title: author.name, description: author.description, path: `/${author.name}`, person: author, image: contentImage('author', author.avatar)}} />
+      <Seo page={{kind: 'profile', title: author.name, description: author.description, path: authorPath(author.name), person: author, image: contentImage('author', author.avatar)}} />
       <Layout>
         <p className={`text-sm text-gray-500 pt-12 px-1`}>
           <NextLink prefetch={false} href={`/about`} className={`hover:underline hover:decoration-gray-400`}>

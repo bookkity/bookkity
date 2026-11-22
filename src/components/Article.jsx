@@ -1,3 +1,4 @@
+import {authorPath} from '@/helpers/author-path'
 import NextLink from "next/link"
 import Layout from "@/components/Layout"
 import {contentImage} from "@/helpers/seo"
@@ -28,7 +29,7 @@ export default function Article({ article, authorRecords }) {
         <span className={'text-xs text-gray-500'}>
 
           by {article.authors.map((author, idx) => (
-            <NextLink prefetch={false} key={`author-url-${author}`} href={`/${author}`}>
+            <NextLink prefetch={false} key={`author-url-${author}`} href={authorPath(author)}>
               {idx > 0 ? ',' : ''}&nbsp;<span className={`text-purple-700`}>{author}</span>
             </NextLink>
           ))} on {article.date}
