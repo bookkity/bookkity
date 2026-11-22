@@ -1,14 +1,15 @@
 import {watch} from 'node:fs'
 import {spawn} from 'node:child_process'
 import {buildSearchIndex} from './build-search-index.mjs'
+import {buildImageSizes} from './build-image-sizes.mjs'
 
-await buildSearchIndex()
+await Promise.all([buildSearchIndex(), buildImageSizes()])
 let timer
 let pending = Promise.resolve()
-const watchers = ['articles', 'series', 'authors'].map(directory => watch(directory, {recursive: true}, () => {
+const watchers = ['articles', 'series', 'authors', 'public'].map(directory => watch(directory, {recursive: true}, () => {
   clearTimeout(timer)
   timer = setTimeout(() => {
-    pending = pending.then(() => buildSearchIndex()).catch(error => console.error('Search index:', error))
+    pending = pending.then(() => Promise.all([buildSearchIndex(), buildImageSizes()])).catch(error => console.error('Generated assets:', error))
   }, 150)
 }))
 const next = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', ...process.argv.slice(2)], {stdio: 'inherit'})

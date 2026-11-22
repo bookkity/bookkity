@@ -42,3 +42,5 @@ next-env.d.ts
 # Generated search data
 /public/search-assets/
 /src/generated/search.json
+
+/src/generated/image-sizes.json

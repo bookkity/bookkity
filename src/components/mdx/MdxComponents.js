@@ -1,3 +1,4 @@
+import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import React from "react"
 import {
@@ -139,7 +140,8 @@ const ScrollableWrapper = ({ height, children }) => {
   )
 }
 
-export default {
+const components = {
+  ContentImage,
   a: (props) => <NextLink prefetch={false} className={'text-purple-500'} {...props} />,
   p: (props) => <div className={'py-2'} {...props} />,
   h1: (props) => <H as='h1' size={'2xl'} {...props} />,
@@ -159,7 +161,7 @@ export default {
   ul: (props) => <ul className={`py-1 pl-5 list-disc`} {...props} />,
   ol: (props) => <ol className={`py-2 pl-8 list-decimal `} {...props} />,
   li: (props) => <li className={`py-0.5 pl-2`} {...props} />,
-  img: (props) =>  <img className={`inline-block rounded-md -mb-1 mt-2`} {...props} />,
+  img: (props) =>  <ContentImage className={`inline-block rounded-md -mb-1 mt-2`} {...props} />,
   blockquote: (props) => <blockquote className={`border-l-4 border-purple-200 py-0 pl-4 mt-2 mb-4 text-md bg-gray-50 rounded-r-md`} {...props} />,
 
   CodeVariants,
@@ -173,3 +175,5 @@ export default {
   Spoiler,
   ScrollableWrapper
 }
+
+export default components

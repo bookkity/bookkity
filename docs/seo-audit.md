@@ -36,6 +36,12 @@ Listings have no visible static title or description. Their head metadata and co
 
 The response uses `application/xml; charset=utf-8` and `public, max-age=0, s-maxage=43200, stale-while-revalidate=60`. A compatible shared cache keeps it fresh for 12 hours and refreshes on demand with a 60-second stale allowance. Bare `next start` regenerates it per request. This is HTTP caching, not HTML ISR or a scheduled refresh. Content updates still require a deployment.
 
+## Images
+
+`ContentImage` uses Next Image with optimization disabled, retaining public asset URLs. The build reads image dimensions with Sharp and generates `src/generated/image-sizes.json`. Development refreshes it when public assets change. Markdown images and literal MDX image tags share this component; percentage widths remain CSS widths. External images need explicit dimensions.
+
+`tests/images-browser.mjs` checks image loading, intrinsic dimensions, MDX proportions, popup persistence, and the absence of optimizer requests at desktop and mobile widths. `npm run lint` rejects warnings.
+
 ## Verification
 
 Run these against a production build on the homelab:

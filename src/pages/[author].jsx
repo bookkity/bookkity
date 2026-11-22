@@ -1,3 +1,4 @@
+import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import {getArticles} from "@/helpers/articles"
 import {contentImage} from "@/helpers/seo"
@@ -65,7 +66,7 @@ export default function Author({ author, series, articles }) {
         </p>
         <div className={'flex flex-col md:flex-row items-center md:justify-start px-1'}>
           <div className={'flex flex-col justify-center items-center md:items-start pt-6 md:pt-12 w-full md:max-w-64'}>
-            <img src={`/author/${author.avatar}`} alt={author.name} className={`rounded-full w-64`}/>
+            <ContentImage src={`/author/${author.avatar}`} alt={author.name} className={`rounded-full w-64`}/>
             <h1 className={`pt-10 pb-3 font-semibold text-3xl`}>
               {author.name}
             </h1>

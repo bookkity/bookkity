@@ -1,3 +1,4 @@
+import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import Layout from "@/components/Layout"
 import Seo from "@/components/Seo"
@@ -37,7 +38,7 @@ export default function About({ authors }) {
                 <div className={`bg-white rounded-lg flex flex-col relative`}>
                   <NextLink prefetch={false} href={`/${author.name}`}>
                     <div className={`w-full bg-gray-200 h-20 rounded-t-lg`}></div>
-                    <img
+                    <ContentImage
                       src={`/author/${author.avatar}`}
                       alt={author.name}
                       className={`absolute mx-auto rounded-full w-28 top-4 left-1/2 -ml-14 border border-black`}

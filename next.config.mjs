@@ -32,10 +32,13 @@ const nextConfig = {
   },
 };
 
-export default async phase => {
+const configureNext = async phase => {
   if ([PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD].includes(phase)) {
     const {buildSearchIndex} = await import('./scripts/build-search-index.mjs');
-    await buildSearchIndex();
+    const {buildImageSizes} = await import('./scripts/build-image-sizes.mjs');
+    await Promise.all([buildSearchIndex(), buildImageSizes()]);
   }
   return nextConfig;
 };
+
+export default configureNext;

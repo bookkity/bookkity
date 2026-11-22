@@ -26,7 +26,7 @@ let browser
 try {
   await until(async () => (await fetch(origin + '/search', {signal: AbortSignal.timeout(2000)})).ok)
   const initial = await manifest()
-  await fs.writeFile(file, `---\ntitle: Automatic discovery fixture\nurl: ${slug}\nauthors: [dzikoysk]\ntags: [testing]\nlanguage: en\ndate: '2026-11-20'\nimage: fixture.png\n---\nAutomatedDiscoverySentinel`, {flag: 'wx'})
+  await fs.writeFile(file, `---\ntitle: Automatic discovery fixture\nurl: ${slug}\nauthors: [dzikoysk]\ntags: [testing]\nlanguage: en\ndate: '2026-11-20'\nimage: /0000/progress-bar.jpg\n---\nAutomatedDiscoverySentinel`, {flag: 'wx'})
   await until(async () => await manifest() !== initial)
   browser = await chromium.launch({headless: true, executablePath: process.env.CHROMIUM_EXECUTABLE || undefined})
   const page = await browser.newPage()

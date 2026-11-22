@@ -1,3 +1,4 @@
+import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import Layout from "@/components/Layout"
 import Seo from "@/components/Seo"
@@ -18,7 +19,7 @@ function ProjectCard({ project }) {
   const cardContent = (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group flex flex-col h-72">
       <div className="relative">
-        <img
+        <ContentImage
           src={project.image || '/images/boo.png'}
           alt={project.title}
           className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"

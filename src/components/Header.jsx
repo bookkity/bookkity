@@ -1,3 +1,4 @@
+import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faDiscord, faGithub} from "@fortawesome/free-brands-svg-icons"
@@ -29,10 +30,10 @@ export default function Header() {
       <NextLink prefetch={false} href={"/articles"} className={`md:w-1/4`}>
         <div className={'flex flex-col md:flex-row items-center justify-center md:justify-start px-4 py-4'}>
           <div className={``}>
-            <img
+            <ContentImage
               src={`/images/boo.png`}
               alt={'Bookkity'}
-              className={`rounded-xl h-10 min-w-10`}
+              className={`rounded-xl w-10 h-10 min-w-10`}
             />
           </div>
           <p className={'font-semibold text-md md:pl-3 pt-1 md:pt-0'}>Bookkity</p>

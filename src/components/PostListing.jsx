@@ -1,3 +1,4 @@
+import ContentImage from "@/components/ContentImage"
 import {PAGE_SIZE} from "@/helpers/listing"
 import {SITE_DESCRIPTION} from "@/helpers/seo"
 import Layout from "@/components/Layout"
@@ -140,7 +141,7 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
                       }
                     </div>
                     <Link href={article.url} prefetch={false}>
-                      <img
+                      <ContentImage
                         src={article.image}
                         alt={article.title}
                         className={`rounded-t-2xl w-full h-56 object-cover`}
@@ -151,7 +152,7 @@ export default function PostListing({ previews, authors, tags, selectedTag = '',
                     <div className="flex -space-x-5 pl-3 pr-2 py-0">
                       {article.authors.map(author => (
                         <Link prefetch={false} key={`author-avatar-${author}`} href={`/${author}`} className="inline-block">
-                          <img
+                          <ContentImage
                             src={`/author/${authors.find(a => a.name === author)?.avatar}`}
                             alt={author}
                             className="rounded-full h-12 w-12 min-w-12 border-2 border-white bg-white"

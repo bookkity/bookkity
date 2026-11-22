@@ -1,3 +1,4 @@
+import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import Layout from "@/components/Layout"
 import Seo from "@/components/Seo"
@@ -57,7 +58,7 @@ function Banner({ item, onHalloweenHover }) {
     >
       {/* On phones the photo sits above the text, on wider screens it fills the right side and fades into the panel */}
       <div className="relative h-56 md:absolute md:inset-y-0 md:right-0 md:h-auto md:w-3/5">
-        <img
+        <ContentImage
           src={bannerImageOf(item)}
           alt=""
           style={{ objectPosition: item.banner?.position }}
@@ -94,7 +95,7 @@ function ProductCard({ item, onHalloweenHover }) {
   return (
     <NextLink prefetch={false} href={`/merch/${item.id}`} className="group" {...halloweenHover(item, onHalloweenHover)}>
       <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-200 dark:bg-ink-800 transition-colors duration-500">
-        <img src={thumbnailOf(item)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        <ContentImage src={thumbnailOf(item)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5">
           {item.preorder && <span className="bg-purple-600 text-white text-xs font-bold uppercase px-2 py-1 rounded">Preorder</span>}
           {item.limitedEdition && <span className="bg-purple-500 text-white text-xs font-bold uppercase px-2 py-1 rounded">Limitowana Edycja</span>}

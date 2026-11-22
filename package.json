@@ -6,7 +6,7 @@
     "dev": "node scripts/dev.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "check:seo": "tsc --allowJs --checkJs --noEmit --skipLibCheck --target es2020 --module nodenext --moduleResolution nodenext src/helpers/seo.js",
     "test:search": "node --test tests/search.test.mjs",
     "benchmark:search": "node scripts/benchmark-search.mjs"
@@ -52,6 +52,7 @@
     "remark-mdx": "3.1.1",
     "remark-parse": "11.0.0",
     "schema-dts": "^2.1.0",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.3.5",
     "typescript": "^6.0.3",
     "unified": "11.0.5"

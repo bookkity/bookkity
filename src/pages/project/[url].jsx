@@ -1,3 +1,4 @@
+import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import {getAuthors} from "@/helpers/authors"
 import Layout from "@/components/Layout"
@@ -56,7 +57,7 @@ export default function ProjectPage({ project, authorNames }) {
           <div className="bg-white rounded-lg p-8 mb-6">
             <div className="flex flex-col lg:flex-row gap-8">
               <div className="lg:w-1/3">
-                <img
+                <ContentImage
                   src={project.image || '/images/boo.png'}
                   alt={project.title}
                   className="w-full h-64 object-cover rounded-lg shadow-md"

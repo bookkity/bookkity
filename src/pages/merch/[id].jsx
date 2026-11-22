@@ -1,3 +1,4 @@
+import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import Layout from "@/components/Layout"
 import Seo from "@/components/Seo"
@@ -58,7 +59,7 @@ export default function MerchProduct({ item }) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             <div className="space-y-4 dark:w-full dark:max-w-md dark:mx-auto">
               <div className="aspect-square dark:aspect-[3/4] rounded-lg dark:rounded-none dark:rounded-t-full overflow-hidden relative group bg-white dark:bg-ink-800 shadow-md dark:shadow-none dark:ring-1 dark:ring-parchment/30 dark:ring-offset-[6px] dark:ring-offset-ink">
-                <img
+                <ContentImage
                   src={images[selectedImage]}
                   alt={item.title}
                   className="w-full h-full object-cover"
@@ -111,7 +112,7 @@ export default function MerchProduct({ item }) {
                         selectedImage === idx ? 'border-purple-600 dark:border-ember' : 'border-transparent hover:border-gray-300 dark:border-parchment/20 dark:hover:border-parchment/50'
                       }`}
                     >
-                      <img src={img} alt={`${item.title} ${idx + 1}`} className="w-full h-full object-cover" />
+                      <ContentImage src={img} alt={`${item.title} ${idx + 1}`} className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -148,13 +149,13 @@ export default function MerchProduct({ item }) {
                     {item.deliveryPrice && !item.deliveryIncluded && (
                       <span className="inline-flex items-center gap-1.5 text-sm sm:text-[15px] text-gray-600 dark:text-parchment-400">
                         + {item.deliveryPrice} {item.currency} dostawa {item.deliveryProvider || 'InPost'}
-                        <img src="/images/inpost.png" alt="" className="w-4 h-4" />
+                        <ContentImage src="/images/inpost.png" alt="" className="w-4 h-4" />
                       </span>
                     )}
                   </div>
                   {item.deliveryPrice && item.deliveryIncluded && (
                     <p className="text-sm flex items-center gap-1.5 text-gray-600 dark:text-parchment-500">
-                      <img src="/images/inpost.png" alt="InPost" className="w-5 h-5" />
+                      <ContentImage src="/images/inpost.png" alt="InPost" className="w-5 h-5" />
                       Dostawa {item.deliveryProvider || 'InPost'} wliczona w cenę
                     </p>
                   )}

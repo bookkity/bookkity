@@ -1,3 +1,4 @@
+import ContentImage from "@/components/ContentImage"
 import NextLink from "next/link"
 import Seo from "@/components/Seo"
 import {getSeries} from "@/helpers/series"
@@ -29,7 +30,7 @@ export default function Series({series}) {
                   `flex flex-col lg:flex-row lg:max-h-52 w-full bg-white rounded-lg cursor-pointer hover:scale-[1.02] hover:duration-200`
                 }>
                   <NextLink prefetch={false} href={firstChapterUrl} className={`w-full lg:w-96 h-52`}>
-                    <img
+                    <ContentImage
                       src={`/series/${details.image}`}
                       alt={details.title}
                       className={`bg-white rounded-l-lg h-full object-cover w-full`}
