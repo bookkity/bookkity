@@ -1,5 +1,4 @@
 import NextLink from "next/link"
-import TagLinks from "@/components/TagLinks"
 import Layout from "@/components/Layout"
 import {contentImage} from "@/helpers/seo"
 import Seo from "@/components/Seo"
@@ -34,7 +33,6 @@ export default function Article({ article, authorRecords }) {
             </NextLink>
           ))} on {article.date}
         </span>
-        <TagLinks tags={article.tags} />
         <div className={'mdx pt-2'}>
           <MDXRemote components={MDX} {...article.content} />
         </div>
