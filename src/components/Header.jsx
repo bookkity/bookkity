@@ -1,10 +1,10 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
-import {faDiscord, faGithub} from "@fortawesome/free-brands-svg-icons"
+import {discordIcon as discordBrandIcon, githubIcon} from "@/components/homepage-icons"
 import {useState} from "react"
 import {useRouter} from "next/router"
 
 const discordIcons = {
-  default: <FontAwesomeIcon icon={faDiscord} size="lg" color={'white'} className={`icon`}/>,
+  default: <FontAwesomeIcon icon={discordBrandIcon} size="lg" color={'white'} className={`icon`} style={{width: 'auto'}}/>,
   pl: <div className={`icon`}>🇵🇱</div>,
   en: <div className={`icon`}>🌎</div>
 }
@@ -23,7 +23,7 @@ export default function Header() {
   const [discordIcon, setDiscordIcon] = useState(discordIcons.default)
 
   return (
-    <div className={`header flex flex-col md:flex-row items-center justify-center md:justify-between h-18 border-b border-b-gray-200 dark:border-b-ink-700 shadow-xs w-full transition-colors duration-500`}>
+    <div className={`header flex flex-col md:flex-row items-center justify-center md:justify-between border-b border-b-gray-200 dark:border-b-ink-700 w-full transition-colors duration-500`}>
       <a href={"/"} className={`md:w-1/4`}>
         <div className={'flex flex-col md:flex-row items-center justify-center md:justify-start px-4 py-4'}>
           <div className={``}>
@@ -76,7 +76,7 @@ export default function Header() {
         </div>
         <div className={`pt-3 pb-3 px-5`}>
           <a href={`https://github.com/bookkity`}>
-            <FontAwesomeIcon icon={faGithub} size="xl"/>
+            <FontAwesomeIcon icon={githubIcon} size="xl" style={{width: 'auto'}}/>
           </a>
         </div>
       </div>
