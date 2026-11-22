@@ -40,7 +40,11 @@ The response uses `application/xml; charset=utf-8` and `public, max-age=0, s-max
 
 `ContentImage` uses Next Image with optimization disabled, retaining public asset URLs. The build reads image dimensions with Sharp and generates `src/generated/image-sizes.json`. Development refreshes it when public assets change. Markdown images and literal MDX image tags share this component; percentage widths remain CSS widths. External images need explicit dimensions.
 
-`tests/images-browser.mjs` checks image loading, intrinsic dimensions, MDX proportions, popup persistence, and the absence of optimizer requests at desktop and mobile widths. `npm run lint` rejects warnings.
+Images show a shared animated SVG data URL while pending. `blurDataURL` supplies the default placeholder, passed directly to Next's data-URL placeholder mode so a second blur filter does not obscure the shimmer. The page stylesheet replaces it with a static gradient for reduced motion. A source change resets Next's loading state. Intrinsic aspect ratios reserve image space, including percentage-width MDX images; numeric width overrides scale the corresponding height.
+
+`tests/image-layout-browser.mjs` blocks image responses until fonts and hydration settle, then samples image/text boxes each animation frame while releasing the images. The homelab production run on 2026-11-22 covered all 37 non-search static pages at 1280×844 and 390×844, with 280 pending image loads. It recorded zero box movement, layout-shift entries, or errors. The pre-shimmer branch also passed this isolated image-load check, so it did not reproduce the reported shifts. This is one deterministic pass per viewport, not a whole-page CLS score or a guarantee across browsers, fonts, and network conditions.
+
+`tests/image-placeholder-browser.mjs` verifies animation with pixel comparisons, reduced motion, placeholder removal, cold gallery changes, and failed-image sizing. `tests/images-browser.mjs` checks image loading, dimensions, MDX proportions, popup persistence, and absence of optimizer requests. Search remains covered by the search browser suite. Run the scripts against a production server on the homelab with `CHROMIUM_EXECUTABLE` set. `npm run lint` rejects warnings.
 
 ## Verification
 
