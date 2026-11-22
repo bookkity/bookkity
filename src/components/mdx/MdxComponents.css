@@ -26,9 +26,9 @@
 
 /* Display math retains its intrinsic width; numbers scroll with the equation. */
 .math-block {
-    --math-scroll-fade: hsl(var(--background) / 0.95);
+    --math-fade-left: 0px;
+    --math-fade-right: 0px;
     display: block;
-    position: relative;
     min-width: 0;
     margin-block: 1em;
 }
@@ -39,9 +39,15 @@
     overscroll-behavior-x: contain;
     direction: ltr;
     padding-block: 0.25em;
+    /* Fade the ink, leaving the surrounding page background untouched. */
+    mask-image: linear-gradient(to right, transparent, black var(--math-fade-left), black calc(100% - var(--math-fade-right)), transparent);
 }
 
 .math-scroll:focus-visible {
+    outline: none;
+}
+
+.math-block:has(> .math-scroll:focus-visible) {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 3px;
 }
@@ -71,40 +77,20 @@
     flex: none;
 }
 
-.math-block::before,
-.math-block::after {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    top: 0.25em;
-    bottom: 0.25em;
-    width: 1rem;
-    pointer-events: none;
-    opacity: 0;
+.math-block[data-scroll-left] {
+    --math-fade-left: 1rem;
 }
 
-.math-block::before {
-    left: 0;
-    background: linear-gradient(to right, var(--math-scroll-fade), transparent);
-}
-
-.math-block::after {
-    right: 0;
-    background: linear-gradient(to left, var(--math-scroll-fade), transparent);
-}
-
-.math-block[data-scroll-left]::before,
-.math-block[data-scroll-right]::after {
-    opacity: 1;
+.math-block[data-scroll-right] {
+    --math-fade-right: 1rem;
 }
 
 @media (forced-colors: active) {
-    .math-block::before,
-    .math-block::after {
-        display: none;
+    .math-scroll {
+        mask-image: none;
     }
 
-    .math-scroll:focus-visible {
+    .math-block:has(> .math-scroll:focus-visible) {
         outline-color: Highlight;
     }
 }

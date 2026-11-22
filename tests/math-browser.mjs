@@ -78,7 +78,12 @@ try {
     await page.waitForTimeout(100)
     assert.equal(await scroller.evaluate(e => e.scrollLeft), 0)
     assert.deepEqual(await edges(), {left: false, right: true})
-    assert.equal(await block.evaluate(e => getComputedStyle(e, '::after').pointerEvents), 'none')
+    assert.ok(await block.evaluate(e => [e, e.firstElementChild].every(element => {
+      const style = getComputedStyle(element)
+      return style.boxShadow === 'none' && style.backgroundColor === 'rgba(0, 0, 0, 0)' && style.borderTopWidth === '0px'
+    })), 'Equations stay flat against the page without a painted panel or shadow')
+    assert.equal(await block.evaluate(e => getComputedStyle(e, '::after').content), 'none')
+    assert.notEqual(await scroller.evaluate(e => getComputedStyle(e).maskImage), 'none')
     if (process.env.MATH_SCREENSHOTS && route.endsWith('/1')) await block.screenshot({path: `${process.env.MATH_SCREENSHOTS}/${route.split('/')[2]}-start.png`})
   }
   await page.setViewportSize({width: 390, height: 844})
@@ -94,8 +99,8 @@ try {
   await page.evaluate(() => {document.documentElement.dir = ''})
   await page.emulateMedia({reducedMotion: 'reduce', forcedColors: 'active'})
   await page.locator('.math-scroll[tabindex="0"]').first().focus()
-  assert.notEqual(await page.locator('.math-scroll[tabindex="0"]').first().evaluate(e => getComputedStyle(e).outlineStyle), 'none')
-  assert.equal(await page.locator('.math-block').first().evaluate(e => getComputedStyle(e, '::after').display), 'none')
+  assert.notEqual(await page.locator('.math-scroll[tabindex="0"]').first().evaluate(e => getComputedStyle(e.parentElement).outlineStyle), 'none')
+  assert.equal(await page.locator('.math-scroll').first().evaluate(e => getComputedStyle(e).maskImage), 'none')
   assert.deepEqual(errors, [])
   const report = {views, errors}
   if (process.env.MATH_REPORT) await fs.writeFile(process.env.MATH_REPORT, JSON.stringify(report, null, 2))

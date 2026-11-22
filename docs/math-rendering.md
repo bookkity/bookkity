@@ -5,8 +5,8 @@ transform wraps each display block in `MathBlock` and groups a numbered formula
 separately from its tag, so operators retain their spacing and numbers cannot
 overlap the formula.
 
-Wide equations scroll at their normal font size. A 1rem white fade marks each edge
-with hidden content. ResizeObserver updates the fades and keyboard focusability;
+Wide equations scroll at their normal font size. A 1rem opacity mask fades the ink at each edge
+with hidden content, leaving the page background continuous. ResizeObserver updates the fades and keyboard focusability;
 short equations add no tab stop. The fades do not intercept input or animate.
 Forced-colors mode preserves the focus outline and native scrolling.
 
