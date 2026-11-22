@@ -5,12 +5,16 @@
 @import "tailwindcss";
 @config "../../tailwind.config.js";
 
-@utility container {
-  margin-inline: auto;
-  padding-inline: 2rem;
-  @media (width >= 1400px) {
-    max-width: 1400px;
-  }
+@theme {
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-purple-400: #c084fc;
+  --color-purple-800: #6b21a8;
+  --color-purple-900: #581c87;
 }
 
 @layer base {

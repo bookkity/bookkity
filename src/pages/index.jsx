@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout"
 import {Input} from "@/components/ui/input"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
-import {faSearch} from "@fortawesome/free-solid-svg-icons"
+import {searchIcon} from "@/components/homepage-icons"
 import {useMemo, useState} from "react"
 import {getArticles} from "@/helpers/articles"
 import Head from "next/head"
@@ -135,11 +135,11 @@ export default function Home({ allArticles, allSeries }) {
           <div className={`flex items-center bg-white rounded-lg text-gray-500`}>
             <div className={`pl-4`}>
               <div className={`h-5 w-5`}>
-                <FontAwesomeIcon icon={faSearch}/>
+                <FontAwesomeIcon icon={searchIcon} style={{width: 'auto'}}/>
               </div>
             </div>
             <Input
-              className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-hidden focus-visible:ring-0 placeholder:focus-visible:text-white`}
+              className={`w-full bg-white border-none shadow-none h-14 rounded-lg text-xl focus-visible:outline-hidden focus-visible:ring-0 focus-visible:placeholder:text-white`}
               placeholder={`Browse articles & series`}
               onChange={(e) => setSearch(e.target.value)}
             />
