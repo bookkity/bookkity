@@ -4,7 +4,7 @@ import Seo from "@/components/Seo";
 import Layout from "@/components/Layout";
 import {getAuthors} from "@/helpers/authors"
 import {contentImage} from "@/helpers/seo"
-import {getSeries} from "@/helpers/series";
+import {getChapter, getSeries} from "@/helpers/series";
 import {MDXRemote} from "next-mdx-remote";
 import MDX from "@/components/mdx/MdxComponents";
 
@@ -32,7 +32,9 @@ export async function getStaticPaths() {
 export async function getStaticProps({params: {seriesUrl, chapterIdx}}) {
   const allSeries = await getSeries()
   const series = allSeries.find(it => it.details.url === seriesUrl)
-  const chapter = series.chapters.find(it => it.order === parseInt(chapterIdx))
+  if (!series) return {notFound: true}
+  const chapter = await getChapter(series.details.path, Number(chapterIdx))
+  if (!chapter) return {notFound: true}
 
   return {
     props: {

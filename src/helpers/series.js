@@ -13,10 +13,11 @@ const seriesPath = path.join(process.cwd(), "series")
 
 /**
  * @typedef {Object} SeriesDetails
+ * @property {string} path
  * @property {string} url
  * @property {string} title
  * @property {string} description
- * @property {string} authors
+ * @property {string[]} authors
  * @property {string} language
  * @property {string} image
  * @property {string[]} tags
@@ -28,7 +29,7 @@ const seriesPath = path.join(process.cwd(), "series")
  * @property {string} shortTitle
  * @property {string} title
  * @property {string} date
- * @property {?string} [url] image
+ * @property {string} [image]
  * @property {boolean} listed
  * @property {boolean} published
  */
@@ -48,21 +49,24 @@ export async function getSeries() {
         path: series,
         ...seriesDetails
       },
-      chapters: await Promise.all(chapters.map(async it => await readMdx(path.join(seriesPath, series, it))))
+      chapters: await Promise.all(chapters.map(async file =>
+        matter(await readSpecificFile(path.join(seriesPath, series, file))).data))
     }
   })
 
   return Promise.all(series)
 }
 
-export async function readMdx(file) {
-  const content = await readSpecificFile(file)
-  const { content: raw, data: metadata } = matter(content)
-  const serializedContent = await serializeMdx(raw)
-
-  return {
-    content: serializedContent,
-    ...metadata
+/** Load the selected body separately so chapter lists carry metadata only. */
+export async function getChapter(seriesDirectory, order) {
+  const directory = path.join(seriesPath, seriesDirectory)
+  const files = (await readDirectory(directory)).filter(file => file !== '.mdx')
+  for (const file of files) {
+    const {content, data} = matter(await readSpecificFile(path.join(directory, file)))
+    if (data.order === order) {
+      return {...data, content: await serializeMdx(content)}
+    }
   }
+  return null
 }
 
