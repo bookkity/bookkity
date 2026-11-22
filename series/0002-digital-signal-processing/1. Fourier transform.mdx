@@ -1,0 +1,875 @@
+---
+order: 1
+shortTitle: "Fourier transform"
+title: "Fourier transform"
+date: "2026-11-18"
+published: false
+listed: true
+---
+
+# Introduction
+
+The Fourier transform is one of the most important mathematical tools in modern science and engineering. Its main purpose is to take a complicated real-world signal and decompose it into fundamental building blocks that can then be analyzed much more easily.
+
+The discrete Fourier transform (DFT) and closely related transforms, such as the short-time Fourier transform (STFT) and discrete cosine transform (DCT), have applications ranging from audio and image processing and compression (MP3, Opus, Vorbis, etc.) to telecommunication (OFDM/OFDMA in Wi-Fi, 5G NR, LTE), medical imaging (MRI), astronomy (radio interferometry), and many other fields.
+
+# Discrete Fourier transform
+
+Unfortunately, computing the discrete Fourier transform directly is computationally expensive, especially for large input signals.
+
+We can see why by taking a look at its definition.
+$$
+X_k = \sum_{m = 0}^{N - 1} x_m e^{-i 2\pi \frac{km}{N}}
+$$
+
+To compute the full discrete Fourier transform, we need $O(N^2)$ operations. As we can see in the table below, a buffer containing 32,768 samples already requires over one billion summation terms. That's not even a full second of audio at 48 kHz!
+
+|     Input size ($N$) | Operations ($N^2$) |
+| -------------------: | -----------------: |
+|           $2^5 = 32$ |              1,024 |
+|          $2^7 = 128$ |             16,384 |
+|          $2^9 = 512$ |            262,144 |
+|     $2^{11} = 2,048$ |          4,194,304 |
+|     $2^{13} = 8,192$ |         67,108,864 |
+|    $2^{15} = 32,768$ |      1,073,741,824 |
+|   $2^{17} = 131,072$ |     17,179,869,184 |
+|   $2^{19} = 524,288$ |    274,877,906,944 |
+| $2^{20} = 1,048,576$ |  1,099,511,627,776 |
+
+Modern computers are powerful, but not that powerful. On my CPU, computing the discrete Fourier transform of a single buffer containing 2,048 elements takes roughly 33 ms using the implementation below. At a sampling rate of 48 kHz, those 2,048 samples represent approximately 42.7 ms of audio. This leaves very little headroom for any other processing, making real-time applications impractical with this approach.
+
+```rs
+pub fn naive_discrete_fourier_transform(input: &[Complex], output: &mut [Complex]) {
+    assert!(input.len() == output.len());
+
+    let n = input.len();
+
+    for k in 0..n {
+        let mut sum = Complex::ZERO;
+
+        for m in 0..n {
+            let angle = -2.0 * PI * (k * m) as f32 / n as f32;
+            let twiddle = Complex::new(angle.cos(), angle.sin());
+
+            sum += twiddle * input[m];
+        }
+
+        output[k] = sum;
+    }
+}
+```
+
+Obviously, we could manually vectorize the code and try to make it as CPU-friendly as possible, but that wouldn't fundamentally change much. Even a highly optimized implementation would still struggle with real-time processing of moderately sized buffers.
+
+Fortunately, as the need arose, clever mathematicians and engineers came up with much more efficient approaches. These approaches are collectively known as the Fast Fourier Transform (FFT). We'll start by looking at the so-called Cooley–Tukey algorithm.
+
+# The Cooley-Tukey algorithm
+
+The algorithm was generalized and popularized by James W. Cooley and John W. Tukey in their 1965 paper, but, as it turns out, its origins go back much further. Carl Friedrich Gauss had already derived a similar algorithm in an unpublished manuscript from 1805, predating even Joseph Fourier's work on Fourier series. Although Gauss's manuscript was eventually published posthumously, his algorithm remained largely unknown for many years.
+
+Other mathematicians independently developed algorithms based on similar principles, including Carl Runge in 1903 and Danielson and Lanczos in 1942.
+
+We will embark on a journey similar to them. 
+
+Let's take another look at the definition and see if anything interesting catches our eye: 
+$$
+X_k = \sum_{m = 0}^{N - 1} x_m e^{-i 2\pi \frac{km}{N}}
+$$
+
+If we're familiar with linear algebra, we might recognize this as a dot product between the input vector $x_m$ and a vector of complex exponentials $e^{-i 2\pi \frac{km}{N}}$. Stricly speaking, the complex inner product involves complex conjugation. Depending on the convention we use, either vector can be conjugated, although it's most common to conjugate the second one. In our case, that would turn $e^{-i 2\pi \frac{km}{N}}$ into $e^{i 2\pi \frac{km}{N}}$. However, this distinction isn't particularly important for what we're trying to accomplish, so we'll ignore it and treat the expression as an ordinary dot product for simplicity.
+
+In vector notation, we can write it as follows:
+$$
+X_k = \begin{bmatrix} x_0 & x_1 & \dots & x_{N - 1} \end{bmatrix} \cdot \begin{bmatrix} 1 \\ e^{-i 2\pi k/N} \\ \vdots \\ e^{-i 2\pi k(N - 1) / N} \end{bmatrix}
+$$
+
+If we've ever taken the time to understand linear algebra intuitively, we might recognize that this equation measures how closely our signal aligns with a particular test function.
+
+That's it. The Fourier transform, both discrete and continuous, is essentially a procedure that compares a signal against a family of test functions and tells us how strongly each one is represented in the original signal.
+
+There's also another way to look at it. If we've worked with complex numbers or are familiar with Euler's formula,
+$$
+e^{ix} = cos(x) + i sin(x)
+$$
+we might recognize that we're multiplying our signal by a rotating complex exponential.
+
+In a sense, we're finding the balance point of all these rotating vectors. If they point in roughly the same direction, they reinforce each other. If they point in different directions, they tend to cancel each other out. This also explains why certain frequencies produce large DFT coefficients while others produce values close to zero. 
+
+To come up with an efficient algorithm, we'll have to focus on the exponential part of the equation. We don't want to make any assumptions about the input signal, as that could make our algorithm unreliable in certain real-world scenarios.
+
+Let's try to plot $e^{-i 2\pi \frac{km}{N}}$ for different integer values of $km$, using $N = 8$, and see what happens. 
+
+![[roots-of-unity.svg]]
+
+We got a circle! These points are called the _roots of unity_. More specifically, they are the solutions to the polynomial equation $z^N - 1 = 0$.
+
+If we're familiar with complex numbers, we'll probably recognize that multiplication by $i$ rotates a point in the complex plane by 90 degrees counterclockwise.
+A similar thing happens with the roots of unity. Multiplying by $\omega = e^{-i \frac{2\pi}{N}}$ rotates a point clockwise from one root of unity to the next.
+
+With that in mind, we can observe two important properties:
+- First, for an even $N$, rotating $\frac{N}{2}$ times takes us to the exact opposite side of the unit circle, In other words, we only need to consider half of the roots of unity; the other half are simply their negatives. This is called half-period symmetry or opposite-root property.
+$$\omega^{k + N / 2} = -\omega^k$$
+- Second, rotating $N$ times brings us right back to where we started. After all, that's a full 360-degree rotation, which leaves the point unchanged. This is called periodicity.
+$$\omega^{k + N} = \omega^k$$
+
+Let's write out the equations for an 8-point DFT and see where that takes us. 
+
+We'll start by writing out a multiplication table of `k` and `m`. It might not seem particularly useful right now, we all know how to multiply, after all, but it'll become useful in just a moment.
+
+$$
+\begin{array}{c|cccccccc}
+	\times & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+	\hline
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+	1 & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+	2 & 0 & 2 & 4 & 6 & 8 & 10 & 12 & 14 \\
+	3 & 0 & 3 & 6 & 9 & 12 & 15 & 18 & 21 \\
+	4 & 0 & 4 & 8 & 12 & 16 & 20 & 24 & 28 \\
+	5 & 0 & 5 & 10 & 15 & 20 & 25 & 30 & 35 \\
+	6 & 0 & 6 & 12 & 18 & 24 & 30 & 36 & 42 \\
+	7 & 0 & 7 & 14 & 21 & 28 & 35 & 42 & 49
+\end{array}
+$$
+
+Writing $e^{-i 2\pi \frac{km}{N}}$ over and over again would get rather tedious, so let's introduce some shorthand notation:
+$$
+W_N = e^{-i \frac{2\pi}{N}}
+$$
+With this notation, we can write $e^{-i 2\pi \frac{km}{N}}$ simply as $W_N^{km}$. Substituting this into our DFT equation gives us:
+$$
+\begin{align}
+	X_0 &= W_8^0 x_0 + W_8^0 x_1 + W_8^0 x_2 + W_8^0 x_3
+	       + W_8^0 x_4 + W_8^0 x_5 + W_8^0 x_6 + W_8^0 x_7 \\
+	
+	X_1 &= W_8^0 x_0 + W_8^1 x_1 + W_8^2 x_2 + W_8^3 x_3
+	       + W_8^4 x_4 + W_8^5 x_5 + W_8^6 x_6 + W_8^7 x_7 \\
+	
+	X_2 &= W_8^0 x_0 + W_8^2 x_1 + W_8^4 x_2 + W_8^6 x_3
+	       + W_8^8 x_4 + W_8^{10} x_5 + W_8^{12} x_6 + W_8^{14} x_7 \\
+	
+	X_3 &= W_8^0 x_0 + W_8^3 x_1 + W_8^6 x_2 + W_8^9 x_3
+	       + W_8^{12} x_4 + W_8^{15} x_5 + W_8^{18} x_6 + W_8^{21} x_7 \\
+	
+	X_4 &= W_8^0 x_0 + W_8^4 x_1 + W_8^8 x_2 + W_8^{12} x_3
+	       + W_8^{16} x_4 + W_8^{20} x_5 + W_8^{24} x_6 + W_8^{28} x_7 \\
+	
+	X_5 &= W_8^0 x_0 + W_8^5 x_1 + W_8^{10} x_2 + W_8^{15} x_3
+	       + W_8^{20} x_4 + W_8^{25} x_5 + W_8^{30} x_6 + W_8^{35} x_7 \\
+	
+	X_6 &= W_8^0 x_0 + W_8^6 x_1 + W_8^{12} x_2 + W_8^{18} x_3
+	       + W_8^{24} x_4 + W_8^{30} x_5 + W_8^{36} x_6 + W_8^{42} x_7 \\
+	
+	X_7 &= W_8^0 x_0 + W_8^7 x_1 + W_8^{14} x_2 + W_8^{21} x_3
+	       + W_8^{28} x_4 + W_8^{35} x_5 + W_8^{42} x_6 + W_8^{49} x_7
+\end{align}
+$$
+It's quite a mouthful, and definitely not very easy to follow. 
+
+We know that $W_8^0 = 1$, so let's simplify first:
+$$
+\begin{align}
+	X_0 &= x_0 + x_1 + x_2 + x_3
+	       + x_4 + x_5 + x_6 + x_7 \\
+	
+	X_1 &= x_0 + W_8^1 x_1 + W_8^2 x_2 + W_8^3 x_3
+	       + W_8^4 x_4 + W_8^5 x_5 + W_8^6 x_6 + W_8^7 x_7 \\
+	
+	X_2 &= x_0 + W_8^2 x_1 + W_8^4 x_2 + W_8^6 x_3
+	       + W_8^8 x_4 + W_8^{10} x_5 + W_8^{12} x_6 + W_8^{14} x_7 \\
+	
+	X_3 &= x_0 + W_8^3 x_1 + W_8^6 x_2 + W_8^9 x_3
+	       + W_8^{12} x_4 + W_8^{15} x_5 + W_8^{18} x_6 + W_8^{21} x_7 \\
+	
+	X_4 &= x_0 + W_8^4 x_1 + W_8^8 x_2 + W_8^{12} x_3
+	       + W_8^{16} x_4 + W_8^{20} x_5 + W_8^{24} x_6 + W_8^{28} x_7 \\
+	
+	X_5 &= x_0 + W_8^5 x_1 + W_8^{10} x_2 + W_8^{15} x_3
+	       + W_8^{20} x_4 + W_8^{25} x_5 + W_8^{30} x_6 + W_8^{35} x_7 \\
+	
+	X_6 &= x_0 + W_8^6 x_1 + W_8^{12} x_2 + W_8^{18} x_3
+	       + W_8^{24} x_4 + W_8^{30} x_5 + W_8^{36} x_6 + W_8^{42} x_7 \\
+	
+	X_7 &= x_0 + W_8^7 x_1 + W_8^{14} x_2 + W_8^{21} x_3
+	       + W_8^{28} x_4 + W_8^{35} x_5 + W_8^{42} x_6 + W_8^{49} x_7
+\end{align}
+$$
+
+Also, remember that we just discussed symmetry and periodicity? Periodicity tells us that we can reduce the exponents modulo N, which in this case means modulo 8.
+
+This also explains why our multiplication table is useful: it gives us exactly the values we need. Let's write out another one, this time performing all the multiplications modulo 8.
+$$
+\begin{array}{c|cccccccc}
+	\times \bmod 8 & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+	\hline
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+	1 & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+	2 & 0 & 2 & 4 & 6 & 0 & 2 & 4 & 6 \\
+	3 & 0 & 3 & 6 & 1 & 4 & 7 & 2 & 5 \\
+	4 & 0 & 4 & 0 & 4 & 0 & 4 & 0 & 4 \\
+	5 & 0 & 5 & 2 & 7 & 4 & 1 & 6 & 3 \\
+	6 & 0 & 6 & 4 & 2 & 0 & 6 & 4 & 2 \\
+	7 & 0 & 7 & 6 & 5 & 4 & 3 & 2 & 1
+\end{array}
+$$
+And now let's rewrite the equation using our new exponents:
+$$
+\begin{align}
+	X_0 &= x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 \\
+	
+	X_1 &= x_0 + W_8^1 x_1 + W_8^2 x_2 + W_8^3 x_3
+	       + W_8^4 x_4 + W_8^5 x_5 + W_8^6 x_6 + W_8^7 x_7 \\
+	
+	X_2 &= x_0 + W_8^2 x_1 + W_8^4 x_2 + W_8^6 x_3
+	       + W_8^0 x_4 + W_8^2 x_5 + W_8^4 x_6 + W_8^6 x_7 \\
+	
+	X_3 &= x_0 + W_8^3 x_1 + W_8^6 x_2 + W_8^1 x_3
+	       + W_8^4 x_4 + W_8^7 x_5 + W_8^2 x_6 + W_8^5 x_7 \\
+	
+	X_4 &= x_0 + W_8^4 x_1 + W_8^0 x_2 + W_8^4 x_3
+	       + W_8^0 x_4 + W_8^4 x_5 + W_8^0 x_6 + W_8^4 x_7 \\
+	
+	X_5 &= x_0 + W_8^5 x_1 + W_8^2 x_2 + W_8^7 x_3
+	       + W_8^4 x_4 + W_8^1 x_5 + W_8^6 x_6 + W_8^3 x_7 \\
+	
+	X_6 &= x_0 + W_8^6 x_1 + W_8^4 x_2 + W_8^2 x_3
+	       + W_8^0 x_4 + W_8^6 x_5 + W_8^4 x_6 + W_8^2 x_7 \\
+	
+	X_7 &= x_0 + W_8^7 x_1 + W_8^6 x_2 + W_8^5 x_3
+	       + W_8^4 x_4 + W_8^3 x_5 + W_8^2 x_6 + W_8^1 x_7
+\end{align}
+$$
+
+We simplify again using $W_8^0 = 1$:
+$$
+\begin{align}
+	X_0 &= x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 \\
+	
+	X_1 &= x_0 + W_8^1 x_1 + W_8^2 x_2 + W_8^3 x_3
+	       + W_8^4 x_4 + W_8^5 x_5 + W_8^6 x_6 + W_8^7 x_7 \\
+	
+	X_2 &= x_0 + W_8^2 x_1 + W_8^4 x_2 + W_8^6 x_3
+	       + x_4 + W_8^2 x_5 + W_8^4 x_6 + W_8^6 x_7 \\
+	
+	X_3 &= x_0 + W_8^3 x_1 + W_8^6 x_2 + W_8^1 x_3
+	       + W_8^4 x_4 + W_8^7 x_5 + W_8^2 x_6 + W_8^5 x_7 \\
+	
+	X_4 &= x_0 + W_8^4 x_1 + x_2 + W_8^4 x_3
+	       + x_4 + W_8^4 x_5 + x_6 + W_8^4 x_7 \\
+	
+	X_5 &= x_0 + W_8^5 x_1 + W_8^2 x_2 + W_8^7 x_3
+	       + W_8^4 x_4 + W_8^1 x_5 + W_8^6 x_6 + W_8^3 x_7 \\
+	
+	X_6 &= x_0 + W_8^6 x_1 + W_8^4 x_2 + W_8^2 x_3
+	       + x_4 + W_8^6 x_5 + W_8^4 x_6 + W_8^2 x_7 \\
+	
+	X_7 &= x_0 + W_8^7 x_1 + W_8^6 x_2 + W_8^5 x_3
+	       + W_8^4 x_4 + W_8^3 x_5 + W_8^2 x_6 + W_8^1 x_7
+\end{align}
+$$
+
+Now let's take symmetry into account. Remember how we discussed that rotating by $\frac{N}{2}$ steps takes us to the opposite side of the unit circle? This means that the corresponding roots of unity are simply negatives of each other.
+
+We can already see a few opportunities to apply this property in our equations. For example $W_8^4 = -1$, which allows us to simplify some of the terms immediately:
+$$
+\begin{align}
+  X_0 &= x_0 + x_1 + x_2 + x_3 + x_4 + x_5 + x_6 + x_7 \\
+
+  X_1 &= x_0 + W_8^1 x_1 + W_8^2 x_2 + W_8^3 x_3
+          + W_8^4 x_4 + W_8^5 x_5 + W_8^6 x_6 + W_8^7 x_7 \\
+
+  X_2 &= x_0 + W_8^2 x_1 + W_8^4 x_2 + W_8^6 x_3
+          + x_4 + W_8^2 x_5 + W_8^4 x_6 + W_8^6 x_7 \\
+
+  X_3 &= x_0 + W_8^3 x_1 + W_8^6 x_2 + W_8^1 x_3
+          + W_8^4 x_4 + W_8^7 x_5 + W_8^2 x_6 + W_8^5 x_7 \\
+
+  X_4 &= x_0 - x_1 + x_2 - x_3
+          + x_4 - x_5 + x_6 - x_7 \\
+
+  X_5 &= x_0 + W_8^5 x_1 + W_8^2 x_2 + W_8^7 x_3
+          + W_8^4 x_4 + W_8^1 x_5 + W_8^6 x_6 + W_8^3 x_7 \\
+
+  X_6 &= x_0 + W_8^6 x_1 + W_8^4 x_2 + W_8^2 x_3
+          + x_4 + W_8^6 x_5 + W_8^4 x_6 + W_8^2 x_7 \\
+
+  X_7 &= x_0 + W_8^7 x_1 + W_8^6 x_2 + W_8^5 x_3
+          + W_8^4 x_4 + W_8^3 x_5 + W_8^2 x_6 + W_8^1 x_7
+\end{align}
+$$
+
+The equations are already considerably simpler, but there's another way to look at them that makes the underlying patterns much easier to recognize.
+
+Let's bring back our original equations and color-code the roots of unity according to their values. Terms representing the same root will share the same color.
+
+$$
+\begin{align}
+  X_0 &= {\color{#E6A6B8}{W_8^0}} x_0 + {\color{#E6A6B8}{W_8^0}} x_1 + {\color{#E6A6B8}{W_8^0}} x_2 + {\color{#E6A6B8}{W_8^0}} x_3 + {\color{#E6A6B8}{W_8^0}} x_4 + {\color{#E6A6B8}{W_8^0}} x_5 + {\color{#E6A6B8}{W_8^0}} x_6 + {\color{#E6A6B8}{W_8^0}} x_7 \\
+
+  X_1 &= {\color{#E6A6B8}{W_8^0}} x_0 + {\color{#E6C58A}{W_8^1}} x_1 + {\color{#B8CE96}{W_8^2}} x_2 + {\color{#83C5C9}{W_8^3}} x_3 + {\color{#A9A0D5}{W_8^4}} x_4 + {\color{#D3A1CF}{W_8^5}} x_5 + {\color{#E6A58A}{W_8^6}} x_6 + {\color{#A5B9DF}{W_8^7}} x_7 \\
+
+  X_2 &= {\color{#E6A6B8}{W_8^0}} x_0 + {\color{#B8CE96}{W_8^2}} x_1 + {\color{#A9A0D5}{W_8^4}} x_2 + {\color{#E6A58A}{W_8^6}} x_3 + {\color{#E6A6B8}{W_8^0}} x_4 + {\color{#B8CE96}{W_8^2}} x_5 + {\color{#A9A0D5}{W_8^4}} x_6 + {\color{#E6A58A}{W_8^6}} x_7 \\
+
+  X_3 &= {\color{#E6A6B8}{W_8^0}} x_0 + {\color{#83C5C9}{W_8^3}} x_1 + {\color{#E6A58A}{W_8^6}} x_2 + {\color{#E6C58A}{W_8^1}} x_3 + {\color{#A9A0D5}{W_8^4}} x_4 + {\color{#A5B9DF}{W_8^7}} x_5 + {\color{#B8CE96}{W_8^2}} x_6 + {\color{#D3A1CF}{W_8^5}} x_7 \\
+
+  X_4 &= {\color{#E6A6B8}{W_8^0}} x_0 + {\color{#A9A0D5}{W_8^4}} x_1 + {\color{#E6A6B8}{W_8^0}} x_2 + {\color{#A9A0D5}{W_8^4}} x_3 + {\color{#E6A6B8}{W_8^0}} x_4 + {\color{#A9A0D5}{W_8^4}} x_5 + {\color{#E6A6B8}{W_8^0}} x_6 + {\color{#A9A0D5}{W_8^4}} x_7 \\
+
+  X_5 &= {\color{#E6A6B8}{W_8^0}} x_0 + {\color{#D3A1CF}{W_8^5}} x_1 + {\color{#B8CE96}{W_8^2}} x_2 + {\color{#A5B9DF}{W_8^7}} x_3 + {\color{#A9A0D5}{W_8^4}} x_4 + {\color{#E6C58A}{W_8^1}} x_5 + {\color{#E6A58A}{W_8^6}} x_6 + {\color{#83C5C9}{W_8^3}} x_7 \\
+
+  X_6 &= {\color{#E6A6B8}{W_8^0}} x_0 + {\color{#E6A58A}{W_8^6}} x_1 + {\color{#A9A0D5}{W_8^4}} x_2 + {\color{#B8CE96}{W_8^2}} x_3 + {\color{#E6A6B8}{W_8^0}} x_4 + {\color{#E6A58A}{W_8^6}} x_5 + {\color{#A9A0D5}{W_8^4}} x_6 + {\color{#B8CE96}{W_8^2}} x_7 \\
+
+  X_7 &= {\color{#E6A6B8}{W_8^0}} x_0 + {\color{#A5B9DF}{W_8^7}} x_1 + {\color{#E6A58A}{W_8^6}} x_2 + {\color{#D3A1CF}{W_8^5}} x_3 + {\color{#A9A0D5}{W_8^4}} x_4 + {\color{#83C5C9}{W_8^3}} x_5 + {\color{#B8CE96}{W_8^2}} x_6 + {\color{#E6C58A}{W_8^1}} x_7
+\end{align}
+$$
+
+Let's make these patterns even easier to see by temporarily ignoring the input samples and looking at the coefficients alone.
+
+This gives us the following table:
+$$
+\Large
+\begin{array}{c|cccccccc}
+  & x_0 & x_1 & x_2 & x_3 & x_4 & x_5 & x_6 & x_7 \\ \hline
+  X_0 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} \\
+  
+  X_1 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6C58A}W_8^1} &
+  {\color{#B8CE96}W_8^2} &
+  {\color{#83C5C9}W_8^3} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#D3A1CF}W_8^5} &
+  {\color{#E6A58A}W_8^6} &
+  {\color{#A5B9DF}W_8^7} \\
+  
+  X_2 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#E6A58A}W_8^6} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#E6A58A}W_8^6} \\
+  
+  X_3 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#83C5C9}W_8^3} &
+  {\color{#E6A58A}W_8^6} &
+  {\color{#E6C58A}W_8^1} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#A5B9DF}W_8^7} &
+  {\color{#B8CE96}W_8^2} &
+  {\color{#D3A1CF}W_8^5} \\
+  
+  X_4 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#A9A0D5}W_8^4} \\
+  
+  X_5 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#D3A1CF}W_8^5} &
+  {\color{#B8CE96}W_8^2} &
+  {\color{#A5B9DF}W_8^7} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#E6C58A}W_8^1} &
+  {\color{#E6A58A}W_8^6} &
+  {\color{#83C5C9}W_8^3} \\
+  
+  X_6 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A58A}W_8^6} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#B8CE96}W_8^2} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A58A}W_8^6} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#B8CE96}W_8^2} \\
+  
+  X_7 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#A5B9DF}W_8^7} &
+  {\color{#E6A58A}W_8^6} &
+  {\color{#D3A1CF}W_8^5} &
+  {\color{#A9A0D5}W_8^4} &
+  {\color{#83C5C9}W_8^3} &
+  {\color{#B8CE96}W_8^2} &
+  {\color{#E6C58A}W_8^1}
+\end{array}
+$$
+
+By now, the underlying patterns should be becoming increasingly apparent. I encourage you to take a moment and try to figure out the answer yourself. If you need a hint, try to apply symmetry first. 
+
+$$
+\Large
+\begin{array}{c|cccccccc}
+  & x_0 & x_1 & x_2 & x_3 & x_4 & x_5 & x_6 & x_7 \\ \hline
+  X_0 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} \\
+  
+  X_1 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6C58A}W_8^1} &
+  {\color{#B8CE96}W_8^2} &
+  {\color{#83C5C9}W_8^3} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#E6C58A}W_8^1} &
+  -{\color{#B8CE96}W_8^2} &
+  -{\color{#83C5C9}W_8^3} \\
+  
+  X_2 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} \\
+  
+  X_3 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#83C5C9}W_8^3} &
+  -{\color{#B8CE96}W_8^2} &
+  {\color{#E6C58A}W_8^1} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#83C5C9}W_8^3} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#E6C58A}W_8^1} \\
+  
+  X_4 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} \\
+  
+  X_5 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6C58A}W_8^1} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#83C5C9}W_8^3} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#E6C58A}W_8^1} &
+  -{\color{#B8CE96}W_8^2} &
+  {\color{#83C5C9}W_8^3} \\
+  
+  X_6 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} \\
+  
+  X_7 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#83C5C9}W_8^3} &
+  -{\color{#B8CE96}W_8^2} &
+  -{\color{#E6C58A}W_8^1} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#83C5C9}W_8^3} &
+  {\color{#B8CE96}W_8^2} &
+  {\color{#E6C58A}W_8^1}
+\end{array}
+$$
+
+The underlying structure becomes even more apparent if we split the table into two smaller tables: one containing the even-indexed inputs and the other containing the odd-indexed inputs.
+
+$$
+\Large
+\begin{array}{c@{\qquad\qquad}c}
+\textbf{Even elements} & \textbf{Odd elements}
+\\[6pt]
+
+\begin{array}{c|cccc}
+  & x_0 & x_2 & x_4 & x_6 \\ \hline
+  X_0 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} \\
+
+  X_1 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} \\
+
+  X_2 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} \\
+
+  X_3 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} \\
+
+  X_4 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} \\
+
+  X_5 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} \\
+
+  X_6 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} \\
+
+  X_7 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2}
+\end{array}
+&
+\begin{array}{c|cccc}
+  & x_1 & x_3 & x_5 & x_7 \\ \hline
+  X_0 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} \\
+
+  X_1 &
+  {\color{#E6C58A}W_8^1} &
+  {\color{#83C5C9}W_8^3} &
+  -{\color{#E6C58A}W_8^1} &
+  -{\color{#83C5C9}W_8^3} \\
+
+  X_2 &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#B8CE96}W_8^2} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#B8CE96}W_8^2} \\
+
+  X_3 &
+  {\color{#83C5C9}W_8^3} &
+  {\color{#E6C58A}W_8^1} &
+  -{\color{#83C5C9}W_8^3} &
+  -{\color{#E6C58A}W_8^1} \\
+
+  X_4 &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} \\
+
+  X_5 &
+  -{\color{#E6C58A}W_8^1} &
+  -{\color{#83C5C9}W_8^3} &
+  {\color{#E6C58A}W_8^1} &
+  {\color{#83C5C9}W_8^3} \\
+
+  X_6 &
+  -{\color{#B8CE96}W_8^2} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#B8CE96}W_8^2} &
+  {\color{#B8CE96}W_8^2} \\
+
+  X_7 &
+  -{\color{#83C5C9}W_8^3} &
+  -{\color{#E6C58A}W_8^1} &
+  {\color{#83C5C9}W_8^3} &
+  {\color{#E6C58A}W_8^1}
+\end{array}
+
+\end{array}
+$$
+
+We can now see that the upper half of the even-indexed table is identical to its lower half. For the odd-indexed table, the upper half is the negative of the lower half.
+
+$$
+\Large
+\begin{array}{c@{\qquad\qquad}c}
+\textbf{Even elements} & \textbf{Odd elements}
+\\[6pt]
+
+\begin{array}{c|cccc}
+  & x_0 & x_2 & x_4 & x_6 \\ \hline
+  X_0 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} \\
+
+  X_1 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} \\
+
+  X_2 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} \\
+
+  X_3 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} \\
+
+	\hline
+
+  X_4 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} \\
+
+  X_5 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} \\
+
+  X_6 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} \\
+
+  X_7 &
+  {\color{#E6A6B8}W_8^0} &
+  -{\color{#B8CE96}W_8^2} &
+  -{\color{#E6A6B8}W_8^0} &
+  {\color{#B8CE96}W_8^2}
+\end{array}
+&
+\begin{array}{c|cccc}
+  & x_1 & x_3 & x_5 & x_7 \\ \hline
+  X_0 &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} &
+  {\color{#E6A6B8}W_8^0} \\
+
+  X_1 &
+  {\color{#E6C58A}W_8^1} &
+  {\color{#83C5C9}W_8^3} &
+  -{\color{#E6C58A}W_8^1} &
+  -{\color{#83C5C9}W_8^3} \\
+
+  X_2 &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#B8CE96}W_8^2} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#B8CE96}W_8^2} \\
+
+  X_3 &
+  {\color{#83C5C9}W_8^3} &
+  {\color{#E6C58A}W_8^1} &
+  -{\color{#83C5C9}W_8^3} &
+  -{\color{#E6C58A}W_8^1} \\
+
+	\hline
+
+  X_4 &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} &
+  -{\color{#E6A6B8}W_8^0} \\
+
+  X_5 &
+  -{\color{#E6C58A}W_8^1} &
+  -{\color{#83C5C9}W_8^3} &
+  {\color{#E6C58A}W_8^1} &
+  {\color{#83C5C9}W_8^3} \\
+
+  X_6 &
+  -{\color{#B8CE96}W_8^2} &
+  {\color{#B8CE96}W_8^2} &
+  -{\color{#B8CE96}W_8^2} &
+  {\color{#B8CE96}W_8^2} \\
+
+  X_7 &
+  -{\color{#83C5C9}W_8^3} &
+  -{\color{#E6C58A}W_8^1} &
+  {\color{#83C5C9}W_8^3} &
+  {\color{#E6C58A}W_8^1}
+\end{array}
+
+\end{array}
+$$
+
+In fact, there's even more structure hidden in those tables, which there is a very high change you see for yourself, but I think that's enough intuition at this point. I feel like we should now come back to the original DFT equation and confirm whether the patterns we have seen in our 8-point DFT example are actually there and are transferable or is it simply a coincidence that only occurs for some small DFTs, in particular for our 8-point DFT.
+
+Let's take another peek at the definition and remind ourselves how it looks like:
+$$
+X_k = \sum_{m = 0}^{N - 1} x_m e^{-i 2\pi \frac{km}{N}}
+$$
+
+We have previously introduced $W_N = e^{-i 2\pi \frac{1}{N}}$, but I will not be using it at the very beginning of what we are about to do, because it slightly obscures the most important property.
+
+Let's try to apply our visual intuition and split the sum into two smaller sums one for even elements and one for odd. 
+
+$$
+\begin{align}
+	X_k &= \sum_{m = 0}^{N - 1}           x_m        e^{-i 2\pi \frac{km}{N}} \\
+		  &= \sum_{r = 0}^{\frac{N}{2} - 1} x_{2r}     e^{-i 2\pi \frac{k2r}{N}} 
+		   + \sum_{r = 0}^{\frac{N}{2} - 1} x_{2r + 1} e^{-i 2\pi \frac{k(2r + 1)}{N}}
+\end{align}
+$$
+
+Now, $e^{-i 2\pi \frac{k(2r + 1)}{N}}$ is very close to $e^{-i 2\pi \frac{k2r}{N}}$, we can make both sums share a coefficient by simply splitting $e^{-i 2\pi \frac{k(2r + 1)}{N}} = e^{-i 2\pi \frac{k}{N}} e^{-i 2\pi \frac{k2r}{N}}$, which also allows us to take a common term out of the second sum.
+
+$$
+X_k = \sum_{r = 0}^{\frac{N}{2} - 1} x_{2r} e^{-i 2\pi \frac{k2r}{N}} 
+    + e^{-i 2\pi \frac{k}{N}} \sum_{r = 0}^{\frac{N}{2} - 1} x_{2r + 1} e^{-i 2\pi \frac{k2r}{N}}
+$$
+
+Now comes the second most important observation. Notice that the exponent contains $2kr / N$. We can rewrite this as $kr / (N / 2)$, which means we're actually dealing with the roots of unity for a transform of half the original size. In other words:
+$$
+W_N^{2r} = W_{N / 2}^r
+$$ 
+
+$$
+X_k = \sum_{r = 0}^{\frac{N}{2} - 1} x_{2r} W_{N / 2}^{kr} 
+    + W_N^k \sum_{r = 0}^{\frac{N}{2} - 1} x_{2r + 1} W_{N / 2}^{kr}
+$$
+
+Are you seeing what I'm seeing? We have just proven that computing an $N$-point DFT is equal to computing two $\frac{N}{2}$-point DFTs and summing them together (as long as $N$ is divisible by $2$). 
+
+But there's still more structure to uncover. Do you remember what we saw visually? It seems like the lower half of the even elements is equal to the upper half, while the lower half of the odd elements is the negative of the upper half. Let's see if we can get the equations to agree with us. Before we do that though, let's introduce a new variable $M = \frac{N}{2}$ as that will simplify our equations a little bit. The equation from before becomes:
+$$
+X_k = \sum_{r = 0}^{M - 1} x_{2r} W_M^{kr} 
+    + W_N^k \sum_{r = 0}^{M - 1} x_{2r + 1} W_M^{kr}
+$$
+Let's also name both sums as that will become useful in a short while.
+
+$$
+X_k = \underbrace{\sum_{r = 0}^{M - 1} x_{2r} W_M^{kr}}_{E_k} 
+    + W_N^k \underbrace{\sum_{r = 0}^{M - 1} x_{2r + 1} W_M^{kr}}_{O_k}
+$$
+
+With that out of the way, we can try to compute $X_{k + M}$ and see where that takes us.
+
+$$
+X_{k + M} = \sum_{r = 0}^{M - 1} x_{2r} W_M^{(k + M)r} 
+          + W_N^{k + M} \sum_{r = 0}^{M - 1} x_{2r + 1} W_M^{(k + M)r}
+$$
+
+Remember, $M$ is half of $N$. which means $W_M^{(k + M)r}$ is a 360 degree rotation in $W_M$, it's $W_M^{(k + M)r} = W_M^{kr}$ due to periodicity. On the other hand, in $W_N$ it's only half a rotation, which means it changes the sign. Hence $W_N^{k + M} = -W_N^k$. 
+
+Thus we get:
+$$
+X_{k + M} = \sum_{r = 0}^{M - 1} x_{2r} W_M^{kr} 
+          - W_N^k \sum_{r = 0}^{M - 1} x_{2r + 1} W_M^{kr}
+$$
+
+Combining $X_{k + M}$ with $X_k$, we confirm the symmetry we though we saw visually:
+$$
+\begin{align}
+	X_k       &= E_k + W_N^k O_k \\
+	X_{k + M} &= E_k - W_N^k O_k
+\end{align}
+$$
+for $0 \le k \lt M$.
+
+This is another great simplification. With both of those results, we have an algorithm for computing bigger DFTs by breaking them recursively into smaller ones. We can also compute both halves of the output using the same intermediate values, avoiding redundant calculations.
+
+Let's see how optimal exactly is our algorithm. 
+
+The recurrence for this exact operation we've been studying until now is $T(N) = 2T(N / 2) + O(N)$ which using [Master Theorem](https://en.wikipedia.org/wiki/Master_theorem_(analysis_of_algorithms)) gives us $T(N) = O(N \log_2 N)$. This is not very hard to prove without using Master Theorem, but I don't find much pedagogical value in doing so. Moving on. The algorithm we found is $O(N \log_2 N)$, as opposed to the original, naive one, which was $O(N^2)$. Let's take the table from earlier and compare.
+
+|     Input size ($N$) | Operations ($N^2$) | Operations ($N \log_2 N$) |
+| -------------------: | -----------------: | ------------------------- |
+|           $2^5 = 32$ |              1,024 | 160                       |
+|          $2^7 = 128$ |             16,384 | 896                       |
+|          $2^9 = 512$ |            262,144 | 4608                      |
+|     $2^{11} = 2,048$ |          4,194,304 | 22,528                    |
+|     $2^{13} = 8,192$ |         67,108,864 | 106,496                   |
+|    $2^{15} = 32,768$ |      1,073,741,824 | 491,520                   |
+|   $2^{17} = 131,072$ |     17,179,869,184 | 2,228,224                 |
+|   $2^{19} = 524,288$ |    274,877,906,944 | 9,961,472                 |
+| $2^{20} = 1,048,576$ |  1,099,511,627,776 | 20,971,520                |
+
+That's an astronomical difference. At least on paper, Cooley-Tukey FFT of approximately 63 seconds at 48 kHz has roughly the same performance as a naive DFT of roughly 0.7 second. 
+
+It's important to note that what we've derived so far isn't the entire Cooley–Tukey algorithm. We've been dealing with a particular variant known as **radix-2 Cooley–Tukey**.
+
+As the name suggests, radix-2 means that we're repeatedly splitting our transform into two smaller transforms. If we want to apply this decomposition all the way down to individual elements, our buffer length must be a power of two.
+
+Fortunately, Cooley–Tukey isn't limited to radix-2. We can use other radices as well, such as radix-3, radix-4, radix-5, and so forth. We can even combine different radices within a single transform. For example, we could first split a transform using radix-7, then radix-5, and finally radix-2. This is known as **mixed-radix Cooley–Tukey**.
+
+In practice, however, FFT implementations usually support only a limited number of radices, since each one requires its own specialized implementation. This means that transforms containing large prime factors can become problematic. A prime-sized transform, in particular, cannot be decomposed into smaller nontrivial transforms using Cooley–Tukey alone.
+
+Fortunately, there are other algorithms that can handle these cases and we'll explore them next.
+
+Before we do that though, let's try to implement what we have learned. 
+
+## Implementation
+
+```rs
+TODO
+```
+
+## Stockham autosort
+
+TODO
+
+```rs
+TODO
+```
+
+# Rader's algorithm
+
+# Bluestein's algorithm
+
+TODO
+
+```rs
+TODO
+```
+
+# Chirp-Z
+
+TODO
+
+```rs
+TODO
+```
+
+# General fast Fourier transform
+
+TODO
+
+```rs
+TODO
+```
